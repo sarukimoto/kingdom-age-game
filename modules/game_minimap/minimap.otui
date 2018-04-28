@@ -1,0 +1,54 @@
+PosLabel < Label
+  id: positionLabel
+  anchors.bottom: parent.bottom
+  anchors.left: parent.left
+  color: #ffffff
+  background-color: #000000
+  text-offset: 2 0
+  text-auto-resize: true
+  padding-right: 3
+  font: verdana-8px-antialised
+
+InstanceLabel < Label
+  id: instanceLabel
+  anchors.bottom: positionLabel.top
+  anchors.left: positionLabel.left
+  color: #ffffff
+  background-color: #000000
+  text-offset: 2 0
+  text-auto-resize: true
+  padding-right: 3
+  font: verdana-8px-antialised
+  visible: false
+
+MiniWindow
+  id: minimapWindow
+  !text: tr('Minimap')
+  height: 150
+  icon: /images/topbuttons/minimap
+  @onClose: modules.game_minimap.onMiniWindowClose()
+  &save: true
+
+  Label
+    text: ?
+    text-align: center
+    phantom: false
+    !tooltip: tr('Hold the left mouse button (or press \'%s\')\nfor navigate. Scroll the mouse middle button for\nzoom. Press the right mouse button to create map\nmarks. Press \'%s\' for view the entire\ngame map.', 'Alt+Arrows', 'Ctrl+Shift+M')
+    anchors.top: minimizeButton.top
+    anchors.right: minimizeButton.left
+    margin-right: 3
+    size: 14 14
+
+  MiniWindowContents
+    Minimap
+      id: minimap
+      anchors.fill: parent
+
+      InstanceLabel
+      PosLabel
+
+//  ResizeBorder
+//    anchors.right: parent.right
+//    anchors.top: parent.top
+//    anchors.bottom: parent.bottom
+//    enabled: true

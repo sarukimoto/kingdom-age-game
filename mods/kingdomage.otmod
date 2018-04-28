@@ -1,0 +1,11 @@
+Module
+  name: kingdomage
+  description: Kingdom Age mods
+  author: River
+  website: http://kingdomageonline.com
+  sandboxed: true
+  autoload: true
+  autoload-priority: 1000
+  @onLoad: |
+    local serverIp = 'kingdomageonline.com'
+    EnterGame.setUniqueServer(serverIp, 7171, 1099)

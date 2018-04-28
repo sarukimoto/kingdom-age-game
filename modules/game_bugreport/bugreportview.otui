@@ -1,0 +1,170 @@
+BRVRowLabel < Label
+  font: verdana-11px-monochrome
+  background-color: alpha
+  text-offset: 2 0
+  focusable: true
+
+  $on:
+    color: #007700
+  $!on:
+    color: #333b43
+
+  $focus:
+    background-color: #333b43
+
+  $on focus:
+    color: #00ff00
+  $!on focus:
+    color: #ffffff
+
+
+
+
+
+BugReportViewWindow < MainWindow
+  !text: 'Report Bug/Problem/Idea View'
+  size: 300 400
+  @onEscape: |
+    modules.game_bugreport.destroyBugReportViewWindow()
+
+  VerticalScrollBar
+    id: bugViewScrollBar
+    anchors.top: parent.top
+    anchors.bottom: bugViewStateComboBox.top
+    anchors.right: parent.right
+    margin-bottom: 10
+    pixels-scroll: true
+    step: 14
+
+  TextList
+    id: bugViewList
+    vertical-scrollbar: bugViewScrollBar
+    anchors.top: prev.top
+    anchors.bottom: prev.bottom
+    anchors.left: parent.left
+    anchors.right: prev.left
+    focusable: false
+
+  Button
+    id: bugViewRemoveButton
+    icon: /images/game/console/ignore
+    !tooltip: 'Remove selected row'
+    anchors.bottom: bugViewRowsPerPageLabel.top
+    anchors.left: parent.left
+    width: 20
+    @onClick: |
+      modules.game_bugreport.bugViewRemoveRow()
+
+  Button
+    id: bugViewSetStateButton
+    !text: 'Set'
+    !tooltip: 'Set report state on selected row'
+    anchors.bottom: bugViewRowsPerPageLabel.top
+    anchors.left: prev.right
+    width: 30
+    @onClick: |
+      modules.game_bugreport.bugViewSetReportState()
+
+  ComboBox
+    id: bugViewStateComboBox
+    anchors.bottom: bugViewRowsPerPageLabel.top
+    anchors.left: prev.right
+    margin-left: 3
+
+  TextEdit
+    id: bugViewPage
+    !text: '1'
+    anchors.bottom: bugViewRowsPerPageLabel.top
+    anchors.right: next.left
+    margin-top: 10
+    margin-right: 3
+    width: 40
+    max-length: 4
+    @onTextChange: modules.game_bugreport.onBugViewPageChange(self)
+
+  Button
+    id: bugViewUpdatePageButton
+    icon: /images/game/console/leftarrow
+    !tooltip: 'Previous page'
+    anchors.bottom: bugViewRowsPerPageLabel.top
+    anchors.right: next.left
+    margin-top: 10
+    width: 25
+    @onClick: |
+      modules.game_bugreport.bugViewPreviousPage()
+
+  Button
+    id: bugViewUpdatePageButton
+    icon: /images/game/console/rightarrow
+    !tooltip: 'Next page'
+    anchors.bottom: next.top
+    anchors.right: parent.right
+    margin-top: 10
+    width: 25
+    @onClick: |
+      modules.game_bugreport.bugViewNextPage()
+
+  Label
+    id: bugViewRowsPerPageLabel
+    anchors.bottom: next.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-bottom: 3
+
+  OptionScrollbar
+    id: bugViewRowsPerPageOptionScrollbar
+    step: 10
+    anchors.bottom: next.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-bottom: 10
+    minimum: 10
+    maximum: 50
+    @onValueChange: |
+      local value = modules.game_bugreport.getRowsPerPage()
+      local text = value
+      if value < 10 or value >= 50 then
+        text = 'max'
+      end
+      modules.game_bugreport.updateRowsPerPageLabel(value)
+
+  Label
+    !text: 'Category:'
+    anchors.bottom: next.top
+    anchors.left: next.left
+    margin-bottom: 3
+
+  ComboBox
+    id: bugViewCategoryComboBox
+    anchors.bottom: bugViewCloseButton.top
+    anchors.left: parent.left
+    margin-bottom: 10
+
+  Button
+    id: bugViewUpdatePageButton
+    !text: 'Refresh'
+    !tooltip: 'Refresh list'
+    anchors.bottom: bugViewCloseButton.bottom
+    anchors.right: bugViewCloseButton.left
+    margin-right: 10
+    width: 80
+    @onClick: |
+      modules.game_bugreport.bugViewUpdatePage()
+
+  Button
+    id: bugViewCloseButton
+    !text: 'Close'
+    anchors.bottom: parent.bottom
+    anchors.right: parent.right
+    width: 80
+    @onClick: |
+      modules.game_bugreport.destroyBugReportViewWindow()
+
+  Button
+    id: bugViewClearButton
+    !text: 'Clear'
+    anchors.bottom: parent.bottom
+    anchors.left: parent.left
+    width: 80
+    @onClick: |
+      modules.game_bugreport.clearViewWindow()

@@ -1,0 +1,103 @@
+PowersListLabel < Label
+  phantom: false
+  focusable: true
+  font: verdana-11px-monochrome
+  background-color: alpha
+  text-offset: 42 3
+  height: 34
+  margin: 1
+
+  $on:
+    color: #007700
+  $!on:
+    color: #333b43
+
+  $focus:
+    background-color: #333b43
+
+  $on focus:
+    color: #00ff00
+  $!on focus:
+    color: #ffffff
+
+  Label
+    id: powerIcon
+    size: 34 34
+    anchors.top: parent.top
+    anchors.left: parent.left
+    border-width: 1
+    border-color: black
+    color: white
+
+PowerInfoLabel < Label
+  width: 70
+  font: verdana-11px-monochrome
+  margin: 5 10
+  color: #cccccc
+  anchors.left: parent.left
+  anchors.right: parent.right
+  text-wrap: true
+  text-auto-resize: true
+
+  $first:
+    anchors.top: powersList.bottom
+
+  $!first:
+    anchors.top: prev.bottom
+
+MiniWindow
+  icon: ka_powerslist
+  id: powersListWindow
+  !text: tr('Powers')
+  @onClose: modules.ka_powerslist.close()
+  height: 315
+  &save: true
+
+  Label
+    text: ?
+    text-align: center
+    phantom: false
+    !tooltip: '1. Powers should be used on hotkeys.\n2. Power hotkeys can be pressed to boost it\'s\npower - it will increase the mana\'s cost also.\n3. Some powers needs the mouse on game screen to target.'
+    anchors.top: minimizeButton.top
+    anchors.right: minimizeButton.left
+    margin-right: 3
+    size: 14 14
+
+  MiniWindowContents
+    padding: 0
+
+    TextList
+      id: powersList
+      vertical-scrollbar: powersListScrollBar
+      anchors.top: parent.top
+      anchors.left: parent.left
+      anchors.right: parent.right
+      margin-bottom: 10
+      padding: 1
+      height: 145
+
+    VerticalScrollBar
+      id: powersListScrollBar
+      anchors.top: powersList.top
+      anchors.bottom: powersList.bottom
+      anchors.right: powersList.right
+      step: 50
+      pixels-scroll: true
+
+    PowerInfoLabel
+      id: labelName
+
+    PowerInfoLabel
+      id: labelLevel
+
+    PowerInfoLabel
+      id: labelClass
+
+    PowerInfoLabel
+      id: labelVocation
+
+    PowerInfoLabel
+      id: labelPremium
+
+    PowerInfoLabel
+      id: labelDescription

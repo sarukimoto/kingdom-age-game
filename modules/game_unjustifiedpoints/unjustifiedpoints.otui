@@ -1,0 +1,59 @@
+SkullProgressBar < ProgressBar
+  height: 13
+  margin: 4 18 0 10
+  anchors.top: prev.bottom
+  anchors.left: parent.left
+  anchors.right: parent.right
+
+SkullWidget < UIWidget
+  size: 11 11
+  margin: 1
+  margin-right: 2
+  anchors.right: parent.right
+  image-source: /images/game/skull_socket
+
+MiniWindow
+  id: unjustifiedPointsWindow
+  !text: 'Unjustified Frags'
+  // old height: 114
+  height: 90
+  icon: /images/topbuttons/unjustifiedpoints
+  @onOpen: modules.game_unjustifiedpoints.onMiniWindowOpen()
+  @onClose: modules.game_unjustifiedpoints.onMiniWindowClose()
+  &save: true
+
+  MiniWindowContents
+    SkullWidget
+      id: currentSkullWidget
+      anchors.top: parent.top
+      anchors.horizontalCenter: parent.horizontalCenter
+      anchors.right: none
+
+    Label
+      id: skullTimeLabel
+      !text: '00:00 (frags: 0)'
+      text-auto-resize: true
+      anchors.top: prev.bottom
+      anchors.horizontalCenter: parent.horizontalCenter
+      margin-top: 3
+      font: verdana-11px-rounded
+      phantom: false
+
+    SkullProgressBar
+      id: redSkullProgressBar
+      !text: 'Red Skull'
+      margin-top: 5
+
+    SkullWidget
+      id: redSkullSkullWidget
+      anchors.top: prev.top
+      image-source: /images/game/skulls/skull_red
+
+    SkullProgressBar
+      id: blackSkullProgressBar
+      !text: 'Black Skull'
+
+    SkullWidget
+      id: blackSkullSkullWidget
+      anchors.top: prev.top
+      image-source: /images/game/skulls/skull_black

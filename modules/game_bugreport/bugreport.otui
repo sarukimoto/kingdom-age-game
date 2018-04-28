@@ -1,0 +1,136 @@
+BugReportWindow < MainWindow
+  !text: 'Report Bug/Problem/Idea'
+  size: 300 400
+
+  Label
+    id: bugLabel
+    color: #cccccc
+    text-wrap: true
+    text-auto-resize: true
+    anchors.top: parent.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+
+  Label
+    id: bugCategoryLabel
+    !text: 'Category:'
+    anchors.top: prev.bottom
+    anchors.left: parent.left
+    margin-top: 10
+    width: 80
+
+  ComboBox
+    id: bugCategoryComboBox
+    anchors.top: prev.bottom
+    anchors.left: parent.left
+    margin-top: 3
+
+  Label
+    id: bugPositionLabel
+    !text: 'Map Position:'
+    anchors.top: bugCategoryLabel.top
+    anchors.left: bugCategoryLabel.right
+    margin-left: 20
+
+  Label
+    id: bugPositionXLabel
+    !text: 'X:'
+    anchors.left: prev.left
+    anchors.top: bugPositionLabel.bottom
+    margin-top: 7
+
+  TextEdit
+    id: bugPositionX
+    !text: '0'
+    anchors.left: prev.right
+    anchors.top: bugPositionLabel.bottom
+    margin-top: 3
+    margin-left: 5
+    width: 40
+    enabled: true
+    max-length: 4
+    @onTextChange: modules.game_bugreport.onPositionXTextChange(self)
+
+  Label
+    id: bugPositionXLabel
+    !text: 'Y:'
+    anchors.left: prev.right
+    anchors.top: bugPositionLabel.bottom
+    margin-top: 7
+    margin-left: 10
+
+  TextEdit
+    id: bugPositionY
+    !text: '0'
+    anchors.left: prev.right
+    anchors.top: bugPositionLabel.bottom
+    margin-top: 3
+    margin-left: 5
+    width: 40
+    enabled: true
+    max-length: 4
+    @onTextChange: modules.game_bugreport.onPositionYTextChange(self)
+
+  Label
+    id: bugPositionXLabel
+    !text: 'Z:'
+    anchors.left: prev.right
+    anchors.top: bugPositionLabel.bottom
+    margin-top: 7
+    margin-left: 10
+
+  TextEdit
+    id: bugPositionZ
+    !text: '0'
+    anchors.left: prev.right
+    anchors.top: bugPositionLabel.bottom
+    anchors.right: parent.right
+    margin-top: 3
+    margin-left: 5
+    width: 40
+    enabled: true
+    max-length: 2
+    @onTextChange: modules.game_bugreport.onPositionZTextChange(self)
+
+  Label
+    id: bugCommentLabel
+    !text: 'Comment:'
+    anchors.left: bugCategoryComboBox.left
+    anchors.top: bugCategoryComboBox.bottom
+    margin-top: 3
+
+  VerticalScrollBar
+    id: bugScrollBarVertical
+    anchors.top: prev.bottom
+    anchors.bottom: bugOkButton.top
+    anchors.right: parent.right
+    margin-top: 8
+    margin-bottom: 8
+    step: 50
+    pixels-scroll: true
+
+  MultilineTextEdit
+    id: bugCommentMultilineTextEdit
+    vertical-scrollbar: bugScrollBarVertical
+    anchors.top: prev.top
+    anchors.bottom: prev.bottom
+    anchors.left: parent.left
+    anchors.right: prev.left
+    text-align: topLeft
+    text-wrap: true
+    max-length: 255
+
+  Button
+    id: bugOkButton
+    !text: 'Ok'
+    anchors.bottom: bugCancelButton.bottom
+    anchors.right: bugCancelButton.left
+    margin-right: 10
+    width: 80
+
+  Button
+    id: bugCancelButton
+    !text: 'Cancel'
+    anchors.bottom: parent.bottom
+    anchors.right: parent.right
+    width: 80

@@ -1,0 +1,74 @@
+Panel
+
+  OptionCheckBox
+
+    id: smoothWalk
+    !text: tr('Enable Smooth Walking')
+    !tooltip: tr('Game Client will schedule next walk before finishing previous step')
+
+  OptionCheckBox
+    id: smartWalk
+    !text: tr('Enable Smart Walking')
+    !tooltip: tr('Game Client will detect when to use diagonal step based on the\nkeys you are pressing')
+
+  OptionCheckBox
+    id: bouncingKeys
+    !text: tr('Enable Auto Bouncing Keys')
+    !tooltip: tr('Whenever new key is pressed game client will bounce previous key')
+
+  Label
+    id: walkingSensitivityLabel
+    anchors.top: prev.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-top: 5
+    @onSetup: |
+      local value = modules.client_options.getOption('walkingSensitivityScrollBar')
+      self:setText(tr('Walking keys sensitivity: %s%%', value))
+
+  OptionScrollbar
+    id: walkingSensitivityScrollBar
+    anchors.top: prev.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-top: 3
+    minimum: 1
+    maximum: 100
+
+  Label
+    id: walkingRepeatDelayLabel
+    anchors.top: prev.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-top: 5
+    @onSetup: |
+      local value = modules.client_options.getOption('walkingRepeatDelayScrollBar')
+      self:setText(tr('Walking keys auto-repeat delay: %s miliseconds', value))
+
+  OptionScrollbar
+    id: walkingRepeatDelayScrollBar
+    anchors.top: prev.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-top: 3
+    minimum: 10
+    maximum: 200
+
+  Label
+    id: bouncingKeysDelayLabel
+    anchors.top: prev.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-top: 5
+    @onSetup: |
+      local value = modules.client_options.getOption('bouncingKeysDelayScrollBar')
+      self:setText(tr('Auto bouncing keys interval: %s miliseconds', value))
+
+  OptionScrollbar
+    id: bouncingKeysDelayScrollBar
+    anchors.top: prev.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-top: 3
+    minimum: 100
+    maximum: 1000

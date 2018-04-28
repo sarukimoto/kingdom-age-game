@@ -1,0 +1,154 @@
+RVListLabel < Label
+  font: verdana-11px-monochrome
+  background-color: alpha
+  text-offset: 2 0
+  focusable: true
+
+  $on:
+    color: #007700
+  $!on:
+    color: #333b43
+
+  $focus:
+    background-color: #333b43
+
+  $on focus:
+    color: #00ff00
+  $!on focus:
+    color: #ffffff
+
+RVLabel < Label
+  anchors.left: parent.left
+  anchors.right: parent.right
+
+  $first:
+    anchors.top: parent.top
+
+  $!first:
+    anchors.top: prev.bottom
+    margin-top: 10
+
+RVTextEdit < TextEdit
+  anchors.left: parent.left
+  anchors.right: parent.right
+  margin-top: 3
+
+  $first:
+    anchors.top: parent.top
+
+  $!first:
+    anchors.top: prev.bottom
+
+
+
+
+
+RVWindow < MainWindow
+  id: ruleViolationWindow
+  size: 400 600
+  @onEscape: |
+    modules.game_ruleviolation.destroyRuleViolationReportWindow()
+
+  RVLabel
+    id: rvLabel
+    color: #cccccc
+    !text: 'Use this dialog to only report players!\nONLY IN ENGLISH!'
+    text-wrap: true
+    text-auto-resize: true
+
+  RVLabel
+    !text: tr('Target name') .. ':'
+
+  RVTextEdit
+    id: targetTextEdit
+    enabled: false
+
+  RVLabel
+    id: statementLabel
+    !text: tr('Statement') .. ':'
+
+  RVTextEdit
+    id: statementTextEdit
+    enabled: false
+
+  RVLabel
+    id: translationLabel
+    !text: tr('Translate to english if the statement is not on that language') .. ':'
+
+  RVTextEdit
+    id: translationTextEdit
+    max-length: 255
+
+  RVLabel
+    id: reasonLabel
+    !text: tr('Reason') .. ':'
+
+  ComboBox
+    id: typeComboBox
+    anchors.top: prev.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-top: 3
+
+  VerticalScrollBar
+    id: reasonTextScrollBar
+    pixels-scroll: true
+    height: 80
+    anchors.top: prev.bottom
+    anchors.right: parent.right
+    margin-top: 3
+    step: 14
+
+  MultilineTextEdit
+    id: reasonMultilineTextEdit
+    anchors.top: prev.top
+    anchors.bottom: prev.bottom
+    anchors.left: parent.left
+    anchors.right: prev.left
+    vertical-scrollbar: reasonTextScrollBar
+    text-wrap: true
+    focusable: false
+    editable: false
+
+  RVLabel
+    id: commentLabel
+    !text: tr('Comment') .. ':'
+
+  VerticalScrollBar
+    id: commentListScrollBar
+    pixels-scroll: true
+    anchors.top: commentLabel.bottom
+    anchors.right: parent.right
+    anchors.bottom: cancelButton.top
+    margin-top: 3
+    margin-bottom: 10
+    step: 14
+
+  MultilineTextEdit
+    id: commentMultilineTextEdit
+    vertical-scrollbar: commentListScrollBar
+    anchors.top: prev.top
+    anchors.bottom: prev.bottom
+    anchors.left: parent.left
+    anchors.right: prev.left
+    text-wrap: true
+    max-length: 255
+
+  Button
+    id: cancelButton
+    !text: tr('Cancel')
+    anchors.right: parent.right
+    anchors.bottom: parent.bottom
+    width: 80
+    @onClick: |
+      modules.game_ruleviolation.destroyRuleViolationReportWindow()
+
+  Button
+    id: okButton
+    !text: tr('Ok')
+    anchors.right: prev.left
+    anchors.bottom: parent.bottom
+    margin-right: 5
+    width: 80
+    @onClick: |
+      modules.game_ruleviolation.report()

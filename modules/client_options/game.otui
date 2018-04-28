@@ -1,0 +1,112 @@
+Panel
+  OptionCheckBox
+    id: classicControl
+    !text: tr('Classic control')
+
+  OptionCheckBox
+    id: autoChaseOverride
+    !text: tr('Allow auto chase override')
+
+  OptionCheckBox
+    id: showPing
+    !text: tr('Show connection ping')
+    !tooltip: tr('Display connection speed to the server\n(milliseconds).')
+
+  OptionCheckBox
+    id: showLeftPanel
+    !text: tr('Show left panel')
+
+  OptionCheckBox
+    id: showNpcDialogWindows
+    !text: tr('Show NPCs dialog windows')
+    !tooltip: tr('Display a dialog window to choose an option\nwithout typing any message, just by clicking. You\ncan also choose the recommended option by pressing\n\'Enter\' or cancel by pressing \'Esc\'.\nNote: It wont appear on all messages, only basic.')
+
+  OptionCheckBox
+    id: displayNames
+    !text: tr('Display creature names')
+
+  OptionCheckBox
+    id: displayLevel
+    !text: tr('Display creature levels')
+
+  OptionCheckBox
+    id: displayHealth
+    !text: tr('Display creature health bar')
+
+  OptionCheckBox
+    id: displayMana
+    !text: tr('Display player mana bar')
+
+  OptionCheckBox
+    id: displayText
+    !text: tr('Display text messages')
+
+  OptionCheckBox
+    id: displayHotkeybars
+    !text: tr('Display hotkeybars')
+
+  Button
+    id: changeLocale
+    !text: tr('Change language')
+    @onClick: modules.client_locales.createWindow()
+    anchors.top: prev.bottom
+    anchors.left: prev.left
+    margin-top: 5
+    width: 120
+
+  Label
+    !text: tr("Left Sticker")
+    anchors.top: changeLocale.bottom
+    anchors.left: parent.left
+    margin-top: 5
+  ComboBox
+    id: leftStickerComboBox
+    anchors.top: prev.bottom
+    anchors.left: parent.left
+    width: 120
+    margin-top: 3
+    &save: true
+  Label
+    id: leftSticketOpacityLabel
+    anchors.top: prev.bottom
+    anchors.left: parent.left
+    &baseText: tr('Opacity') .. ': %d%%'
+    !text: tr('Opacity') .. ': 100%'
+    margin-top: 5
+  OptionScrollbar
+    id: leftStickerOpacityScrollbar
+    anchors.top: prev.bottom
+    anchors.left: parent.left
+    width: 120
+    margin-top: 3
+    minimum: 0
+    maximum: 255
+
+  Label
+    !text: tr("Right Sticker")
+    anchors.top: changeLocale.bottom
+    anchors.left: prev.right
+    margin-top: 5
+    margin-left: 70
+  ComboBox
+    id: rightStickerComboBox
+    anchors.top: prev.bottom
+    anchors.left: prev.left
+    width: 120
+    margin-top: 3
+    &save: true
+  Label
+    id: rightSticketOpacityLabel
+    anchors.top: prev.bottom
+    anchors.left: prev.left
+    &baseText: tr('Opacity') .. ': %d%%'
+    !text: tr('Opacity') .. ': 100%'
+    margin-top: 5
+  OptionScrollbar
+    id: rightStickerOpacityScrollbar
+    anchors.top: prev.bottom
+    anchors.left: prev.left
+    width: 120
+    margin-top: 3
+    minimum: 0
+    maximum: 255

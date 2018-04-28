@@ -1,0 +1,259 @@
+RVVRowLabel < Label
+  font: verdana-11px-monochrome
+  background-color: alpha
+  text-offset: 2 0
+  focusable: true
+
+  $on:
+    color: #007700
+  $!on:
+    color: #333b43
+
+  $focus:
+    background-color: #333b43
+
+  $on focus:
+    color: #00ff00
+  $!on focus:
+    color: #ffffff
+
+
+
+
+
+RVViewWindow < MainWindow
+  !text: 'Report Rule Violations View'
+  size: 400 600
+  @onEscape: |
+    modules.game_ruleviolation.destroyRVViewWindow()
+
+  ComboBox
+    id: rvViewTypeActionComboBox
+    anchors.top: parent.top
+    anchors.left: parent.left
+    width: 85
+
+  Button
+    id: rvViewRemoveButton
+    icon: /images/game/console/clearchannel
+    !tooltip: 'Detach row'
+    anchors.top: parent.top
+    anchors.right: parent.right
+    width: 25
+    @onClick: |
+      modules.game_ruleviolation.rvViewDetachRow()
+
+  Button
+    id: rvViewActionButton
+    !text: tr('Action')
+    anchors.top: parent.top
+    anchors.right: prev.left
+    width: 50
+    @onClick: |
+      modules.game_ruleviolation.rvViewAction()
+
+  ComboBox
+    id: rvViewActionComboBox
+    anchors.top: parent.top
+    anchors.left: rvViewTypeActionComboBox.right
+    anchors.right: rvViewActionButton.left
+    margin-left: 3
+    margin-right: 3
+
+  Label
+    !text: 'Reason:'
+    anchors.top: prev.bottom
+    anchors.left: parent.left
+    margin-top: 5
+
+  ComboBox
+    id: rvViewActionReasonComboBox
+    anchors.top: prev.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-top: 3
+
+  Label
+    id: commentLabel
+    !text: 'Action comment:'
+    anchors.top: prev.bottom
+    anchors.left: parent.left
+    margin-top: 5
+
+  VerticalScrollBar
+    id: commentScrollBar
+    pixels-scroll: true
+    height: 80
+    anchors.top: prev.bottom
+    anchors.right: parent.right
+    margin-top: 3
+    step: 14
+
+  MultilineTextEdit
+    id: rvViewCommentMultilineTextEdit
+    anchors.top: prev.top
+    anchors.bottom: prev.bottom
+    anchors.left: parent.left
+    anchors.right: prev.left
+    vertical-scrollbar: commentScrollBar
+    text-wrap: true
+    focusable: true
+    editable: true
+    max-length: 255
+
+  VerticalScrollBar
+    id: rvViewScrollBar
+    anchors.top: prev.bottom
+    anchors.bottom: rvViewStateComboBox.top
+    anchors.right: parent.right
+    margin-top: 10
+    margin-bottom: 10
+    pixels-scroll: true
+    step: 14
+
+  TextList
+    id: rvViewList
+    vertical-scrollbar: rvViewScrollBar
+    anchors.top: prev.top
+    anchors.bottom: prev.bottom
+    anchors.left: parent.left
+    anchors.right: prev.left
+    focusable: false
+
+  Button
+    id: rvViewRemoveButton
+    icon: /images/game/console/ignore
+    !tooltip: 'Remove selected row'
+    anchors.bottom: rvViewRowsPerPageLabel.top
+    anchors.left: parent.left
+    width: 25
+    @onClick: |
+      modules.game_ruleviolation.rvViewRemoveRow()
+
+  Button
+    id: rvViewSetStateButton
+    !text: 'Set'
+    !tooltip: 'Set report state on selected row'
+    anchors.bottom: rvViewRowsPerPageLabel.top
+    anchors.left: prev.right
+    width: 30
+    @onClick: |
+      modules.game_ruleviolation.rvViewSetReportState()
+
+  ComboBox
+    id: rvViewStateComboBox
+    anchors.bottom: rvViewRowsPerPageLabel.top
+    anchors.left: prev.right
+    margin-left: 3
+
+  TextEdit
+    id: rvViewPage
+    !text: '1'
+    anchors.bottom: rvViewRowsPerPageLabel.top
+    anchors.right: next.left
+    margin-top: 10
+    margin-right: 3
+    width: 40
+    max-length: 4
+    @onTextChange: modules.game_ruleviolation.onRVViewPageChange(self)
+
+  Button
+    id: rvViewUpdatePageButton
+    icon: /images/game/console/leftarrow
+    !tooltip: 'Previous page'
+    anchors.bottom: rvViewRowsPerPageLabel.top
+    anchors.right: next.left
+    margin-top: 10
+    width: 25
+    @onClick: |
+      modules.game_ruleviolation.rvViewPreviousPage()
+
+  Button
+    id: rvViewUpdatePageButton
+    icon: /images/game/console/rightarrow
+    !tooltip: 'Next page'
+    anchors.bottom: next.top
+    anchors.right: parent.right
+    margin-top: 10
+    width: 25
+    @onClick: |
+      modules.game_ruleviolation.rvViewNextPage()
+
+  Label
+    id: rvViewRowsPerPageLabel
+    anchors.bottom: next.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-bottom: 3
+
+  OptionScrollbar
+    id: rvViewRowsPerPageOptionScrollbar
+    step: 10
+    anchors.bottom: next.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-bottom: 10
+    minimum: 10
+    maximum: 50
+    @onValueChange: |
+      local value = modules.game_ruleviolation.getRowsPerPage()
+      local text = value
+      if value < 10 or value >= 50 then
+        text = 'max'
+      end
+      modules.game_ruleviolation.updateRowsPerPageLabel(value)
+
+  Label
+    !text: 'Type:'
+    anchors.bottom: next.top
+    anchors.left: parent.left
+    margin-bottom: 3
+
+  ComboBox
+    id: rvViewTypeComboBox
+    anchors.bottom: next.top
+    anchors.left: parent.left
+    margin-bottom: 10
+    width: 85
+
+  Label
+    !text: 'Reason:'
+    anchors.bottom: next.top
+    anchors.left: parent.left
+    margin-bottom: 3
+
+  ComboBox
+    id: rvViewReasonComboBox
+    anchors.bottom: rvViewCloseButton.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-bottom: 10
+
+  Button
+    id: rvViewUpdatePageButton
+    !text: 'Refresh'
+    !tooltip: 'Refresh list'
+    anchors.bottom: rvViewCloseButton.bottom
+    anchors.right: rvViewCloseButton.left
+    margin-right: 10
+    width: 80
+    @onClick: |
+      modules.game_ruleviolation.rvViewUpdatePage()
+
+  Button
+    id: rvViewCloseButton
+    !text: 'Close'
+    anchors.bottom: parent.bottom
+    anchors.right: parent.right
+    width: 80
+    @onClick: |
+      modules.game_ruleviolation.destroyRVViewWindow()
+
+  Button
+    id: rvViewClearButton
+    !text: 'Clear'
+    anchors.bottom: parent.bottom
+    anchors.left: parent.left
+    width: 80
+    @onClick: |
+      modules.game_ruleviolation.clearViewWindow()

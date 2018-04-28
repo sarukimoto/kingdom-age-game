@@ -1,0 +1,82 @@
+Panel
+  OptionCheckBox
+    id: enableAudio
+    !text: tr('Enable audio')
+
+
+
+  OptionCheckBox
+    id: enableMusic
+    !text: tr('Enable music')
+
+  Label
+    id: musicVolumeLabel
+    !text: tr('Music volume') .. ': ' .. 100 .. '%'
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: prev.bottom
+    margin-top: 6
+    @onSetup: |
+      local value = modules.client_options.getOption('musicVolume')
+      self:setText(tr('Music volume') .. ': ' .. value .. '%')
+
+  OptionScrollbar
+    id: musicVolume
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: prev.bottom
+    margin-top: 3
+    minimum: 0
+    maximum: 100
+
+
+
+  OptionCheckBox
+    id: enableSoundAmbient
+    !text: tr('Enable ambient sounds')
+
+  Label
+    id: soundAmbientVolumeLabel
+    !text: tr('Ambient sounds volume') .. ': ' .. 100 .. '%'
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: prev.bottom
+    margin-top: 6
+    @onSetup: |
+      local value = modules.client_options.getOption('soundAmbientVolume')
+      self:setText(tr('Ambient sounds volume') .. ': ' .. value .. '%')
+
+  OptionScrollbar
+    id: soundAmbientVolume
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: prev.bottom
+    margin-top: 3
+    minimum: 0
+    maximum: 100
+
+
+
+  OptionCheckBox
+    id: enableSoundEffect
+    !text: tr('Enable effect sounds')
+
+  Label
+    id: soundEffectVolumeLabel
+    !text: tr('Effect sounds volume') .. ': ' .. 100 .. '%'
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: prev.bottom
+    margin-top: 6
+    @onSetup: |
+      local value = modules.client_options.getOption('soundEffectVolume')
+      self:setText(tr('Effect sounds volume') .. ': ' .. value .. '%')
+
+  OptionScrollbar
+    id: soundEffectVolume
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: prev.bottom
+    margin-top: 3
+    minimum: 0
+    maximum: 100
