@@ -292,10 +292,10 @@ function disableChat()
   local gameRootPanel = modules.game_interface.getRootPanel()
   local changeWalkDir = modules.game_interface.changeWalkDir
   if gameRootPanel and changeWalkDir then
-    g_keyboard.bindKeyPress('Ctrl+W', function() g_game.turn(North) changeWalkDir(North) end, gameRootPanel)
-    g_keyboard.bindKeyPress('Ctrl+D', function() g_game.turn(East) changeWalkDir(East) end, gameRootPanel)
-    g_keyboard.bindKeyPress('Ctrl+S', function() g_game.turn(South) changeWalkDir(South) end, gameRootPanel)
-    g_keyboard.bindKeyPress('Ctrl+A', function() g_game.turn(West) changeWalkDir(West) end, gameRootPanel)
+    g_keyboard.bindKeyPress('Ctrl+W', function() if not g_game.canHoldDirectionChange(North) then return end g_game.turn(North) changeWalkDir(North) end, gameRootPanel)
+    g_keyboard.bindKeyPress('Ctrl+D', function() if not g_game.canHoldDirectionChange(East) then return end g_game.turn(East) changeWalkDir(East) end, gameRootPanel)
+    g_keyboard.bindKeyPress('Ctrl+S', function() if not g_game.canHoldDirectionChange(South) then return end g_game.turn(South) changeWalkDir(South) end, gameRootPanel)
+    g_keyboard.bindKeyPress('Ctrl+A', function() if not g_game.canHoldDirectionChange(West) then return end g_game.turn(West) changeWalkDir(West) end, gameRootPanel)
   end
 
   consoleToggleChat:setTooltip(tr('Enable chat mode'))

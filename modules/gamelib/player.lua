@@ -149,3 +149,30 @@ function Player:hasState(state, states)
   end
   return false
 end
+
+local reverseDirs =
+{
+  [North] = { East, South, West },
+  [East]  = { South, West, North },
+  [South] = { West, North, East },
+  [West]  = { North, East, South },
+}
+local dirKeys =
+{
+  [North] = { KeyUp, KeyW, KeyNumpad8 },
+  [East]  = { KeyRight, KeyD, KeyNumpad6 },
+  [South] = { KeyDown, KeyS, KeyNumpad2 },
+  [West]  = { KeyLeft, KeyA, KeyNumpad4 },
+}
+function Player:canHoldDirectionChange(direction)
+  if self:getDirection() == direction then return false end
+  for _, reverseDir in ipairs(reverseDirs[direction]) do
+    for _, dirKey in ipairs(dirKeys[reverseDir]) do
+      -- Holding multiple directions
+      if g_window.isKeyPressed(dirKey) then
+        return false
+      end
+    end
+  end
+  return true
+end

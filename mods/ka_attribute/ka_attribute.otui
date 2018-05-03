@@ -73,7 +73,7 @@ MiniWindow
     AttributeLabel
       id: attackAttributeLabel
       !text: 'Attack'
-      !tooltip: 'It increases your damage.\nPhysical or magical, depending of your vocation.'
+      !tooltip: 'It increases your physical or magical damage\n(except staffs and instruments), depending of your vocation.'
       anchors.top: topPanel.bottom
       margin-top: 10
 
@@ -87,7 +87,7 @@ MiniWindow
     AttributeLabel
       id: defenseAttributeLabel
       !text: 'Defense'
-      !tooltip: 'It increases your physical defense.'
+      !tooltip: 'It increases your physical defense by shield.'
       anchors.top: attackAttributeLabel.bottom
 
     AttributeAddButton

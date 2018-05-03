@@ -38,6 +38,8 @@ showAllItems = nil
 sellAllButton = nil
 
 playerFreeCapacity = 0
+playerIsPremium = false
+playerMoneyFromBank = true
 playerMoney = 0
 tradeItems = {}
 playerItems = {}
@@ -349,7 +351,7 @@ function refreshPlayerGoods()
 
   checkSellAllTooltip()
 
-  moneyLabel:setText(formatCurrency(playerMoney))
+  moneyLabel:setText(string.format('%s (%s)', formatCurrency(playerMoney), playerMoneyFromBank and 'from bank' or 'holding'))
   tradeButton:setTooltip(CURRENCY_ISVIP and getCurrentTradeType() == BUY and 'Your VIP money may not be displayed correctly\nif points are added through the website\nwhile keeping the trade opened.' or '')
   capacityLabel:setText(string.format('%.2f', playerFreeCapacity) .. ' ' .. WEIGHT_UNIT)
 
@@ -429,8 +431,16 @@ function onCloseNpcTrade()
   hide()
 end
 
-function onPlayerGoods(money, kaps, items)
-  playerMoney = CURRENCY_ISVIP and kaps or money
+function onPlayerGoods(isPremium, bankPaymentMode, money, bankMoney, kaps, items)
+  playerMoneyFromBank = false
+  playerIsPremium = isPremium
+  playerMoney = money
+  if CURRENCY_ISVIP then
+    playerMoney = kaps
+  elseif isPremium and bankPaymentMode then
+    playerMoneyFromBank = bankPaymentMode
+    playerMoney         = bankMoney
+  end
 
   playerItems = {}
   for _,item in pairs(items) do
