@@ -28,7 +28,7 @@ function init()
 
   minimapWindow:setup()
 
-  ProtocolGame.registerExtendedOpcode(GameServerOpcodes.GameServerInstanceInfo, onInstanceInfo)
+  ProtocolGame.registerExtendedOpcode(GameServerExtOpcodes.GameServerInstanceInfo, onInstanceInfo)
 
   connect(g_game, {
     onGameStart = online,
@@ -57,6 +57,8 @@ function terminate()
   disconnect(LocalPlayer, {
     onPositionChange = updateCameraPosition
   })
+
+  ProtocolGame.unregisterExtendedOpcode(GameServerExtOpcodes.GameServerInstanceInfo)
 
   local gameRootPanel = modules.game_interface.getRootPanel()
   g_keyboard.unbindKeyPress('Alt+Left', gameRootPanel)

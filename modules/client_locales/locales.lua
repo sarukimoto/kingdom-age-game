@@ -15,19 +15,19 @@ local GAMELANGUAGE_LAST    = GAMELANGUAGE_SV
 local GAMELANGUAGE_DEFAULT = GAMELANGUAGE_EN
 local language =
 {
-  ['en']                   = GAMELANGUAGE_EN,
-  ['pt']                   = GAMELANGUAGE_PT,
-  ['es']                   = GAMELANGUAGE_ES,
-  ['de']                   = GAMELANGUAGE_DE,
-  ['pl']                   = GAMELANGUAGE_PL,
-  ['sv']                   = GAMELANGUAGE_SV
+  ['en'] = GAMELANGUAGE_EN,
+  ['pt'] = GAMELANGUAGE_PT,
+  ['es'] = GAMELANGUAGE_ES,
+  ['de'] = GAMELANGUAGE_DE,
+  ['pl'] = GAMELANGUAGE_PL,
+  ['sv'] = GAMELANGUAGE_SV
 }
 
 function sendLocale(localeName)
   local protocolGame = g_game.getProtocolGame()
   if protocolGame then
-    protocolGame:sendExtendedOpcode(ExtendedIds.Locale, localeName)
-    protocolGame:sendExtendedOpcode(ClientOpcodes.ClientGameLanguage, language[localeName] or GAMELANGUAGE_EN)
+    protocolGame:sendExtendedOpcode(ClientExtOpcodes.ClientLocale, localeName)
+    protocolGame:sendExtendedOpcode(ClientExtOpcodes.ClientGameLanguage, language[localeName] or GAMELANGUAGE_EN)
     return true
   end
   return false
@@ -91,7 +91,7 @@ function init()
     connect(g_app, { onRun = createWindow })
   end
 
-  ProtocolGame.registerExtendedOpcode(ExtendedIds.Locale, onExtendedLocales)
+  ProtocolGame.registerExtendedOpcode(GameServerExtOpcodes.GameServerLocale, onExtendedLocales)
   connect(g_game, { onGameStart = onGameStart })
 end
 
@@ -99,7 +99,7 @@ function terminate()
   installedLocales = nil
   currentLocale = nil
 
-  ProtocolGame.unregisterExtendedOpcode(ExtendedIds.Locale)
+  ProtocolGame.unregisterExtendedOpcode(GameServerExtOpcodes.GameServerLocale)
   disconnect(g_app, { onRun = createWindow })
   disconnect(g_game, { onGameStart = onGameStart })
 end

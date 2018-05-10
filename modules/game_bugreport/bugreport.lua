@@ -14,25 +14,25 @@ local function sendNewReport(category, comment, position)
   position = position or { x = 0, y = 0, z = 0 }
   local protocolGame = g_game.getProtocolGame()
   if not protocolGame then return end
-  protocolGame:sendExtendedOpcode(ClientOpcodes.ClientBugReport, string.format("%d;%d;%s;%d;%d;%d", REPORT_MODE_NEWREPORT, category, comment:trim(), position.x, position.y, position.z))
+  protocolGame:sendExtendedOpcode(ClientExtOpcodes.ClientBugReport, string.format("%d;%d;%s;%d;%d;%d", REPORT_MODE_NEWREPORT, category, comment:trim(), position.x, position.y, position.z))
 end
 
 local function sendUpdateSearch(category, page, rowsPerPage, state)
   local protocolGame = g_game.getProtocolGame()
   if not protocolGame then return end
-  protocolGame:sendExtendedOpcode(ClientOpcodes.ClientBugReport, string.format("%d;%d;%d;%d;%d", REPORT_MODE_UPDATESEARCH, category, page, rowsPerPage, state))
+  protocolGame:sendExtendedOpcode(ClientExtOpcodes.ClientBugReport, string.format("%d;%d;%d;%d;%d", REPORT_MODE_UPDATESEARCH, category, page, rowsPerPage, state))
 end
 
 local function sendUpdateState(row)
   local protocolGame = g_game.getProtocolGame()
   if not protocolGame then return end
-  protocolGame:sendExtendedOpcode(ClientOpcodes.ClientBugReport, string.format("%d;%d;%d", REPORT_MODE_UPDATESTATE, row.state, row.id))
+  protocolGame:sendExtendedOpcode(ClientExtOpcodes.ClientBugReport, string.format("%d;%d;%d", REPORT_MODE_UPDATESTATE, row.state, row.id))
 end
 
 local function sendRemoveRow(row)
   local protocolGame = g_game.getProtocolGame()
   if not protocolGame then return end
-  protocolGame:sendExtendedOpcode(ClientOpcodes.ClientBugReport, string.format("%d;%d", REPORT_MODE_REMOVEROW, row.id))
+  protocolGame:sendExtendedOpcode(ClientExtOpcodes.ClientBugReport, string.format("%d;%d", REPORT_MODE_REMOVEROW, row.id))
 end
 
 
@@ -94,11 +94,11 @@ function init()
   bugCommentMultilineTextEdit = bugReportWindow:getChildById('bugCommentMultilineTextEdit')
 
   g_keyboard.bindKeyDown('Ctrl+,', toggle)
-  ProtocolGame.registerExtendedOpcode(GameServerOpcodes.GameServerBugReport, parseBugReports) -- View List
+  ProtocolGame.registerExtendedOpcode(GameServerExtOpcodes.GameServerBugReport, parseBugReports) -- View List
 end
 
 function terminate()
-  ProtocolGame.unregisterExtendedOpcode(GameServerOpcodes.GameServerBugReport) -- View List
+  ProtocolGame.unregisterExtendedOpcode(GameServerExtOpcodes.GameServerBugReport) -- View List
   g_keyboard.unbindKeyDown('Ctrl+,')
 
   destroyBugReportWindow()

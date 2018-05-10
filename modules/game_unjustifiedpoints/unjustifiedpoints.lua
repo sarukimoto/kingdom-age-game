@@ -49,7 +49,7 @@ function init()
 
   onUnjustifiedPoints()
 
-  ProtocolGame.registerExtendedOpcode(GameServerOpcodes.GameServerUnjustifiedPoints, parseUnjustifiedPoints)
+  ProtocolGame.registerExtendedOpcode(GameServerExtOpcodes.GameServerUnjustifiedPoints, parseUnjustifiedPoints)
 
   g_keyboard.bindKeyDown(shortcut, toggle)
 
@@ -64,7 +64,7 @@ function terminate()
 
   g_keyboard.unbindKeyDown(shortcut)
 
-  ProtocolGame.unregisterExtendedOpcode(GameServerOpcodes.GameServerUnjustifiedPoints)
+  ProtocolGame.unregisterExtendedOpcode(GameServerExtOpcodes.GameServerUnjustifiedPoints)
 
   disconnect(g_game, { onGameStart = online, onGameEnd = offline })
 
@@ -100,7 +100,7 @@ function sendUnjustifiedPointsRequest()
 
   local protocolGame = g_game.getProtocolGame()
   if protocolGame then
-    protocolGame:sendExtendedOpcode(ClientOpcodes.ClientUnjustifiedPoints, '') -- No sending data needed, since is just a request signal
+    protocolGame:sendExtendedOpcode(ClientExtOpcodes.ClientUnjustifiedPoints, '') -- No sending data needed, since is just a request signal
     return true
   end
   return false

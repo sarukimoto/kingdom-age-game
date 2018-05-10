@@ -11,7 +11,7 @@ local SCREENPOS_LEFT = 8
 local SCREENPOS_TOPLEFT = 9
 
 function init()
-  ProtocolGame.registerExtendedOpcode(GameServerOpcodes.GameServerScreenImage, parseScreenImage)
+  ProtocolGame.registerExtendedOpcode(GameServerExtOpcodes.GameServerScreenImage, parseScreenImage)
 
   g_ui.importStyle('ka_screenimage.otui')
 
@@ -27,7 +27,7 @@ function init()
 end
 
 function terminate()
-  ProtocolGame.unregisterExtendedOpcode(GameServerOpcodes.GameServerScreenImage)
+  ProtocolGame.unregisterExtendedOpcode(GameServerExtOpcodes.GameServerScreenImage)
 
   clearImages()
 
@@ -115,10 +115,16 @@ function clearImages()
   screenImages = {}
 end
 
+function getRootPath()
+  return '/screenimages/'
+end
+
 function addImage(path, fadeIn, position, resizeX, resizeY, screenBased)
+  if not path or not fadeIn or not position or not resizeX or not resizeY or not screenBased then return end
+
   local mapWidget = modules.game_interface.getMapPanel()
   local image = g_ui.createWidget('ScreenImage', mapWidget)
-  image:setImageSource('images/' .. path)
+  image:setImageSource(string.format('%s%s', getRootPath(), path))
 
   if fadeIn ~= 0 then
     g_effects.fadeIn(image, fadeIn)
@@ -200,6 +206,8 @@ local function removeSingleImage(index, fadeOut)
 end
 
 function removeImage(path, fadeOut, mode)
+  if not path or not fadeOut or not mode then return end
+
   if #screenImages < 1 then
     return
   end
@@ -250,13 +258,24 @@ function parseScreenImage(protocol, opcode, buffer)
 
   -- Add
   if state then
-    for i = 3, 7 do
-      params[i] = tonumber(params[i])
+    for i = 2, 7 do
+      -- Params 3 to 7 are numeric
+      if i >= 3 and i <= 7 then
+        params[i] = tonumber(params[i])
+      end
+      if not params[i] then return end
     end
     addImage(params[2], params[3], params[4], params[5], params[6], params[7]) -- (path, fadeIn, position, resizeX, resizeY, screenBased)
 
   -- Remove
   else
-    removeImage(params[2], tonumber(params[3]), tonumber(params[4])) -- (path, fadeOut, mode)
+    for i = 2, 4 do
+      -- Params 3 to 4 are numeric
+      if i >= 3 and i <= 4 then
+        params[i] = tonumber(params[i])
+      end
+      if not params[i] then return end
+    end
+    removeImage(params[2], params[3], params[4]) -- (path, fadeOut, mode)
   end
 end

@@ -92,7 +92,7 @@ function onHoverChange(widget, hovered)
 end
 
 function addItem(id, count, name, pos)
-  local count = tonumber(count) or 1
+  count = count or 1
   if lootWidget:getChildCount() - 2 >= config.maxItems then
     table.insert(queue, {item = id, count = count, name = name, pos = pos})
     return
@@ -119,17 +119,28 @@ end
 
 function onLoot(protocol, opcode, buffer)
   local params = buffer:split(':')
-  local pos = {x = tonumber(params[1]), y = tonumber(params[2]), z = tonumber(params[3])}
+  local pos = { x = tonumber(params[1]), y = tonumber(params[2]), z = tonumber(params[3]) }
+  if not pos.x or not pos.y or not pos.z then
+    pos = g_game.getLocalPlayer():getPosition()
+  end
+
   for i = 4, #params do
-    local tmp = params[i]:split(';')
-    addItem(tmp[1], tmp[2], tmp[3], pos)
+    local _params = params[i]:split(';')
+    for j = 1, 3 do
+      -- Params 1 to 2 are numeric
+      if j >= 1 and j <= 2 then
+        _params[j] = tonumber(_params[j])
+      end
+      if not _params[j] then return end
+    end
+    addItem(_params[1], _params[2], _params[3], pos)
   end
 end
 
 function init()
   g_ui.importStyle('ka_loot')
 
-  ProtocolGame.registerExtendedOpcode(GameServerOpcodes.GameServerLootWindow, onLoot)
+  ProtocolGame.registerExtendedOpcode(GameServerExtOpcodes.GameServerLootWindow, onLoot)
   connect(modules.game_interface.getMapPanel(), {
     onGeometryChange = adjustPosition
   })
@@ -142,7 +153,7 @@ function terminate()
     lootWidget:destroy()
   end
 
-  ProtocolGame.unregisterExtendedOpcode(GameServerOpcodes.GameServerLootWindow)
+  ProtocolGame.unregisterExtendedOpcode(GameServerExtOpcodes.GameServerLootWindow)
   disconnect(modules.game_interface.getMapPanel(), {
     onGeometryChange = adjustPosition
   })

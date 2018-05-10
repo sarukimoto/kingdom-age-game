@@ -12,7 +12,7 @@ function init()
   channels[AudioChannels.Ambient].volume = isAudioEnabled and modules.client_options.getOption('enableSoundAmbient') and modules.client_options.getOption('soundAmbientVolume') or 0
   channels[AudioChannels.Effect].volume  = isAudioEnabled and modules.client_options.getOption('enableSoundEffect') and modules.client_options.getOption('soundEffectVolume') or 0
 
-  ProtocolGame.registerExtendedOpcode(GameServerOpcodes.GameServerAudio, parseAudioRequest)
+  ProtocolGame.registerExtendedOpcode(GameServerExtOpcodes.GameServerAudio, parseAudioRequest)
 
   connect(LocalPlayer, {
     onPositionChange = onPositionChange
@@ -24,7 +24,7 @@ function terminate()
     onPositionChange = onPositionChange
   })
 
-  ProtocolGame.unregisterExtendedOpcode(GameServerOpcodes.GameServerAudio)
+  ProtocolGame.unregisterExtendedOpcode(GameServerExtOpcodes.GameServerAudio)
 
   clearAudios()
 end
@@ -87,10 +87,10 @@ function parseAudioRequest(protocol, opcode, buffer)
       local fadeInTime = tonumber(params[6])
       local x = tonumber(params[7])
       local y = tonumber(params[8])
-      if not channelId or path == "" or not gain or not repetitions or not fadeInTime or not x or not y then return end
+      if not channelId or path == '' or not gain or not repetitions or not fadeInTime or not x or not y then return end
       local channel = channels[channelId].channel
       if not channel then return end
-      path = string.format("%s%s", getRootPath(), path)
+      path = string.format('%s%s', getRootPath(), path)
       local audio = channel:play(path, gain, repetitions, fadeInTime)
       if audio and x ~= 0 and y ~= 0 then
         audio:setPosition(x, y)
@@ -125,20 +125,20 @@ function parseAudioRequest(protocol, opcode, buffer)
     local channelId = tonumber(params[2])
     local path = params[3]
     local fadeOutTime = tonumber(params[4])
-    if not channelId or path == "" or not fadeOutTime then return end
+    if not channelId or path == '' or not fadeOutTime then return end
     local channel = channels[channelId].channel
     if not channel then return end
-    path = string.format("%s%s", getRootPath(), path)
+    path = string.format('%s%s', getRootPath(), path)
     channel:stopAudios(path, fadeOutTime)
 
   elseif action == ACTION_CHANNEL_AUDIOSSETGAIN then
     local channelId = tonumber(params[2])
     local path = params[3]
     local gain = tonumber(params[4])
-    if not channelId or path == "" or not gain then return end
+    if not channelId or path == '' or not gain then return end
     local channel = channels[channelId].channel
     if not channel then return end
-    path = string.format("%s%s", getRootPath(), path)
+    path = string.format('%s%s', getRootPath(), path)
     channel:setAudiosGain(path, gain)
 
   end

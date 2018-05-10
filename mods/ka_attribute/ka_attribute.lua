@@ -249,7 +249,7 @@ function Attribute:sendAdd(attributeId)
   local protocol = g_game.getProtocolGame()
   if not protocol then return end
 
-  protocol:sendExtendedOpcode(ClientOpcodes.ClientAttribute, string.format("%d", attributeId))
+  protocol:sendExtendedOpcode(ClientExtOpcodes.ClientAttribute, string.format("%d", attributeId))
 end
 
 function onClickAddButton(widget)

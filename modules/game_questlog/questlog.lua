@@ -13,13 +13,13 @@ function init()
   questLogButton = modules.client_topmenu.addRightGameToggleButton('questLogButton', tr('Quest Log') .. ' (Ctrl+Q)', '/images/topbuttons/questlog', toggle)
 
   connect(g_game, { onGameEnd = destroyWindows })
-  ProtocolGame.registerExtendedOpcode(GameServerOpcodes.GameServerQuestLog, parseQuestLog)
+  ProtocolGame.registerExtendedOpcode(GameServerExtOpcodes.GameServerQuestLog, parseQuestLog)
   g_keyboard.bindKeyDown('Ctrl+Q', toggle)
 end
 
 function terminate()
   g_keyboard.unbindKeyDown('Ctrl+Q')
-  ProtocolGame.unregisterExtendedOpcode(GameServerOpcodes.GameServerQuestLog)
+  ProtocolGame.unregisterExtendedOpcode(GameServerExtOpcodes.GameServerQuestLog)
   disconnect(g_game, { onGameEnd = destroyWindows })
 
   destroyWindows()
@@ -40,7 +40,7 @@ function show()
   if not g_game.canPerformGameAction() then return end
   local protocolGame = g_game.getProtocolGame()
   if protocolGame then
-    protocolGame:sendExtendedOpcode(ClientOpcodes.ClientQuestLog, '')
+    protocolGame:sendExtendedOpcode(ClientExtOpcodes.ClientQuestLog, '')
     questLogButton:setOn(true)
   end
 end
@@ -57,7 +57,7 @@ end
 function sendTeleportRequest(questId, missionId)
   local protocolGame = g_game.getProtocolGame()
   if protocolGame then
-    protocolGame:sendExtendedOpcode(ClientOpcodes.ClientAction, string.format('%i:%i:%i', ClientActions.QuestTeleports, questId, missionId))
+    protocolGame:sendExtendedOpcode(ClientExtOpcodes.ClientAction, string.format('%i:%i:%i', ClientActions.QuestTeleports, questId, missionId))
     return true
   end
   return false
@@ -66,7 +66,7 @@ end
 function sendShowItemsRequest(questId, missionId)
   local protocolGame = g_game.getProtocolGame()
   if protocolGame then
-    protocolGame:sendExtendedOpcode(ClientOpcodes.ClientAction, string.format('%i:%i:%i', ClientActions.QuestItems, questId, missionId))
+    protocolGame:sendExtendedOpcode(ClientExtOpcodes.ClientAction, string.format('%i:%i:%i', ClientActions.QuestItems, questId, missionId))
     return true
   end
   return false
@@ -252,7 +252,7 @@ function onGameQuestLog(quests)
       local protocolGame = g_game.getProtocolGame()
       if protocolGame then
         questLogWindow:hide()
-        protocolGame:sendExtendedOpcode(ClientOpcodes.ClientQuestLog, string.format('%d', quest.id))
+        protocolGame:sendExtendedOpcode(ClientExtOpcodes.ClientQuestLog, string.format('%d', quest.id))
       end
     end
 

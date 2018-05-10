@@ -24,7 +24,7 @@ function destroyDialog()
   end
 end
 
-function onModalDialog(id, title, message, buttons, enterButton, escapeButton, choices, priority)
+function onModalDialog(id, title, message, spectatorId, buttons, enterButton, escapeButton, choices, priority)
   -- priority parameter is unused, not sure what its use is.
   if modalDialog then
     return
@@ -46,7 +46,8 @@ function onModalDialog(id, title, message, buttons, enterButton, escapeButton, c
     local choiceName = choices[i][2]
 
     local label = g_ui.createWidget('ChoiceListLabel', choiceList)
-    label.choiceId = choiceId
+    label.choiceId  = choiceId
+    label.choiceKey = i
     label:setText(choiceName)
     label:setPhantom(false)
     if not labelHeight then
@@ -62,15 +63,19 @@ function onModalDialog(id, title, message, buttons, enterButton, escapeButton, c
 
     local button = g_ui.createWidget('ModalButton', buttonsPanel)
     button:setText(buttonText)
-    button.onClick = function(self)
-                       local focusedChoice = choiceList:getFocusedChild()
-                       local choice = 0xFF
-                       if focusedChoice then
-                         choice = focusedChoice.choiceId
-                       end
-                       g_game.answerModalDialog(id, buttonId, choice)
-                       destroyDialog()
-                     end
+    button.onClick =
+    function(self)
+      local focusedChoice = choiceList:getFocusedChild()
+      local choice    = 0xFF
+      local choiceKey = 0
+      if focusedChoice then
+        choice    = focusedChoice.choiceId
+        choiceKey = focusedChoice.choiceKey
+      end
+      g_game.answerModalDialog(id, buttonId, buttons[i] and buttons[i][2] or '', choice, choices[choiceKey] and choices[choiceKey][2] or '', spectatorId)
+      destroyDialog()
+    end
+
     buttonsWidth = buttonsWidth + button:getWidth() + button:getMarginLeft() + button:getMarginRight()
   end
 
@@ -92,21 +97,39 @@ function onModalDialog(id, title, message, buttons, enterButton, escapeButton, c
 
   local enterFunc = function()
     local focusedChoice = choiceList:getFocusedChild()
-    local choice = 0xFF
+    local choice    = 0xFF
+    local choiceKey = 0
     if focusedChoice then
-      choice = focusedChoice.choiceId
+      choice    = focusedChoice.choiceId
+      choiceKey = focusedChoice.choiceKey
     end
-    g_game.answerModalDialog(id, enterButton, choice)
+    local buttonTxT = ''
+    for i = 1, #buttons do
+      if i == enterButton then
+        buttonTxT = buttons[i][2]
+        break
+      end
+    end
+    g_game.answerModalDialog(id, enterButton, buttonTxT, choice, choices[choiceKey] and choices[choiceKey][2] or '', spectatorId)
     destroyDialog()
   end
 
   local escapeFunc = function()
     local focusedChoice = choiceList:getFocusedChild()
-    local choice = 0xFF
+    local choice    = 0xFF
+    local choiceKey = 0
     if focusedChoice then
-      choice = focusedChoice.choiceId
+      choice    = focusedChoice.choiceId
+      choiceKey = focusedChoice.choiceKey
     end
-    g_game.answerModalDialog(id, escapeButton, choice)
+    local buttonTxT = ''
+    for i = 1, #buttons do
+      if i == escapeButton then
+        buttonTxT = buttons[i][2]
+        break
+      end
+    end
+    g_game.answerModalDialog(id, escapeButton, buttonTxT, choice, choices[choiceKey] and choices[choiceKey][2] or '', spectatorId)
     destroyDialog()
   end
 

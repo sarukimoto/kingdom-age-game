@@ -315,6 +315,8 @@ function setOption(key, value, force)
     gameMapPanel:setDrawTexts(value)
   elseif key == 'displayHotkeybars' then
     modules.ka_hotkeybars.onDisplay(value)
+  elseif key == 'showNpcDialogWindows' then
+    g_game.setNpcDialogWindows(value)
   elseif key == 'dontStretchShrink' then
     addEvent(function()
       modules.game_interface.updateStretchShrink()

@@ -50,12 +50,12 @@ end
 
 function init()
   Blink.removeAll(true)
-  ProtocolGame.registerExtendedOpcode(GameServerOpcodes.GameServerBlinkHit, onBlinkHit)
+  ProtocolGame.registerExtendedOpcode(GameServerExtOpcodes.GameServerBlinkHit, onBlinkHit)
 end
 
 function terminate()
   Blink.removeAll(true)
-  ProtocolGame.unregisterExtendedOpcode(GameServerOpcodes.GameServerBlinkHit)
+  ProtocolGame.unregisterExtendedOpcode(GameServerExtOpcodes.GameServerBlinkHit)
 end
 
 function onBlinkHit(protocol, opcode, buffer)

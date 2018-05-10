@@ -777,12 +777,12 @@ function Power.send(flag) -- ([flag]) -- (flag: powerFlags)
 
   -- If has flag, send flag instead of power id
   if flag and table.contains(powerFlags, flag) then
-    protocol:sendExtendedOpcode(ClientOpcodes.ClientPower, string.format("%d:%d:%d:%d", flag, 0, 0, 0))
+    protocol:sendExtendedOpcode(ClientExtOpcodes.ClientPower, string.format("%d:%d:%d:%d", flag, 0, 0, 0))
     return
   end
 
   -- Send power id and mouse position
-  protocol:sendExtendedOpcode(ClientOpcodes.ClientPower, string.format("%d:%d:%d:%d", boost_lastPower, toPos.x, toPos.y, toPos.z))
+  protocol:sendExtendedOpcode(ClientExtOpcodes.ClientPower, string.format("%d:%d:%d:%d", boost_lastPower, toPos.x, toPos.y, toPos.z))
 end
 
 function Power.sendBoostStart()

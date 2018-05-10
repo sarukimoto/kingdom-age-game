@@ -91,26 +91,6 @@ function displayCustomBox(title, message, buttons, buttonIndexOnEnterCallback, c
   return messageBox
 end
 
--- Used by the server
--- Note: You cannot customize the buttons callbacks! All these will be overwritten.
--- Return the button id selected
-local CUSTOMBOX_NPC = 1
-function displayServerCustomBox(windowId, title, message, buttons, buttonIndexOnEnterCallback, cancelText, buttonWidth)
-  if windowId == CUSTOMBOX_NPC and not modules.client_options.getOption('showNpcDialogWindows') then
-    return nil
-  end
-
-  local messageBox
-  local sendOpcode = function(buttonText) local protocolGame = g_game.getProtocolGame() if protocolGame then protocolGame:sendExtendedOpcode(ClientOpcodes.ClientCustomBox, string.format("%i:%s", windowId, buttonText)) end end
-  for i = 1, #buttons do if buttons[i] then buttons[i].callback = function() messageBox:ok() sendOpcode(buttons[i].text or "") end end end
-  buttons[#buttons + 1] = {} -- Adds the cancel button to buttons list
-  local cancelCallback = function() messageBox:cancel() sendOpcode(buttons[#buttons].text or "") end
-  buttons[#buttons] = {text=cancelText or tr('Cancel'), callback=cancelCallback}
-  messageBox = UIMessageBox.display(title or '', message or tr('Choose an option.'), buttons, buttons[buttonIndexOnEnterCallback] and buttons[buttonIndexOnEnterCallback].callback or nil, cancelCallback, buttonWidth or 80)
-  messageBox:setTooltip(tr("Press 'Enter' for default.\nPress 'Esc' for cancel."))
-  return messageBox
-end
-
 function displayGeneralBox(title, message, buttons, onEnterCallback, onEscapeCallback, buttonWidth)
   return UIMessageBox.display(title, message, buttons, onEnterCallback, onEscapeCallback, buttonWidth)
 end
