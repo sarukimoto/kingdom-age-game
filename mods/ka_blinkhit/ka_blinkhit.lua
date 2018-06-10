@@ -54,14 +54,12 @@ function init()
 end
 
 function terminate()
-  Blink.removeAll(true)
   ProtocolGame.unregisterExtendedOpcode(GameServerExtOpcodes.GameServerBlinkHit)
+  Blink.removeAll(true)
 end
 
 function onBlinkHit(protocol, opcode, buffer)
-  local params = string.split(buffer, ':')
-
-  local id = tonumber(params[1])
+  local id = tonumber(buffer)
   if not id then return end
 
   Blink.add(id)

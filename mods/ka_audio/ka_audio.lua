@@ -79,22 +79,20 @@ function parseAudioRequest(protocol, opcode, buffer)
   if not action then return end
 
   if action == ACTION_CHANNEL_PLAY then
-    if modules.client_options.getOption('enableAudio') then
-      local channelId = tonumber(params[2])
-      local path = params[3]
-      local gain = tonumber(params[4])
-      local repetitions = tonumber(params[5])
-      local fadeInTime = tonumber(params[6])
-      local x = tonumber(params[7])
-      local y = tonumber(params[8])
-      if not channelId or path == '' or not gain or not repetitions or not fadeInTime or not x or not y then return end
-      local channel = channels[channelId].channel
-      if not channel then return end
-      path = string.format('%s%s', getRootPath(), path)
-      local audio = channel:play(path, gain, repetitions, fadeInTime)
-      if audio and x ~= 0 and y ~= 0 then
-        audio:setPosition(x, y)
-      end
+    local channelId = tonumber(params[2])
+    local path = params[3]
+    local gain = tonumber(params[4])
+    local repetitions = tonumber(params[5])
+    local fadeInTime = tonumber(params[6])
+    local x = tonumber(params[7])
+    local y = tonumber(params[8])
+    if not channelId or path == '' or not gain or not repetitions or not fadeInTime or not x or not y then return end
+    local channel = channels[channelId].channel
+    if not channel then return end
+    path = string.format('%s%s', getRootPath(), path)
+    local audio = channel:play(path, gain, repetitions, fadeInTime)
+    if audio and x ~= 0 and y ~= 0 then
+      audio:setPosition(x, y)
     end
 
   elseif action == ACTION_CHANNEL_STOP then

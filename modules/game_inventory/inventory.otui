@@ -306,7 +306,7 @@ MiniWindow
       padding: 2
       border-width: 1
       border-color: #00000077
-      background-color: #191919ff
+      background-color: #ffffff11
 
       $!on:
         visible: false

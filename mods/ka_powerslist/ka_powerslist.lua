@@ -11,6 +11,8 @@ labelVocation    = nil
 labelPremium     = nil
 labelDescription = nil
 
+local power_flag_updateList = -3
+
 local txtName     = "Name"
 local txtLevel    = "Level"
 local txtClass    = "Class"
@@ -121,6 +123,11 @@ function online()
   clearWindow()
   powersListButton:show()
   powersListButton:setOn(false)
+
+  local protocol = g_game.getProtocolGame()
+  if protocol then
+    protocol:sendExtendedOpcode(ClientExtOpcodes.ClientPower, string.format("%d:%d:%d:%d", power_flag_updateList, 0, 0, 0))
+  end
 end
 
 function clearWindow()

@@ -487,12 +487,14 @@ end
 function toggleIcon(bitChanged)
   local content = inventoryWindow:recursiveGetChildById('conditionPanel')
 
-  local icon = content:getChildById(Icons[bitChanged].id)
-  if icon then
-    icon:destroy()
-  else
-    icon = loadIcon(bitChanged)
-    icon:setParent(content)
+  if Icons[bitChanged] then
+    local icon = content:getChildById(Icons[bitChanged].id)
+    if icon then
+      icon:destroy()
+    else
+      icon = loadIcon(bitChanged)
+      icon:setParent(content)
+    end
   end
 end
 

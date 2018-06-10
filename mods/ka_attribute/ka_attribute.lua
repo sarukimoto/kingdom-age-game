@@ -39,6 +39,8 @@ ATTRIBUTE_LAST      = ATTRIBUTE_LUCK
 
 attributeLabel = nil
 
+local attribute_flag_updateList = -1
+
 local _availablePoints = 0
 
 -- Attribute
@@ -173,6 +175,11 @@ function online()
   clearWindow()
   attributeButton:show()
   attributeButton:setOn(false)
+
+  local protocol = g_game.getProtocolGame()
+  if protocol then
+    protocol:sendExtendedOpcode(ClientExtOpcodes.ClientAttribute, string.format("%d", attribute_flag_updateList))
+  end
 end
 
 function clearWindow()

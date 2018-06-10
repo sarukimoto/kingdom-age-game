@@ -87,7 +87,7 @@ MiniWindow
     AttributeLabel
       id: defenseAttributeLabel
       !text: 'Defense'
-      !tooltip: 'It increases your physical defense by shield.'
+      !tooltip: 'It increases your physical defense by shield, and your capacity.'
       anchors.top: attackAttributeLabel.bottom
 
     AttributeAddButton
@@ -99,8 +99,8 @@ MiniWindow
 
     AttributeLabel
       id: willPowerAttributeLabel
-      !text: 'Will Power'
-      !tooltip: 'It increases your magical defense.'
+      !text: 'Will Power*'
+      !tooltip: 'It increases your magical defense.\n* 100 points is the maximum value for this attribute.'
       anchors.top: defenseAttributeLabel.bottom
 
     AttributeAddButton
@@ -113,7 +113,7 @@ MiniWindow
     AttributeLabel
       id: healthAttributeLabel
       !text: 'Health'
-      !tooltip: 'It increases your health points and capacity.'
+      !tooltip: 'It increases your health points.'
       anchors.top: willPowerAttributeLabel.bottom
 
     AttributeAddButton

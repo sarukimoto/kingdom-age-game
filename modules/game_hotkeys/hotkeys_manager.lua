@@ -41,18 +41,49 @@ boundCombosCallback = {}
 hotkeysList = {}
 
 -- Power
-Power = {}
-boost_lastPower         = 0
-boost_keycombo          = nil
-boost_clickedWidget     = nil
-boost_startAt           = nil
-boost_maxTime           = 60 * 1000
-boost_time              = 1000
-boost_timeAdditionEvent = nil
 
-local powerFlag_boostStart  = -1
-local powerFlag_boostCancel = -2
-local powerFlags = { powerFlag_boostStart, powerFlag_boostCancel }
+powerBoost_time    = 1000 -- Time difference between each boost
+powerBoost_maxTime = 60 * 1000 -- boost_maxTime
+
+powerBoost_lastPower     = 0
+powerBoost_keyCombo      = nil
+powerBoost_clickedWidget = nil
+powerBoost_startAt       = nil
+
+power_flag_start      = -1
+power_flag_cancel     = -2
+power_flag_updateList = -3 -- Used on ka_powerslist
+
+-- Power Boost Effect
+
+powerBoost_none  = 1
+powerBoost_low   = 2
+powerBoost_high  = 3
+powerBoost_first = powerBoost_none
+powerBoost_last  = powerBoost_high
+
+powerBoost_fadein      = 400
+powerBoost_fadeout     = 200
+powerBoost_resizex     = 0.5
+powerBoost_resizey     = 0.5
+powerBoost_color_speed = 200
+
+powerBoost_color_default = { r = 255, g = 255, b = 150 }
+powerBoost_color =
+{
+  [powerBoost_none] = { r = 255, g = 255, b = 150 },
+  [powerBoost_low]  = { r = 255, g = 150, b = 150 },
+  [powerBoost_high] = { r = 150, g = 150, b = 255 }
+}
+
+powerBoost_state_color = false
+powerBoost_event_color = nil
+powerBoost_state_image = false
+powerBoost_event_image = nil
+
+
+
+
 
 -- public functions
 function init()
@@ -91,16 +122,20 @@ function init()
   g_keyboard.bindKeyPress('Down', function() currentHotkeys:focusNextChild(KeyboardFocusReason) end, hotkeysWindow)
   g_keyboard.bindKeyPress('Up', function() currentHotkeys:focusPreviousChild(KeyboardFocusReason) end, hotkeysWindow)
 
-  g_keyboard.bindKeyPress('Escape', function() Power.cancel(true) end, rootWidget)
+  g_keyboard.bindKeyPress('Escape', function() cancelPower(true) end, rootWidget)
   connect(g_game, {
     onGameStart = online,
     onGameEnd = offline
   })
 
   load()
+
+  removePowerBoostEffect()
 end
 
 function terminate()
+  removePowerBoostEffect()
+
   disconnect(g_game, {
     onGameStart = online,
     onGameEnd = offline
@@ -124,7 +159,9 @@ end
 function online()
   scheduleEvent(function()
     reload()
-    modules.ka_hotkeybars.onUpdateHotkeys()
+    if modules.ka_hotkeybars then
+      modules.ka_hotkeybars.onUpdateHotkeys()
+    end
   end, 10)
   hide()
 end
@@ -138,7 +175,9 @@ function show()
   if not g_game.isOnline() then
     return
   end
-  modules.ka_hotkeybars.updateDraggable(true)
+  if modules.ka_hotkeybars then
+    modules.ka_hotkeybars.updateDraggable(true)
+  end
   hotkeysWindow:show()
   hotkeysWindow:raise()
   hotkeysWindow:focus()
@@ -147,7 +186,9 @@ end
 
 function hide()
   hotkeysWindow:hide()
-  modules.ka_hotkeybars.updateDraggable(false)
+  if modules.ka_hotkeybars then
+    modules.ka_hotkeybars.updateDraggable(false)
+  end
   hotkeysButton:setOn(false)
 end
 
@@ -161,7 +202,9 @@ end
 
 function ok()
   save()
-  modules.ka_hotkeybars.onUpdateHotkeys()
+  if modules.ka_hotkeybars then
+    modules.ka_hotkeybars.onUpdateHotkeys()
+  end
   hide()
 end
 
@@ -241,7 +284,7 @@ function save()
   table.clear(hotkeys)
 
   for _,child in pairs(currentHotkeys:getChildren()) do
-    local powerId = Power.getIdByString(child.value)
+    local powerId = getPowerIdByString(child.value)
     child.autoSend = powerId and true or child.autoSend
     hotkeys[child.keyCombo] = {
       autoSend = child.autoSend,
@@ -320,7 +363,9 @@ function onChooseItemMouseRelease(self, mousePosition, mouseButton)
     currentHotkeyLabel.autoSend = false
     updateHotkeyLabel(currentHotkeyLabel)
     updateHotkeyForm(true)
-    modules.ka_hotkeybars.onUpdateHotkeys()
+    if modules.ka_hotkeybars then
+      modules.ka_hotkeybars.onUpdateHotkeys()
+    end
   end
 
   show()
@@ -345,7 +390,9 @@ function clearObject()
   currentHotkeyLabel.value = nil
   updateHotkeyLabel(currentHotkeyLabel)
   updateHotkeyForm(true)
-  modules.ka_hotkeybars.onUpdateHotkeys()
+  if modules.ka_hotkeybars then
+    modules.ka_hotkeybars.onUpdateHotkeys()
+  end
 end
 
 function addHotkey()
@@ -384,7 +431,7 @@ function addKeyCombo(keyCombo, keySettings, focus)
     end
 
     if keySettings then
-      local powerId = Power.getIdByString(keySettings.value or '')
+      local powerId = getPowerIdByString(keySettings.value or '')
       currentHotkeyLabel = hotkeyLabel
       hotkeyLabel.keyCombo = keyCombo
       keySettings.autoSend = powerId and true or keySettings.autoSend
@@ -423,55 +470,74 @@ function doKeyCombo(keyCombo, clickedWidget)
   if hotKey.itemId == nil then
     if not hotKey.value or #hotKey.value == 0 then return end
     if hotKey.autoSend then
-      local powerId = Power.getIdByString(hotKey.value)
+      local powerId = getPowerIdByString(hotKey.value)
       if powerId then
-        if boost_lastPower == 0 then
-          boost_lastPower     = tonumber(powerId)
-          boost_keycombo      = keyCombo
-          boost_clickedWidget = clickedWidget
-          boost_startAt       = g_clock.millis()
+        -- Should not work with right button because onMouseRelease is not working the the right mouse button
+        if clickedWidget and g_mouse.isPressed(MouseRightButton) then
+          return
+        end
 
-          Power.sendBoostStart()
-          modules.ka_hotkeybars.setPowerIcon(boost_keycombo, true)
+        if powerBoost_lastPower == 0 then
+          powerBoost_lastPower = tonumber(powerId) or 0
+          powerBoost_keyCombo = keyCombo
+          powerBoost_startAt = g_clock.millis()
+
+          sendPowerBoostStart()
+          if modules.ka_hotkeybars then
+            modules.ka_hotkeybars.setPowerIcon(powerBoost_keyCombo, true)
+          end
 
           if clickedWidget then
-            connect(boost_clickedWidget, {
+            powerBoost_clickedWidget = clickedWidget
+            connect(clickedWidget, {
               onMouseRelease = function(widget, mousePos, mouseButton, elapsedTime)
-                if not widget:containsPoint(mousePos) then
-                  Power.cancel()
+                -- Should not work with right button because onMouseRelease is not working the the right mouse button
+                if g_mouse.isPressed(MouseLeftButton) then -- If right released and left kept pressed
                   return
                 end
-                Power.send()
-                disconnect(boost_clickedWidget, 'onMouseRelease')
-                modules.ka_hotkeybars.setPowerIcon(boost_keycombo, false)
+                if not widget:containsPoint(mousePos) then
+                  cancelPower()
+                  return
+                end
+                sendPower()
+                disconnect(clickedWidget, 'onMouseRelease')
+                if modules.ka_hotkeybars then
+                  modules.ka_hotkeybars.setPowerIcon(powerBoost_keyCombo, false)
+                end
                 scheduleEvent(function()
-                  boost_lastPower = 0
-                  boost_keycombo = nil
+                  powerBoost_lastPower = 0
+                  powerBoost_keyCombo = nil
                 end, 500)
             end})
           else
             g_keyboard.bindKeyUp(keyCombo, function ()
-              Power.send()
+              sendPower()
               g_keyboard.unbindKeyUp(keyCombo)
-              modules.ka_hotkeybars.setPowerIcon(boost_keycombo, false)
+              if modules.ka_hotkeybars then
+                modules.ka_hotkeybars.setPowerIcon(powerBoost_keyCombo, false)
+              end
               scheduleEvent(function()
-                boost_lastPower = 0
-                boost_keycombo = nil
+                powerBoost_lastPower = 0
+                powerBoost_keyCombo = nil
               end, 500)
             end)
           end
-        elseif boost_lastPower > 0 then
-          local elapsedTime = g_clock.millis() - boost_startAt
-          if elapsedTime > boost_maxTime then
-            Power.cancel(true)
+        elseif powerBoost_lastPower > 0 then
+          local elapsedTime = g_clock.millis() - powerBoost_startAt
+          if elapsedTime > powerBoost_maxTime then
+            cancelPower(true)
           end
         end
         return
       end
 
-      modules.game_console.sendMessage(hotKey.value)
+      if modules.game_console then
+        modules.game_console.sendMessage(hotKey.value)
+      end
     else
-      modules.game_console.setTextEditText(hotKey.value)
+      if modules.game_console then
+        modules.game_console.setTextEditText(hotKey.value)
+      end
     end
   elseif hotKey.useType == HOTKEY_MANAGER_USE then
     if g_game.getClientVersion() < 780 or hotKey.subType then
@@ -520,7 +586,7 @@ function doKeyCombo(keyCombo, clickedWidget)
     local item = Item.create(hotKey.itemId)
     if g_game.getClientVersion() < 780 or hotKey.subType then
       local tmpItem = g_game.findPlayerItem(hotKey.itemId, hotKey.subType or -1)
-      if not tmpItem then return true end
+      if not tmpItem then return end
       item = tmpItem
     end
     modules.game_interface.startUseWith(item)
@@ -533,21 +599,23 @@ function getHotkey(keyCombo)
   if not hotKey then return nil end
   if hotKey.itemId == nil then
     if not hotKey.value or #hotKey.value == 0 then return nil end
-    --if hotKey.autoSend then
-      local powerId = Power.getIdByString(hotKey.value)
+    -- if hotKey.autoSend then
+      local powerId = getPowerIdByString(hotKey.value)
       if powerId then
         local ret = { type = 'power', id = powerId }
-        local power = modules.ka_powerslist.getPower(powerId)
-        if power then
-          ret.data =
-          {
-            name  = power.name,
-            level = power.level
-          }
+        if modules.ka_powerslist then
+          local power = modules.ka_powerslist.getPower(powerId)
+          if power then
+            ret.data =
+            {
+              name  = power.name,
+              level = power.level
+            }
+          end
         end
         return ret
       end
-    --end
+    -- end
     return {type = 'text', autoSend = hotKey.autoSend, value = hotKey.value}
   else
     return {type = 'item', id = hotKey.itemId, useType = hotKey.useType}
@@ -570,10 +638,10 @@ function updateHotkeyLabel(hotkeyLabel)
     hotkeyLabel:setColor(HotkeyColors.itemUse)
   else
     local text = hotkeyLabel.keyCombo .. ': '
-    local powerId = Power.getIdByString(hotkeyLabel.value)
+    local powerId = getPowerIdByString(hotkeyLabel.value)
     if hotkeyLabel.value then
       if powerId then
-        local name = Power.getNameById(powerId)
+        local name = getPowerNameById(powerId)
         text = text .. (name ~= '' and name or '[Power] You are not able to use this power.')
       elseif hotkeyLabel.value ~= '' then
         text = text .. '[Text] ' .. hotkeyLabel.value
@@ -592,7 +660,7 @@ end
 
 function updateHotkeyForm(reset)
   if currentHotkeyLabel then
-    local powerId = Power.getIdByString(currentHotkeyLabel.value)
+    local powerId = getPowerIdByString(currentHotkeyLabel.value)
     removeHotkeyButton:enable()
     if currentHotkeyLabel.itemId ~= nil then
       hotkeyText:clearText()
@@ -686,7 +754,7 @@ function onHotkeyTextChange(value)
   if not hotkeysManagerLoaded then return end
   if currentHotkeyLabel == nil then return end
   currentHotkeyLabel.value = value
-  local powerId = Power.getIdByString(currentHotkeyLabel.value)
+  local powerId = getPowerIdByString(currentHotkeyLabel.value)
   if value == '' then
     currentHotkeyLabel.autoSend = false
   elseif powerId then
@@ -753,21 +821,21 @@ end
 
 -- Power
 
-function getPower()       return Power end
-function getLastPowerId() return boost_lastPower end
-
-function Power.getNameById(id) -- Not implemented yet
+-- Power.getNameById
+function getPowerNameById(id)
   if not id then return '' end
   local power = rootWidget:recursiveGetChildById('power_' .. id)
   return power and power.name or ''
 end
 
-function Power.getIdByString(str)
+-- Power.getIdByString
+function getPowerIdByString(str)
   str = str and tostring(str) or ''
   return tonumber(str:match('/power (%d+)'))
 end
 
-function Power.send(flag) -- ([flag]) -- (flag: powerFlags)
+-- Power.send
+function sendPower(flag) -- ([flag]) -- (flag: powerFlags)
   local protocol = g_game.getProtocolGame()
   if not protocol then return end
   local mapWidget = modules.game_interface.getMapPanel()
@@ -776,40 +844,138 @@ function Power.send(flag) -- ([flag]) -- (flag: powerFlags)
   local toPos = mapWidget:getPosition(g_window.getMousePosition())
 
   -- If has flag, send flag instead of power id
-  if flag and table.contains(powerFlags, flag) then
+  if flag then
     protocol:sendExtendedOpcode(ClientExtOpcodes.ClientPower, string.format("%d:%d:%d:%d", flag, 0, 0, 0))
     return
   end
 
   -- Send power id and mouse position
-  protocol:sendExtendedOpcode(ClientExtOpcodes.ClientPower, string.format("%d:%d:%d:%d", boost_lastPower, toPos.x, toPos.y, toPos.z))
+  protocol:sendExtendedOpcode(ClientExtOpcodes.ClientPower, string.format("%d:%d:%d:%d", powerBoost_lastPower, toPos.x, toPos.y, toPos.z))
+  removePowerBoostEffect()
 end
 
-function Power.sendBoostStart()
-  Power.send(powerFlag_boostStart)
+-- Power.sendBoostStart
+function sendPowerBoostStart()
+  sendPower(power_flag_start)
+  addPowerBoostEffect()
 end
 
-function Power.cancel(forceStop)
-  Power.send(powerFlag_boostCancel)
+-- Power.cancel
+function cancelPower(forceStop)
+  sendPower(power_flag_cancel)
+  removePowerBoostEffect()
 
-  modules.ka_hotkeybars.setPowerIcon(boost_keycombo, false)
-
-  if forceStop then
-    boost_lastPower = -1
-    scheduleEvent(function() boost_lastPower = 0 end, 1000)
-  else
-    boost_lastPower = 0
+  if modules.ka_hotkeybars then
+    modules.ka_hotkeybars.setPowerIcon(powerBoost_keyCombo, false)
   end
 
-  if boost_clickedWidget then
-    disconnect(boost_clickedWidget, 'onMouseRelease')
+  if forceStop then
+    powerBoost_lastPower = -1
+    scheduleEvent(function() powerBoost_lastPower = 0 end, 1000)
   else
-    if boost_keycombo then
-      g_keyboard.unbindKeyUp(boost_keycombo)
+    powerBoost_lastPower = 0
+  end
+
+  if powerBoost_clickedWidget then
+    disconnect(powerBoost_clickedWidget, 'onMouseRelease')
+  else
+    if powerBoost_keyCombo then
+      g_keyboard.unbindKeyUp(powerBoost_keyCombo)
     end
   end
 
-  boost_keycombo      = nil
-  boost_clickedWidget = nil
-  boost_startAt       = nil
+  powerBoost_keyCombo      = nil
+  powerBoost_clickedWidget = nil
+  powerBoost_startAt       = nil
+end
+
+function removePowerBoostColor()
+  local localPlayer = g_game.getLocalPlayer()
+  if not localPlayer then return end
+
+  powerBoost_state_color = false
+  localPlayer:setColor(0, 0, 0, 0)
+
+  if powerBoost_event_color then
+    removeEvent(powerBoost_event_color)
+    powerBoost_event_color = nil
+  end
+end
+
+function removePowerBoostImage()
+  powerBoost_state_image = false
+  if modules.ka_screenimage then
+    for boostLevel = powerBoost_first, powerBoost_last do
+      modules.ka_screenimage.removeImage(string.format("system/power_boost/normal_%d.png", boostLevel), powerBoost_fadeout, 0)
+      modules.ka_screenimage.removeImage(string.format("system/power_boost/extra_%d.png", boostLevel), powerBoost_fadeout, 0)
+    end
+  end
+
+  if powerBoost_event_image then
+    removeEvent(powerBoost_event_image)
+    powerBoost_event_image = nil
+  end
+end
+
+function setPowerBoostColor(boostTime, light) -- ([boostTime[, light]])
+  local localPlayer = g_game.getLocalPlayer()
+  if not localPlayer then return end
+
+  local boostLevel = powerBoost_first
+
+  boostTime  = boostTime and boostTime + powerBoost_color_speed or 0
+  light      = light == nil and true or not light
+  boostLevel = math.min(math.max(powerBoost_first, math.ceil(boostTime / powerBoost_time)), powerBoost_last)
+
+  if boostTime == 0 then
+    removePowerBoostColor()
+    powerBoost_state_color = true
+  end
+
+  local ret = false
+  if powerBoost_state_color then
+    localPlayer:setColor(powerBoost_color[boostLevel].r or powerBoost_color_default.r, powerBoost_color[boostLevel].g or powerBoost_color_default.g, powerBoost_color[boostLevel].b or powerBoost_color_default.b, light and 255 or 0)
+    powerBoost_event_color = scheduleEvent(function() setPowerBoostColor(boostTime, light) end, powerBoost_color_speed)
+    ret = true
+  end
+  return ret
+end
+
+function setPowerBoostImage(boostTime) -- ([boostTime])
+  local boostLevel = powerBoost_first
+
+  boostTime  = boostTime and boostTime + powerBoost_time or 0
+  boostLevel = math.min(math.max(powerBoost_first, math.ceil(boostTime / powerBoost_time)), powerBoost_last)
+
+  if boostLevel == 1 then
+    removePowerBoostImage()
+    powerBoost_state_image = true
+  else
+    if modules.ka_screenimage then
+      modules.ka_screenimage.removeImage(string.format("system/power_boost/normal_%d.png", boostLevel - 1), powerBoost_fadeout, 0)
+      modules.ka_screenimage.removeImage(string.format("system/power_boost/extra_%d.png", boostLevel - 1), powerBoost_fadeout, 0)
+    end
+  end
+
+  local ret = false
+  if powerBoost_state_image then
+    if boostTime ~= 0 and modules.ka_screenimage then
+      modules.ka_screenimage.addImage(string.format("system/power_boost/normal_%d.png", boostLevel), powerBoost_fadein, 1, powerBoost_resizex, powerBoost_resizey, 0)
+      modules.ka_screenimage.addImage(string.format("system/power_boost/extra_%d.png", boostLevel), powerBoost_fadein, 1, powerBoost_resizex, powerBoost_resizey, 0)
+    end
+
+    powerBoost_event_image = scheduleEvent(function() setPowerBoostImage(boostTime) end, boostTime ~= 0 and powerBoost_time or 0)
+    ret = true
+  end
+  return ret
+end
+
+function removePowerBoostEffect()
+  removePowerBoostColor()
+  removePowerBoostImage()
+end
+
+function addPowerBoostEffect()
+  setPowerBoostColor()
+  setPowerBoostImage()
 end

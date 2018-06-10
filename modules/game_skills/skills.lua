@@ -10,7 +10,7 @@ function init()
     -- onSoulChange = onSoulChange,
     onFreeCapacityChange = onFreeCapacityChange,
     onTotalCapacityChange = onTotalCapacityChange,
-    --onStaminaChange = onStaminaChange,
+    onStaminaChange = onStaminaChange,
     --onOfflineTrainingChange = onOfflineTrainingChange,
     onRegenerationChange = onRegenerationChange,
     --onSpeedChange = onSpeedChange,
@@ -44,7 +44,7 @@ function terminate()
     -- onSoulChange = onSoulChange,
     onFreeCapacityChange = onFreeCapacityChange,
     onTotalCapacityChange = onTotalCapacityChange,
-    --onStaminaChange = onStaminaChange,
+    onStaminaChange = onStaminaChange,
     --onOfflineTrainingChange = onOfflineTrainingChange,
     onRegenerationChange = onRegenerationChange,
     --onSpeedChange = onSpeedChange,
@@ -207,7 +207,7 @@ function refresh()
   onManaChange(player, player:getMana(), player:getMaxMana())
   -- onSoulChange(player, player:getSoul())
   onFreeCapacityChange(player, player:getFreeCapacity())
-  --onStaminaChange(player, player:getStamina())
+  onStaminaChange(player, player:getStamina())
   --onMagicLevelChange(player, player:getMagicLevel(), player:getMagicLevelPercent())
   --onOfflineTrainingChange(player, player:getOfflineTrainingTime())
   onRegenerationChange(player, player:getRegenerationTime())
@@ -236,7 +236,7 @@ function refresh()
   end
   ]]
 
-  skillsWindow:setContentMaximumHeight(116)
+  skillsWindow:setContentMaximumHeight(140)
 end
 
 function offline()
@@ -335,7 +335,6 @@ function onTotalCapacityChange(localPlayer, totalCapacity)
   checkAlert('capacity', localPlayer:getFreeCapacity(), totalCapacity, 20)
 end
 
---[[
 function onStaminaChange(localPlayer, stamina)
   local hours = math.floor(stamina / 60)
   local minutes = stamina % 60
@@ -348,6 +347,7 @@ function onStaminaChange(localPlayer, stamina)
   setSkillPercent('stamina', percent, tr('You have %s percent', percent))
 end
 
+--[[
 function onOfflineTrainingChange(localPlayer, offlineTrainingTime)
   if not g_game.getFeature(GameOfflineTrainingTime) then
     return

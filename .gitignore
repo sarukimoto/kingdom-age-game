@@ -37,7 +37,7 @@ Makefile
 *.o
 *.gch
 *.a
-#*.exe
+*.exe
 *.kdev*
 *.cbp
 *~

@@ -36,7 +36,7 @@ SkillPercentPanel < ProgressBar
 MiniWindow
   id: skillWindow
   !text: tr('Stats')
-  height: 116
+  height: 140
   icon: /images/topbuttons/skills
   @onClose: modules.game_skills.onMiniWindowClose()
   &save: true
@@ -99,17 +99,18 @@ MiniWindow
 
     SkillButton
       id: regenerationTime
+      height: 15
       SkillNameLabel
         !text: tr('Feed Time')
       SkillValueLabel
 
-//    SkillButton
-//      id: stamina
-//      SkillNameLabel
-//        !text: tr('Stamina')
-//      SkillValueLabel
-//      SkillPercentPanel
-//
+    SkillButton
+      id: stamina
+      SkillNameLabel
+        !text: tr('Stamina')
+      SkillValueLabel
+      SkillPercentPanel
+
 //    SkillButton
 //      id: offlineTraining
 //      SkillNameLabel
