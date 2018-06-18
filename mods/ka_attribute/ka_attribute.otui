@@ -23,7 +23,7 @@ MiniWindow
   icon: ka_attribute
   id: attributeWindow
   !text: 'Attributes'
-  @onClose: modules.ka_attribute.close()
+  @onClose: modules.ka_attribute.onMiniWindowClose()
   height: 286
   &save: true
 
@@ -31,7 +31,7 @@ MiniWindow
     text: ?
     text-align: center
     phantom: false
-    !tooltip: '1. \'Distribution\' are points that you distributed manually.\n2. \'Alignment\' are recommended points that were\n distributed automatically due to your vocation.\n3. \'(De)Buff\' are points that were increased or\ndecreased temporarily due to Powers.'
+    &tooltipAddons: { { text = '1. \'Distribution\' are points that you distributed manually.\n\n2. \'Alignment\' are recommended points that were\ndistributed automatically due to your vocation.\n\n3. \'(De)Buff\' are points that were increased or\ndecreased temporarily due to Powers.', align = AlignLeft } }
     anchors.top: minimizeButton.top
     anchors.right: minimizeButton.left
     margin-right: 3

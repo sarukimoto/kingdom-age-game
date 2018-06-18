@@ -49,10 +49,10 @@ Attribute = {}
 function init()
   attributeWindow = g_ui.loadUI('ka_attribute', modules.game_interface.getRightPanel())
   attributeWindow:disableResize()
-  attributeWindow:hide()
   attributeWindow:setup()
 
   attributeButton = modules.client_topmenu.addRightGameToggleButton('attributeButton', tr('Attributes') .. ' (Ctrl+Shift+U)', 'ka_attribute', toggle)
+  attributeButton:setOn(true)
 
   attackAttributeAddButton    = attributeWindow:recursiveGetChildById('attackAttributeAddButton')
   defenseAttributeAddButton   = attributeWindow:recursiveGetChildById('defenseAttributeAddButton')
@@ -127,6 +127,7 @@ function terminate()
                        onPlayerAttributes = onPlayerAttributes })
 
   attributeWindow:destroy()
+  attributeButton:destroy()
 
   attributeWindow = nil
   attributeButton = nil
@@ -155,30 +156,28 @@ function terminate()
   pointsCostLabel      = nil
 end
 
-function open()
-  attributeButton:setOn(true)
-  attributeWindow:show()
-  attributeWindow:raise()
-  attributeWindow:focus()
-end
-
-function close()
-  attributeButton:setOn(false)
-  attributeWindow:hide()
-end
-
 function toggle()
-  if attributeButton:isOn() then close() else open() end
+  if attributeButton:isOn() then
+    attributeWindow:close()
+    attributeButton:setOn(false)
+  else
+    attributeWindow:open()
+    attributeButton:setOn(true)
+  end
 end
 
 function online()
   clearWindow()
-  attributeButton:show()
-  attributeButton:setOn(false)
 
   local protocol = g_game.getProtocolGame()
   if protocol then
     protocol:sendExtendedOpcode(ClientExtOpcodes.ClientAttribute, string.format("%d", attribute_flag_updateList))
+  end
+end
+
+function onMiniWindowClose()
+  if attributeButton then
+    attributeButton:setOn(false)
   end
 end
 

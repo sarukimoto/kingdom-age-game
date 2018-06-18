@@ -122,10 +122,6 @@ function UIHotkeybar:removeHotkey(widget)
   end
 end
 
-function UIHotkeybar:moveHotkey(keyCombo, mousePos)
-  -- body
-end
-
 function UIHotkeybar:updateLook()
   local children = self:getChildren()
   for i = 1, #children do

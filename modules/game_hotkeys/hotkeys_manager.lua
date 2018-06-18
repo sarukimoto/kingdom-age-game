@@ -325,7 +325,7 @@ function onChooseItemMouseRelease(self, mousePosition, mouseButton)
     local clickedWidget = modules.game_interface.getRootPanel():recursiveGetChildByPos(mousePosition, false)
     if clickedWidget then
       local clickedId = clickedWidget:getId()
-      if clickedId:match('power_%d+') then
+      if clickedId:match('PowerButton_id%d+') then
         local powerId = tonumber(clickedId:match('%d+'))
         if powerId then
           currentHotkeyLabel.itemId = nil
@@ -836,8 +836,6 @@ end
 
 -- Power.send
 function sendPower(flag) -- ([flag]) -- (flag: powerFlags)
-  local protocol = g_game.getProtocolGame()
-  if not protocol then return end
   local mapWidget = modules.game_interface.getMapPanel()
   if not mapWidget then return end
 
@@ -845,12 +843,12 @@ function sendPower(flag) -- ([flag]) -- (flag: powerFlags)
 
   -- If has flag, send flag instead of power id
   if flag then
-    protocol:sendExtendedOpcode(ClientExtOpcodes.ClientPower, string.format("%d:%d:%d:%d", flag, 0, 0, 0))
+    g_game.sendPowerProtocolData(string.format("%d:%d:%d:%d", flag, 0, 0, 0))
     return
   end
 
   -- Send power id and mouse position
-  protocol:sendExtendedOpcode(ClientExtOpcodes.ClientPower, string.format("%d:%d:%d:%d", powerBoost_lastPower, toPos.x, toPos.y, toPos.z))
+  g_game.sendPowerProtocolData(string.format("%d:%d:%d:%d", powerBoost_lastPower, toPos.x, toPos.y, toPos.z))
   removePowerBoostEffect()
 end
 

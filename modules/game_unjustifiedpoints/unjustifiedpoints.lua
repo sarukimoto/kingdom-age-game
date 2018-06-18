@@ -141,6 +141,9 @@ function onUnjustifiedPoints(remainingTime, fragsToRedSkull, fragsToBlackSkull, 
   local fragsCount  = math.ceil(remainingTime / timeToRemoveFrag)
   local skull       = localPlayer:getSkull()
 
+  redSkullProgressBar:setPhases(fragsToRedSkull)
+  blackSkullProgressBar:setPhases(fragsToBlackSkull)
+
   local nextFragRemainingTime = remainingTime % timeToRemoveFrag
   skullTimeLabel:setText(string.format('%.2d:%.2d (frags: %d)', math.floor(nextFragRemainingTime / (60 * 60)), math.floor(nextFragRemainingTime / 60) % 60, fragsCount))
 

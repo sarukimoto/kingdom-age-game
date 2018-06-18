@@ -1,23 +1,5 @@
-local minimumWindowSize = 290
-
-powersListWindow = nil
-powersListButton = nil
-
-powersList       = nil
-labelName        = nil
-labelLevel       = nil
-labelClass       = nil
-labelVocation    = nil
-labelPremium     = nil
-labelDescription = nil
-
-local power_flag_updateList = -3
-
-local txtName     = "Name"
-local txtLevel    = "Level"
-local txtClass    = "Class"
-local txtVocation = "Vocs"
-local txtPremium  = "Premium"
+local power_flag_updateList             = -3
+local power_flag_updateNonConstantPower = -4
 
 local POWER_CLASS_ALL       = 0
 local POWER_CLASS_OFFENSIVE = 1
@@ -25,196 +7,435 @@ local POWER_CLASS_DEFENSIVE = 2
 local POWER_CLASS_SUPPORT   = 3
 local POWER_CLASS_SPECIAL   = 4
 
-local POWER_CLASS_STRING =
-{
-  [POWER_CLASS_ALL]       = "All",
-  [POWER_CLASS_OFFENSIVE] = "Offensive",
-  [POWER_CLASS_DEFENSIVE] = "Defensive",
-  [POWER_CLASS_SUPPORT]   = "Support",
-  [POWER_CLASS_SPECIAL]   = "Special"
-}
+powersListTopButton = nil
+powersListWindow = nil
 
-local VOCATION_LEARNER  = 0
-local VOCATION_KNIGHT   = 1
-local VOCATION_PALADIN  = 2
-local VOCATION_ARCHER   = 3
-local VOCATION_ASSASSIN = 4
-local VOCATION_WIZARD   = 5
-local VOCATION_BARD     = 6
-local vocationName =
-{
-  [VOCATION_LEARNER]  = "Learner",
-  [VOCATION_KNIGHT]   = "Knight",
-  [VOCATION_PALADIN]  = "Paladin",
-  [VOCATION_ARCHER]   = "Archer",
-  [VOCATION_ASSASSIN] = "Assassin",
-  [VOCATION_WIZARD]   = "Wizard",
-  [VOCATION_BARD]     = "Bard",
-}
+mouseWidget = nil
+
+ballButton = nil
+
+filterSortPanel = nil
+filterHiddenPanel = nil
+
+sortTypeBox = nil
+sortOrderBox = nil
+
+hideNonOffensiveButton = nil
+hideOffensiveButton = nil
+hideNonPremiumButton = nil
+hidePremiumButton = nil
+
+horizontalSeparator = nil
+
+powersListPanel = nil
+
+lastPowerButtonSwitched = nil
+powerButtonsByIdList    = {}
 
 function init()
+  g_ui.importStyle('powerslistbutton')
+
   powersListWindow = g_ui.loadUI('ka_powerslist', modules.game_interface.getRightPanel())
-  powersListWindow:hide()
-  powersListWindow:setContentMinimumHeight(minimumWindowSize)
+  powersListWindow:setContentMinimumHeight(94)
   powersListWindow:setup()
+  powersListTopButton = modules.client_topmenu.addRightGameToggleButton('powersListTopButton', tr('Powers') .. ' (Ctrl+Shift+P)', 'ka_powerslist', toggle)
+  powersListTopButton:setOn(true)
+  g_keyboard.bindKeyDown('Ctrl+Shift+P', toggle)
 
-  powersListButton = modules.client_topmenu.addRightGameToggleButton('powersListButton', tr('Powers List') .. ' (Ctrl+Shift+P)', 'ka_powerslist', toggle)
+  -- This disables scrollbar auto hiding
+  local scrollbar = powersListWindow:getChildById('miniwindowScrollBar')
+  scrollbar:mergeStyle({ ['$!on'] = {} })
 
-  powersList       = powersListWindow:recursiveGetChildById('powersList')
-  labelName        = powersListWindow:recursiveGetChildById('labelName')
-  labelLevel       = powersListWindow:recursiveGetChildById('labelLevel')
-  labelClass       = powersListWindow:recursiveGetChildById('labelClass')
-  labelVocation    = powersListWindow:recursiveGetChildById('labelVocation')
-  labelPremium     = powersListWindow:recursiveGetChildById('labelPremium')
-  labelDescription = powersListWindow:recursiveGetChildById('labelDescription')
+  mouseWidget = g_ui.createWidget('UIButton')
+  mouseWidget:setVisible(false)
+  mouseWidget:setFocusable(false)
+  mouseWidget.cancelNextRelease = false
 
-  if g_game.isOnline() then
-    online()
+  ballButton = powersListWindow:getChildById('ballButton')
+
+  filterSortPanel   = powersListWindow:recursiveGetChildById('filterSortPanel')
+  filterHiddenPanel = powersListWindow:recursiveGetChildById('filterHiddenPanel')
+  if isHidingFilters() then
+    hideFiltersPanel()
   end
 
-  connect(g_game, { onGameStart        = online,
-                    onPlayerPowersList = onPlayerPowersList })
+  sortTypeBox  = powersListWindow:recursiveGetChildById('sortTypeBox')
+  sortTypeBox:addOption('Name', 'name')
+  sortTypeBox:addOption('Class', 'class')
+  sortTypeBox:addOption('Level', 'level')
+  sortTypeBox:setCurrentOptionByData(getSortType())
+  sortTypeBox.onOptionChange = onChangeSortType
 
-  g_keyboard.bindKeyDown('Ctrl+Shift+P', toggle)
+  sortOrderBox = powersListWindow:recursiveGetChildById('sortOrderBox')
+  sortOrderBox:addOption('Asc.', 'asc')
+  sortOrderBox:addOption('Desc.', 'desc')
+  sortOrderBox:setCurrentOptionByData(getSortOrder())
+  sortOrderBox.onOptionChange = onChangeSortOrder
+
+  hideNonOffensiveButton = powersListWindow:recursiveGetChildById('hideNonOffensive')
+  hideOffensiveButton    = powersListWindow:recursiveGetChildById('hideOffensive')
+  hideNonPremiumButton   = powersListWindow:recursiveGetChildById('hideNonPremium')
+  hidePremiumButton      = powersListWindow:recursiveGetChildById('hidePremium')
+
+  horizontalSeparator = powersListWindow:recursiveGetChildById('horizontalSeparator')
+
+  powersListPanel = powersListWindow:recursiveGetChildById('powersListPanel')
+
+  connect(g_game, {
+    onGameStart        = online,
+    onGameEnd          = offline,
+    onPlayerPowersList = onPlayerPowersList
+  })
+
+  checkPowers()
 end
 
 function terminate()
-  g_keyboard.unbindKeyDown('Ctrl+Shift+P')
+  powerButtonsByIdList = {}
 
-  disconnect(g_game, { onGameStart        = online,
-                       onPlayerPowersList = onPlayerPowersList })
+  disconnect(g_game, {
+    onGameStart        = online,
+    onGameEnd          = offline,
+    onPlayerPowersList = onPlayerPowersList
+  })
 
-  disconnect(powersList, { onChildFocusChange = function(self, focusedChild)
-                             if focusedChild == nil then return end
-                             onClickPowersListLabel(focusedChild)
-                           end })
-
+  mouseWidget:destroy()
+  powersListTopButton:destroy()
   powersListWindow:destroy()
 
-  powersListWindow = nil
-  powersListButton = nil
-
-  powersList       = nil
-  labelName        = nil
-  labelLevel       = nil
-  labelClass       = nil
-  labelVocation    = nil
-  labelPremium     = nil
-  labelDescription = nil
-end
-
-function open()
-  powersListButton:setOn(true)
-  powersListWindow:show()
-  powersListWindow:raise()
-  powersListWindow:focus()
-end
-
-function close()
-  powersListButton:setOn(false)
-  powersListWindow:hide()
-end
-
-function toggle()
-  if powersListButton:isOn() then close() else open() end
+  g_keyboard.unbindKeyDown('Ctrl+Shift+P')
 end
 
 function online()
-  clearWindow()
-  powersListButton:show()
-  powersListButton:setOn(false)
+  if filterSortPanel:isVisible() and filterHiddenPanel:isVisible() then
+    ballButton:setTooltip('Hide options')
+  else
+    ballButton:setTooltip('Show options')
+  end
 
-  local protocol = g_game.getProtocolGame()
-  if protocol then
-    protocol:sendExtendedOpcode(ClientExtOpcodes.ClientPower, string.format("%d:%d:%d:%d", power_flag_updateList, 0, 0, 0))
+  checkPowers()
+end
+
+function offline()
+  removeAllPowers()
+end
+
+function onMiniWindowClose()
+  if powersListTopButton then
+    powersListTopButton:setOn(false)
   end
 end
 
-function clearWindow()
-  labelName:setText(string.format('%s:', tr(txtName)))
-  labelLevel:setText(string.format('%s:', tr(txtLevel)))
-  labelClass:setText(string.format('%s:', tr(txtClass)))
-  labelVocation:setText(string.format('%s:', tr(txtVocation)))
-  labelPremium:setText(string.format('%s:', tr(txtPremium)))
-  labelDescription:setText('')
-
-  clearPowersList()
+function onMiniWindowBallButton()
+  toggleFilterPanel()
 end
 
-function onClickPowersListLabel(widget)
-  labelName:setText(string.format("%s: %s", tr(txtName), widget.name))
-  labelLevel:setText(string.format("%s: %d", tr(txtLevel), widget.level))
-  labelClass:setText(string.format("%s: %s", tr(txtClass), POWER_CLASS_STRING[widget.class]))
-
-  local vocations = {}
-  if #widget.vocations == table.size(vocationName) then
-    labelVocation:setText(string.format("%s: %s", tr(txtVocation), tr('All')))
+function toggle()
+  if powersListTopButton:isOn() then
+    powersListWindow:close()
+    powersListTopButton:setOn(false)
   else
-    for _, vocationId in ipairs(widget.vocations) do
-      if vocationName[vocationId] then
-        table.insert(vocations, vocationName[vocationId])
+    powersListWindow:open()
+    powersListTopButton:setOn(true)
+  end
+end
+
+
+
+function hasPower(power)
+  return powerButtonsByIdList[power.id] and true or false
+end
+
+function addPower(power)
+  -- Add
+  if not hasPower(power) then
+    if not powerFitFilters(power) then return end
+
+    local powerButton = g_ui.createWidget('PowersListButton')
+    powerButton:setup(power)
+
+    powerButton.onMouseRelease = onPowerButtonMouseRelease
+
+    powerButtonsByIdList[power.id] = powerButton
+
+    local inserted  = false
+    local sortType  = getSortType()
+    local sortOrder = getSortOrder()
+
+    local childCount = powersListPanel:getChildCount()
+    for i = 1, childCount do
+      local equal = false
+      local child = powersListPanel:getChildByIndex(i)
+
+      if sortType == 'appear' then
+        powersListPanel:insertChild(isSortAsc() and childCount + 1 or 1, powerButton)
+        inserted = true
+        break
+
+      elseif sortType == 'class' or sortType == 'level' then
+        if (power[sortType] < child.power[sortType] and isSortAsc()) or (power[sortType] > child.power[sortType] and isSortDesc()) then
+          powersListPanel:insertChild(i, powerButton)
+          inserted = true
+          break
+        elseif power[sortType] == child.power[sortType] then
+          equal = true
+        end
+      end
+
+      -- If any other sort type is selected and values are equal, sort it by name also
+      if sortType == 'name' or equal then
+        local nameLower = power.name:lower()
+        local childName = child.power.name:lower()
+        for j = 1, math.min(nameLower:len(), childName:len()) do
+          if (nameLower:byte(j) < childName:byte(j) and isSortAsc()) or (nameLower:byte(j) > childName:byte(j) and isSortDesc()) then
+            powersListPanel:insertChild(i, powerButton)
+            inserted = true
+            break
+          elseif (nameLower:byte(j) > childName:byte(j) and isSortAsc()) or (nameLower:byte(j) < childName:byte(j) and isSortDesc()) then
+            break
+          elseif j == nameLower:len() and isSortAsc() then
+            powersListPanel:insertChild(i, powerButton)
+            inserted = true
+          elseif j == childName:len() and isSortDesc() then
+            powersListPanel:insertChild(i, powerButton)
+            inserted = true
+          end
+        end
+      end
+
+      if inserted then
+        break
       end
     end
-    labelVocation:setText(string.format("%s: %s", tr(txtVocation), table.concat(vocations, ', ')))
-  end
 
-  labelPremium:setText(string.format("%s: %s", tr(txtPremium), widget.premium and tr('Yes') or tr('No')))
-  labelDescription:setText(string.format("\n%s", widget.description))
-end
+    -- Insert at the end if no other place is found
+    if not inserted then
+      powersListPanel:insertChild(childCount + 1, powerButton)
+    end
 
-function clearPowersList()
-  local children = powersList:getChildren()
-  for i = 1, #children do
-    powersList:removeChild(children[i])
-    children[i]:destroy()
+  -- Update
+  else
+    local powerButton = powerButtonsByIdList[power.id]
+    powerButton:updateData(power)
   end
 end
 
-function onPlayerPowersList(powers)
-  clearWindow()
+function removeAllPowers()
+  for _, powerButton in pairs(powerButtonsByIdList) do
+    removePower(powerButton.power)
+  end
+end
+
+function removePower(power)
+  if hasPower(power) then
+    if lastPowerButtonSwitched == powerButtonsByIdList[power.id] then
+      lastPowerButtonSwitched = nil
+    end
+
+    -- Remove power button
+    powerButtonsByIdList[power.id]:destroy()
+    powerButtonsByIdList[power.id] = nil
+  end
+end
+
+
+
+-- Filters
+
+function isHidingFilters()
+  local settings = g_settings.getNode('PowersList')
+  if settings and type(settings['hidingFilters']) == 'boolean' then
+    return settings['hidingFilters']
+  end
+  return false
+end
+
+function setHidingFilters(state)
+  local settings = {}
+  settings['hidingFilters'] = state
+  g_settings.mergeNode('PowersList', settings)
+end
+
+function hideFiltersPanel()
+  -- Comboboxes to Sort
+  filterSortPanel.originalHeight    = filterSortPanel:getHeight()
+  filterSortPanel.originalMarginTop = filterSortPanel:getMarginTop()
+  filterSortPanel:setHeight(0)
+  filterSortPanel:setMarginTop(0)
+  filterSortPanel:setVisible(false)
+
+  -- Buttons to Hide
+  filterHiddenPanel.originalHeight    = filterHiddenPanel:getHeight()
+  filterHiddenPanel.originalMarginTop = filterHiddenPanel:getMarginTop()
+  filterHiddenPanel:setHeight(0)
+  filterHiddenPanel:setMarginTop(0)
+  filterHiddenPanel:setVisible(false)
+
+  -- Horizontal Separator
+  horizontalSeparator.originalHeight    = horizontalSeparator:getHeight()
+  horizontalSeparator.originalMarginTop = horizontalSeparator:getMarginTop()
+  horizontalSeparator:setHeight(0)
+  horizontalSeparator:setMarginTop(0)
+  horizontalSeparator:setVisible(false)
+
+  setHidingFilters(true)
+  ballButton:setTooltip('Show options')
+end
+
+function showFiltersPanel()
+  -- Comboboxes to Sort
+  filterSortPanel:setHeight(filterSortPanel.originalHeight or 0)
+  filterSortPanel:setMarginTop(filterSortPanel.originalMarginTop or 0)
+  filterSortPanel:setVisible(true)
+
+  -- Buttons to Hide
+  filterHiddenPanel:setHeight(filterHiddenPanel.originalHeight or 0)
+  filterHiddenPanel:setMarginTop(filterHiddenPanel.originalMarginTop or 0)
+  filterHiddenPanel:setVisible(true)
+
+  -- Horizontal Separator
+  horizontalSeparator:setHeight(horizontalSeparator.originalHeight or 0)
+  horizontalSeparator:setMarginTop(horizontalSeparator.originalMarginTop or 0)
+  horizontalSeparator:setVisible(true)
+
+  setHidingFilters(false)
+  ballButton:setTooltip('Hide options')
+end
+
+function toggleFilterPanel()
+  if filterSortPanel:isVisible() and filterHiddenPanel:isVisible() then
+    hideFiltersPanel()
+  else
+    showFiltersPanel()
+  end
+end
+
+
+
+-- Sort
+
+function getSortType()
+  local settings = g_settings.getNode('PowersList')
+  return settings and settings['sortType'] or 'appear'
+end
+
+function setSortType(state)
+  local settings = {}
+  settings['sortType'] = state
+  g_settings.mergeNode('PowersList', settings)
+  checkPowers()
+end
+
+function getSortOrder()
+  local settings = g_settings.getNode('PowersList')
+  return settings and settings['sortOrder'] or 'desc'
+end
+
+function setSortOrder(state)
+  local settings = {}
+  settings['sortOrder'] = state
+  g_settings.mergeNode('PowersList', settings)
+  checkPowers()
+end
+
+function isSortAsc()
+  return getSortOrder() == 'asc'
+end
+
+function isSortDesc()
+  return getSortOrder() == 'desc'
+end
+
+function onChangeSortType(comboBox, option)
+  setSortType(option:lower())
+end
+
+function onChangeSortOrder(comboBox, option)
+  -- Replace dot in option name
+  setSortOrder(option:lower():gsub('[.]', ''))
+end
+
+
+
+function powerFitFilters(power)
+  if hideNonOffensiveButton:isChecked() and not power.isOffensive or hideOffensiveButton:isChecked() and power.isOffensive or hideNonPremiumButton:isChecked() and not power.isPremium or hidePremiumButton:isChecked() and power.isPremium then
+    return false
+  end
+  return true
+end
+
+function checkPowers()
+  removeAllPowers()
+
+  if not g_game.isOnline() then
+    return
+  end
+
+  g_game.sendPowerProtocolData(string.format("%d:%d:%d:%d", power_flag_updateList, 0, 0, 0))
+end
+
+function requestNonConstantPowerChanges(power)
+  if power.isConstant or not g_game.isOnline() then return end
+
+  g_game.sendPowerProtocolData(string.format("%d:%d:%d:%d", power_flag_updateNonConstantPower, power.id or 0, 0, 0))
+end
+
+
+
+function onPowerButtonMouseRelease(self, mousePosition, mouseButton)
+  if mouseWidget.cancelNextRelease then
+    mouseWidget.cancelNextRelease = false
+    return false
+  end
+
+  if mouseButton == MouseLeftButton then
+    -- Do nothing, but returns true
+    return true
+  end
+  return false
+end
+
+function onPlayerPowersList(powers, updateNonConstantPower)
+  if not updateNonConstantPower then
+    removeAllPowers()
+  end
 
   for k, power in ipairs(powers) do
-    local id          = power[1]
-    local name        = power[2]
-    local level       = power[3]
-    local class       = power[4]
-    local vocations   = power[5]
-    local premium     = power[6]
-    local description = power[7]
+    local params = {}
 
-    local label = g_ui.createWidget('PowersListLabel', powersList)
+    params.id                   = power[1]
+    params.name                 = power[2]
+    params.level                = power[3]
+    params.class                = power[4]
+    params.mana                 = power[5]
+    params.vocations            = power[6]
+    params.isPremium            = power[7]
+    params.description          = power[8]
+    params.descriptionBoostNone = power[9]
+    params.descriptionBoostLow  = power[10]
+    params.descriptionBoostHigh = power[11]
+    params.isConstant           = power[12]
+    params.isOffensive          = params.class == POWER_CLASS_OFFENSIVE
 
-    label:setId(string.format("power_%d", id))
-    label:setText(string.format("%d. %s", k, name))
+    params.onHover =
+    function(widget, hovered)
+      local power = widget.power
+      if hovered and power then
+        requestNonConstantPowerChanges(power)
+      end
+    end
 
-    local icon = label:getChildById('powerIcon')
-    icon:setIcon('/images/game/powers/' .. id .. '_off')
-
-    label.id          = id
-    label.name        = name
-    label.level       = level
-    label.class       = class
-    label.vocations   = vocations
-    label.premium     = premium
-    label.description = description
-
-    label.onClick = onClickPowersListLabel
+    addPower(params)
   end
 
-  connect(powersList, { onChildFocusChange = function(self, focusedChild)
-                          if focusedChild == nil then return end
-                          onClickPowersListLabel(focusedChild)
-                        end })
-
-  modules.ka_hotkeybars.updateLook()
+  if updateNonConstantPower then
+    local widget = g_game.getWidgetByPos()
+    if widget then
+      g_tooltip.widgetHoverChange(widget, true)
+    end
+  end
 end
 
 function getPower(id)
-  local children = powersList:getChildren()
-  for i = 1, #children do
-    if id == children[i].id then
-      return children[i]
-    end
-  end
-  return nil
+  return powerButtonsByIdList[id]
 end

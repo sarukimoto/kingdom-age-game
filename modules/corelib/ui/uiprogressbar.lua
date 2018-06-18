@@ -12,6 +12,9 @@ function UIProgressBar.create()
   progressbar.bgBorderRight = 0
   progressbar.bgBorderTop = 0
   progressbar.bgBorderBottom = 0
+  progressbar.phases = 0
+  progressbar.phasesBorderWidth = 1
+  progressbar.phasesBorderColor = '#ffffff77'
   return progressbar
 end
 
@@ -46,6 +49,21 @@ function UIProgressBar:setPercent(percent)
   self:setValue(percent, 0, 100)
 end
 
+function UIProgressBar:setPhases(value)
+  self.phases = value
+  self:updateBackground()
+end
+
+function UIProgressBar:setPhasesBorderWidth(value)
+  self.phasesBorderWidth = value
+  self:updateBackground()
+end
+
+function UIProgressBar:setPhasesBorderColor(value)
+  self.phasesBorderColor = value
+  self:updateBackground()
+end
+
 function UIProgressBar:getPercent()
   return self.value
 end
@@ -59,12 +77,49 @@ function UIProgressBar:getProgress()
   return (self.value - self.minimum) / (self.maximum - self.minimum)
 end
 
+function UIProgressBar:getPhases()
+  return self.phases
+end
+
+function UIProgressBar:getPhasesBorderWidth()
+  return self.phasesBorderWidth
+end
+
+function UIProgressBar:getPhasesBorderColor()
+  return self.phasesBorderColor
+end
+
+function UIProgressBar:updatePhases()
+  if self.phases < 2 or self.phasesBorderWidth < 1 then
+    return
+  end
+
+  -- Remove old phases
+  self:destroyChildren()
+
+  local phaseWidth = math.floor((self:getWidth() - (self.bgBorderLeft + self.bgBorderRight)) / self.phases)
+  local height = self:getHeight() - (self.bgBorderTop + self.bgBorderBottom)
+
+  for i = 1, self.phases - 1 do
+    local rect = { x = 0, y = 0, width = self.phasesBorderWidth, height = height }
+    local widget = g_ui.createWidget('UIWidget', self)
+    widget:addAnchor(AnchorTop, 'parent', AnchorTop)
+    widget:addAnchor(AnchorLeft, 'parent', AnchorLeft)
+
+    widget:setMarginLeft((i * phaseWidth) + self.bgBorderLeft)
+
+    widget:setRect(rect)
+    widget:setBackgroundColor(self.phasesBorderColor)
+  end
+end
+
 function UIProgressBar:updateBackground()
   if self:isOn() then
     local width = math.round(math.max((self:getProgress() * (self:getWidth() - self.bgBorderLeft - self.bgBorderRight)), 1))
     local height = self:getHeight() - self.bgBorderTop - self.bgBorderBottom
     local rect = { x = self.bgBorderLeft, y = self.bgBorderTop, width = width, height = height }
     self:setBackgroundRect(rect)
+    self:updatePhases()
   end
 end
 

@@ -134,7 +134,9 @@ function toggle()
 end
 
 function onMiniWindowClose()
-  battleButton:setOn(false)
+  if battleButton then
+    battleButton:setOn(false)
+  end
 end
 
 function getSortType()

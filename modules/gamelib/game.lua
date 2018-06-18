@@ -3,17 +3,16 @@ function g_game.getRsa()
 end
 
 function g_game.findPlayerItem(itemId, subType)
-    local localPlayer = g_game.getLocalPlayer()
-    if localPlayer then
-        for slot = InventorySlotFirst, InventorySlotLast do
-            local item = localPlayer:getInventoryItem(slot)
-            if item and item:getId() == itemId and (subType == -1 or item:getSubType() == subType) then
-                return item
-            end
-        end
+  local localPlayer = g_game.getLocalPlayer()
+  if localPlayer then
+    for slot = InventorySlotFirst, InventorySlotLast do
+      local item = localPlayer:getInventoryItem(slot)
+      if item and item:getId() == itemId and (subType == -1 or item:getSubType() == subType) then
+        return item
+      end
     end
-
-    return g_game.findItemInContainers(itemId, subType)
+  end
+  return g_game.findItemInContainers(itemId, subType)
 end
 
 function g_game.chooseRsa(host)
@@ -121,4 +120,14 @@ function g_game.canHoldDirectionChange(direction)
   if not g_game.isOnline() then return false end
   local localPlayer = g_game.getLocalPlayer()
   return localPlayer and localPlayer:canHoldDirectionChange(direction)
+end
+
+function g_game.getWidgetByPos(wantsPhantom, parentWidget)
+  if wantsPhantom == nil then
+    wantsPhantom = false
+  end
+  parentWidget = parentWidget or rootWidget
+
+  local mousePosition = g_window.getMousePosition()
+  return parentWidget:recursiveGetChildByPos(mousePosition, wantsPhantom), mousePosition
 end
