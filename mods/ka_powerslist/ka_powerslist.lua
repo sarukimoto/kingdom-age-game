@@ -375,7 +375,7 @@ function checkPowers()
 end
 
 function requestNonConstantPowerChanges(power)
-  if power.isConstant or not g_game.isOnline() then return end
+  if not g_game.isOnline() then return end
 
   g_game.sendPowerProtocolData(string.format("%d:%d:%d:%d", power_flag_updateNonConstantPower, power.id or 0, 0, 0))
 end
@@ -420,9 +420,11 @@ function onPlayerPowersList(powers, updateNonConstantPower)
     params.onHover =
     function(widget, hovered)
       local power = widget.power
-      if hovered and power then
+      if hovered and power and not power.isConstant then
         requestNonConstantPowerChanges(power)
+        return false -- Cancel old tooltip
       end
+      return true
     end
 
     addPower(params)
@@ -431,7 +433,7 @@ function onPlayerPowersList(powers, updateNonConstantPower)
   if updateNonConstantPower then
     local widget = g_game.getWidgetByPos()
     if widget then
-      g_tooltip.widgetHoverChange(widget, true)
+      g_tooltip.widgetHoverChange(widget, true) -- Automatically show updated power tooltip
     end
   end
 end

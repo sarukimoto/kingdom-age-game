@@ -64,7 +64,9 @@ end
 
 local function onWidgetHoverChange(widget, hovered)
   if widget.onTooltipHoverChange then
-    widget.onTooltipHoverChange(widget, hovered)
+    if not widget.onTooltipHoverChange(widget, hovered) then
+      return
+    end
   end
 
   g_tooltip.widgetHoverChange(widget, hovered)
