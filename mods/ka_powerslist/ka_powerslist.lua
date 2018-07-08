@@ -408,13 +408,14 @@ function onPlayerPowersList(powers, updateNonConstantPower)
     params.level                = power[3]
     params.class                = power[4]
     params.mana                 = power[5]
-    params.vocations            = power[6]
-    params.isPremium            = power[7]
-    params.description          = power[8]
-    params.descriptionBoostNone = power[9]
-    params.descriptionBoostLow  = power[10]
-    params.descriptionBoostHigh = power[11]
-    params.isConstant           = power[12]
+    params.exhaustTime          = power[6]
+    params.vocations            = power[7]
+    params.isPremium            = power[8]
+    params.description          = power[9]
+    params.descriptionBoostNone = power[10]
+    params.descriptionBoostLow  = power[11]
+    params.descriptionBoostHigh = power[12]
+    params.isConstant           = power[13]
     params.isOffensive          = params.class == POWER_CLASS_OFFENSIVE
 
     params.onHover =

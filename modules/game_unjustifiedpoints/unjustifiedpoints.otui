@@ -41,7 +41,6 @@ MiniWindow
 
     SkullProgressBar
       id: redSkullProgressBar
-      !text: 'Red Skull'
       margin-top: 5
 
     SkullWidget
@@ -51,7 +50,6 @@ MiniWindow
 
     SkullProgressBar
       id: blackSkullProgressBar
-      !text: 'Black Skull'
 
     SkullWidget
       id: blackSkullSkullWidget

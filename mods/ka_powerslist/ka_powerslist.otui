@@ -63,7 +63,7 @@ MiniWindow
     text: ?
     text-align: center
     phantom: false
-    &tooltipAddons: { { text = '1. Powers should be used on hotkeys.\n\n2. Power hotkeys can be pressed to boost it\'s power\n- it will increase the mana\'s cost also.\n\n3. Some powers needs the mouse on game screen to target.\n', align = AlignLeft }, { text = 'Note: All powers shows informations according to your\ncharacter\'s status. So, your attributes, equipments and\nothers can change these informations in real time.', color = '#E6DB74', align = AlignLeft } }
+    &tooltipAddons: { { text = '1. Powers should be used on hotkeys.\n\n2. Power hotkeys can be pressed to boost it\'s power\n- it will increase the mana\'s cost also.\n\n3. Some powers needs the mouse on game screen to target.\n', align = AlignLeft }, { text = 'Note: All powers shows informations according to your\ncharacter\'s status. So, your attributes, equipments and\nothers can change these informations in real time. Also,\ndamages may change according to target\'s defense.', color = '#E6DB74', align = AlignLeft } }
     anchors.top: ballButton.top
     anchors.right: ballButton.left
     margin-right: 3

@@ -54,10 +54,10 @@ local function moveToolTip(firstDisplay)
   end
 
   local ydif = g_window.getSize().height - (pos.y + height)
-  pos.y = ydif <= 0 and pos.y - height - (widget.tooltipAddons and -6 or 0) or pos.y + (widget.tooltipAddons and 6 or 0)
+  pos.y = ydif <= 10 and pos.y - height - (widget.tooltipAddons and -6 or 0) or pos.y + (widget.tooltipAddons and 6 or 0)
 
   local xdif = g_window.getSize().width - (pos.x + width)
-  pos.x = xdif <= 0 and pos.x - width - (widget.tooltipAddons and 6 or 10) or pos.x + (widget.tooltipAddons and 15 or 11)
+  pos.x = xdif <= 10 and pos.x - width - (widget.tooltipAddons and 6 or 10) or pos.x + (widget.tooltipAddons and 15 or 11)
 
   toolTipLabel:setPosition(pos)
 end
