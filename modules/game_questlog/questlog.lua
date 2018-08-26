@@ -100,9 +100,9 @@ function updateLayout(window, questId, missionId, row)
     teleportButton:setVisible(true)
 
     teleportButton.onClick = function()
-      if not modules.game_questlog.getTeleportLock() then
-        displayCustomBox('Quest Teleport', 'Are you sure that you want to teleport?', {{ text = 'Yes', buttonCallback = function() sendTeleportRequest(questId, missionId) modules.game_questlog.setTeleportLock(false) end }}, 1, 'No', function() modules.game_questlog.setTeleportLock(false) end, nil)
-        modules.game_questlog.setTeleportLock(true)
+      if not getTeleportLock() then
+        displayCustomBox('Quest Teleport', 'Are you sure that you want to teleport?', {{ text = 'Yes', buttonCallback = function() sendTeleportRequest(questId, missionId) local mod = modules.game_questlog if not mod then return end mod.setTeleportLock(false) end }}, 1, 'No', function() local mod = modules.game_questlog if not mod then return end mod.setTeleportLock(false) end, nil)
+        setTeleportLock(true)
       end
     end
   else
@@ -112,7 +112,7 @@ function updateLayout(window, questId, missionId, row)
   if row.experience >= 1 then
     rewardExperienceLabel:setVisible(true)
     rewardExperienceValueLabel:setVisible(true)
-    rewardExperienceValueLabel:setText(tr(row.experience))
+    rewardExperienceValueLabel:setText(tr('%d XP', row.experience))
   else
     rewardExperienceLabel:setVisible(false)
     rewardExperienceValueLabel:setVisible(false)
@@ -121,7 +121,7 @@ function updateLayout(window, questId, missionId, row)
   if row.money >= 1 then
     rewardMoneyLabel:setVisible(true)
     rewardMoneyValueLabel:setVisible(true)
-    rewardMoneyValueLabel:setText(tr(row.money))
+    rewardMoneyValueLabel:setText(tr('%d GPs', row.money))
   else
     rewardMoneyLabel:setVisible(false)
     rewardMoneyValueLabel:setVisible(false)

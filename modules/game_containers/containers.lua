@@ -95,7 +95,7 @@ function onContainerOpen(container, previousContainer)
     containerWindow:hide()
   end
 
-  -- this disables scrollbar auto hiding
+  -- This disables scrollbar auto hiding
   local scrollbar = containerWindow:getChildById('miniwindowScrollBar')
   scrollbar:mergeStyle({ ['$!on'] = { }})
 

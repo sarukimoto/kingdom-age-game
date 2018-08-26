@@ -18,8 +18,8 @@ MiniWindow
   // old height: 114
   height: 90
   icon: /images/topbuttons/unjustifiedpoints
-  @onOpen: modules.game_unjustifiedpoints.onMiniWindowOpen()
-  @onClose: modules.game_unjustifiedpoints.onMiniWindowClose()
+  @onOpen: onMiniWindowOpen()
+  @onClose: onMiniWindowClose()
   &save: true
 
   MiniWindowContents

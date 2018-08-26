@@ -49,7 +49,7 @@ BugReportWindow < MainWindow
     width: 40
     enabled: true
     max-length: 4
-    @onTextChange: modules.game_bugreport.onPositionXTextChange(self)
+    @onTextChange: onPositionXTextChange(self)
 
   Label
     id: bugPositionXLabel
@@ -69,7 +69,7 @@ BugReportWindow < MainWindow
     width: 40
     enabled: true
     max-length: 4
-    @onTextChange: modules.game_bugreport.onPositionYTextChange(self)
+    @onTextChange: onPositionYTextChange(self)
 
   Label
     id: bugPositionXLabel
@@ -90,7 +90,7 @@ BugReportWindow < MainWindow
     width: 40
     enabled: true
     max-length: 2
-    @onTextChange: modules.game_bugreport.onPositionZTextChange(self)
+    @onTextChange: onPositionZTextChange(self)
 
   Label
     id: bugCommentLabel

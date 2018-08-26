@@ -4,6 +4,7 @@ Module
   author: edubart, baxnie
   website: www.otclient.info
   sandboxed: true
-  scripts: [containers]
+  scripts: [ containers ]
+  dependencies: [ game_interface ]
   @onLoad: init()
   @onUnload: terminate()

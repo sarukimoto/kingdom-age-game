@@ -17,6 +17,9 @@ hideMonstersButton = nil
 hideSkullsButton = nil
 hidePartyButton = nil
 
+ballButton = nil
+horizontalSeparator = nil
+
 function init()
   g_ui.importStyle('battlebutton')
   battleButton = modules.client_topmenu.addRightGameToggleButton('battleButton', tr('Battle') .. ' (Ctrl+B)', '/images/topbuttons/battle', toggle)
@@ -24,7 +27,7 @@ function init()
   battleWindow = g_ui.loadUI('battle', modules.game_interface.getRightPanel())
   g_keyboard.bindKeyDown('Ctrl+B', toggle)
 
-  -- this disables scrollbar auto hiding
+  -- This disables scrollbar auto hiding
   local scrollbar = battleWindow:getChildById('miniwindowScrollBar')
   scrollbar:mergeStyle({ ['$!on'] = {} })
 
@@ -33,10 +36,6 @@ function init()
   filterPanel = battleWindow:recursiveGetChildById('filterPanel')
   --toggleFilterButton = battleWindow:recursiveGetChildById('toggleFilterButton')
 
-  if isHidingFilters() then
-    hideFilterPanel()
-  end
-
   --sortTypeBox = battleWindow:recursiveGetChildById('sortTypeBox')
   --sortOrderBox = battleWindow:recursiveGetChildById('sortOrderBox')
   hidePlayersButton = battleWindow:recursiveGetChildById('hidePlayers')
@@ -44,6 +43,13 @@ function init()
   hideMonstersButton = battleWindow:recursiveGetChildById('hideMonsters')
   hideSkullsButton = battleWindow:recursiveGetChildById('hideSkulls')
   hidePartyButton = battleWindow:recursiveGetChildById('hideParty')
+
+  ballButton = battleWindow:getChildById('ballButton')
+  horizontalSeparator = battleWindow:recursiveGetChildById('horizontalSeparator')
+
+  if isHidingFilters() then
+    hideFilterPanel()
+  end
 
   mouseWidget = g_ui.createWidget('UIButton')
   mouseWidget:setVisible(false)
@@ -188,29 +194,41 @@ function setHidingFilters(state)
 end
 
 function hideFilterPanel()
-  filterPanel.originalHeight = filterPanel:getHeight()
+  -- Buttons to Hide
+  filterPanel.originalHeight    = filterPanel:getHeight()
   filterPanel.originalMarginTop = filterPanel:getMarginTop()
   filterPanel:setHeight(0)
+  filterPanel:setMarginTop(0)
+  filterPanel:setVisible(false)
   --toggleFilterButton:getParent():setMarginTop(0)
   --toggleFilterButton:setImageClip(torect("0 0 21 12"))
+
+  -- Horizontal Separator
+  horizontalSeparator.originalHeight    = horizontalSeparator:getHeight()
+  horizontalSeparator.originalMarginTop = horizontalSeparator:getMarginTop()
+  horizontalSeparator:setHeight(0)
+  horizontalSeparator:setMarginTop(0)
+  horizontalSeparator:setVisible(false)
+
   setHidingFilters(true)
-  filterPanel:setVisible(false)
-  local ballButton = battleWindow:recursiveGetChildById('ballButton')
-  if ballButton then
-    ballButton:setTooltip('Show options')
-  end
+  ballButton:setTooltip('Show options')
 end
 
 function showFilterPanel()
+  -- Buttons to Hide
   filterPanel:setHeight(filterPanel.originalHeight or 0)
+  filterPanel:setMarginTop(filterPanel.originalMarginTop or 0)
+  filterPanel:setVisible(true)
   --toggleFilterButton:getParent():setMarginTop(5)
   --toggleFilterButton:setImageClip(torect("21 0 21 12"))
+
+  -- Horizontal Separator
+  horizontalSeparator:setHeight(horizontalSeparator.originalHeight or 0)
+  horizontalSeparator:setMarginTop(horizontalSeparator.originalMarginTop or 0)
+  horizontalSeparator:setVisible(true)
+
   setHidingFilters(false)
-  filterPanel:setVisible(true)
-  local ballButton = battleWindow:recursiveGetChildById('ballButton')
-  if ballButton then
-    ballButton:setTooltip('Hide options')
-  end
+  ballButton:setTooltip('Hide options')
 end
 
 function toggleFilterPanel()
@@ -491,13 +509,10 @@ function addCreature(creature)
 end
 
 function online()
-  local ballButton = battleWindow:recursiveGetChildById('ballButton')
-  if ballButton then
-    if filterPanel:isVisible() then
-      ballButton:setTooltip('Hide options')
-    else
-      ballButton:setTooltip('Show options')
-    end
+  if filterPanel:isVisible() then
+    ballButton:setTooltip('Hide options')
+  else
+    ballButton:setTooltip('Show options')
   end
 end
 

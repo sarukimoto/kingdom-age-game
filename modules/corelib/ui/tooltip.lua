@@ -7,26 +7,34 @@ local fadeOutTime = 100
 local toolTipLabel
 local currentHoveredWidget
 local toolTipAddonLabels = {}
-local toolTipAddonBackgroundLabel
+local toolTipAddonGroupLabels = {} -- Rows background
+local toolTipAddonsBackgroundLabel
+local alignToAnchor = {
+  [AlignLeft]   = AnchorLeft,
+  [AlignRight]  = AnchorRight,
+  [AlignCenter] = AnchorHorizontalCenter
+}
 
 -- private functions
 local function removeToolTipAddonLabels()
   for i = 1, #toolTipAddonLabels do
-    if toolTipAddonLabels[i] then
-      toolTipAddonLabels[i]:destroy()
+    for j = 1, #toolTipAddonLabels[i] do
+      toolTipAddonLabels[i][j]:destroy()
     end
-    toolTipAddonLabels[i] = nil
+    toolTipAddonGroupLabels[i]:destroy()
   end
   toolTipAddonLabels = {}
+  toolTipAddonGroupLabels = {}
 end
 
 local function removeTooltip()
-  g_effects.cancelFade(toolTipAddonBackgroundLabel)
-  toolTipAddonBackgroundLabel:hide()
+  g_effects.cancelFade(toolTipAddonsBackgroundLabel)
+  toolTipAddonsBackgroundLabel:hide()
   for i = 1, #toolTipAddonLabels do
-    if toolTipAddonLabels[i] then
-      g_effects.cancelFade(toolTipAddonLabels[i])
+    for j = 1, #toolTipAddonLabels[i] do
+      g_effects.cancelFade(toolTipAddonLabels[i][j])
     end
+    g_effects.cancelFade(toolTipAddonGroupLabels[i])
   end
   removeToolTipAddonLabels()
 end
@@ -49,8 +57,8 @@ local function moveToolTip(firstDisplay)
   local width  = toolTipLabel:getWidth()
   local height = toolTipLabel:getHeight()
   if widget.tooltipAddons then
-    width  = toolTipAddonBackgroundLabel:getWidth()
-    height = toolTipAddonBackgroundLabel:getHeight()
+    width  = toolTipAddonsBackgroundLabel:getWidth()
+    height = toolTipAddonsBackgroundLabel:getHeight()
   end
 
   local ydif = g_window.getSize().height - (pos.y + height)
@@ -86,8 +94,8 @@ function g_tooltip.init()
   })
 
   addEvent(function()
-    toolTipAddonBackgroundLabel = g_ui.createWidget('UILabel', rootWidget)
-    toolTipAddonBackgroundLabel:setId('toolTipAddonBackground')
+    toolTipAddonsBackgroundLabel = g_ui.createWidget('UILabel', rootWidget)
+    toolTipAddonsBackgroundLabel:setId('toolTipAddonsBackground')
 
     toolTipLabel = g_ui.createWidget('UILabel', rootWidget)
     toolTipLabel:setId('toolTip')
@@ -103,15 +111,15 @@ function g_tooltip.terminate()
     onHoverChange = onWidgetHoverChange
   })
 
+  removeTooltip()
+
   currentHoveredWidget = nil
 
   toolTipLabel:destroy()
   toolTipLabel = nil
 
-  toolTipAddonBackgroundLabel:destroy()
-  toolTipAddonBackgroundLabel = nil
-
-  removeToolTipAddonLabels()
+  toolTipAddonsBackgroundLabel:destroy()
+  toolTipAddonsBackgroundLabel = nil
 
   g_tooltip = nil
 end
@@ -126,7 +134,7 @@ function g_tooltip.display(widget)
     toolTipLabel:resize(toolTipLabel:getWidth() + 8, toolTipLabel:getHeight() + 8)
   end
   if not widget.tooltip or widget.tooltip:len() == 0 then
-    toolTipLabel:setHeight(0) -- For fix the heightSum
+    toolTipLabel:setHeight(0) -- For fix the heightTotalSum
   end
   toolTipLabel:show()
   toolTipLabel:raise()
@@ -135,80 +143,145 @@ function g_tooltip.display(widget)
 
   if widget.tooltipAddons then
     -- Force previous tooltip remove
-    g_effects.cancelFade(toolTipAddonBackgroundLabel)
+    g_effects.cancelFade(toolTipAddonsBackgroundLabel)
     for i = 1, #toolTipAddonLabels do
-      if toolTipAddonLabels[i] then
-        g_effects.cancelFade(toolTipAddonLabels[i])
+      for j = 1, #toolTipAddonLabels[i] do
+        g_effects.cancelFade(toolTipAddonLabels[i][j])
       end
+      g_effects.cancelFade(toolTipAddonGroupLabels[i])
     end
     removeToolTipAddonLabels()
 
-    local higherWidth = toolTipLabel:getWidth()
-    local heightSum   = toolTipLabel:getHeight() + toolTipLabel:getMarginTop() + toolTipLabel:getMarginBottom()
-    for i = 1, #widget.tooltipAddons do
-      toolTipAddonLabels[i] = g_ui.createWidget('Label', rootWidget)
-      toolTipAddonLabels[i]:setId(string.format('toolTipAddon_%d', i))
-      if widget.tooltipAddons[i].backgroundColor then
-        toolTipAddonLabels[i]:setBackgroundColor(widget.tooltipAddons[i].backgroundColor)
-      end
-      toolTipAddonLabels[i]:addAnchor(AnchorTop, i > 1 and string.format('toolTipAddon_%d', i - 1) or 'toolTip', AnchorBottom)
-      toolTipAddonLabels[i]:addAnchor(AnchorHorizontalCenter, 'toolTip', AnchorHorizontalCenter)
+    local higherWidth    = 0
+    local heightTotalSum = 0
 
-      if widget.tooltipAddons[i].text then
-        toolTipAddonLabels[i]:setText(widget.tooltipAddons[i].text)
-        toolTipAddonLabels[i]:setColor(widget.tooltipAddons[i].color or 'white')
-        toolTipAddonLabels[i]:resizeToText()
-      elseif widget.tooltipAddons[i].icon then
-        g_textures.preload(widget.tooltipAddons[i].icon)
-        toolTipAddonLabels[i]:setIcon(widget.tooltipAddons[i].icon)
-        if widget.tooltipAddons[i].size then
-          toolTipAddonLabels[i]:setSize(widget.tooltipAddons[i].size)
-          toolTipAddonLabels[i]:setIconSize(widget.tooltipAddons[i].size)
+    -- Group
+    --[[
+      Options:
+      - backgroundColor
+    ]]
+    for i = 1, #widget.tooltipAddons do
+      toolTipAddonGroupLabels[i] = g_ui.createWidget('Label', toolTipAddonsBackgroundLabel)
+      toolTipAddonGroupLabels[i]:setId(string.format('toolTipAddonGroupLabels_%d', i))
+      toolTipAddonGroupLabels[i]:addAnchor(AnchorTop, i < 2 and 'parent' or string.format('toolTipAddonGroupLabels_%d', i - 1), i < 2 and AnchorTop or AnchorBottom)
+      if i == 1 then
+        toolTipAddonGroupLabels[i]:setMarginTop(4)
+      end
+      toolTipAddonGroupLabels[i]:addAnchor(AnchorLeft, 'parent', AnchorLeft)
+      toolTipAddonGroupLabels[i]:setMarginLeft(4)
+      toolTipAddonGroupLabels[i]:addAnchor(AnchorRight, 'parent', AnchorRight)
+      toolTipAddonGroupLabels[i]:setMarginRight(4)
+      if i == #widget.tooltipAddons then
+        toolTipAddonGroupLabels[i]:addAnchor(AnchorBottom, 'parent', AnchorBottom)
+        toolTipAddonGroupLabels[i]:setMarginBottom(4)
+      end
+      if widget.tooltipAddons[i].backgroundColor then
+        toolTipAddonGroupLabels[i]:setBackgroundColor(widget.tooltipAddons[i].backgroundColor)
+      end
+      if widget.tooltipAddons[i].backgroundIcon then
+        toolTipAddonGroupLabels[i]:setIcon(widget.tooltipAddons[i].backgroundIcon)
+        if widget.tooltipAddons[i].backgroundIconSize then
+          toolTipAddonGroupLabels[i]:setSize(widget.tooltipAddons[i].backgroundIconSize)
+          toolTipAddonGroupLabels[i]:setIconSize(widget.tooltipAddons[i].backgroundIconSize)
         end
       end
+      if widget.tooltipAddons[i].onGroupBackground then
+        widget.tooltipAddons[i].onGroupBackground(toolTipAddonGroupLabels[i], i)
+      end
 
-      toolTipAddonLabels[i]:show()
-      toolTipAddonLabels[i]:raise()
-      toolTipAddonLabels[i]:enable()
+      -- Addons
+      --[[
+        Options:
+        - backgroundColor
+        - text
+        - color
+        - align (for text and icon)
+        - icon
+        - size (for icon)
+        - onAddon(group, addon, i, j)
+      ]]
+      local addonsWidthSum = 0
+      local higherHeight   = 0
+      toolTipAddonLabels[i] = {}
+      for j = 1, #widget.tooltipAddons[i] do
+        toolTipAddonLabels[i][j] = g_ui.createWidget('Label', toolTipAddonGroupLabels[i])
+        local addon = toolTipAddonLabels[i][j]
+        addon:setId(string.format('toolTipAddon_%d_%d', i, j))
+        addon:addAnchor(AnchorTop, 'parent', AnchorTop)
+        addon:addAnchor(AnchorBottom, 'parent', AnchorBottom)
 
-      higherWidth = higherWidth < toolTipAddonLabels[i]:getWidth() and toolTipAddonLabels[i]:getWidth() or higherWidth
-      heightSum   = heightSum + toolTipAddonLabels[i]:getHeight() + toolTipAddonLabels[i]:getMarginTop() + toolTipAddonLabels[i]:getMarginBottom()
+        addon:addAnchor(AnchorLeft, j < 2 and 'parent' or string.format('toolTipAddon_%d_%d', i, j - 1), j < 2 and AnchorLeft or AnchorRight)
+        if j == #widget.tooltipAddons[i] then addon:addAnchor(AnchorRight, 'parent', AnchorRight) end
+
+        if widget.tooltipAddons[i][j].backgroundColor then
+          addon:setBackgroundColor(widget.tooltipAddons[i][j].backgroundColor)
+        end
+        if widget.tooltipAddons[i][j].text then
+          addon:setText(widget.tooltipAddons[i][j].text)
+          addon:setColor(widget.tooltipAddons[i][j].color or 'white')
+          addon:resizeToText()
+          addon:setTextAlign(widget.tooltipAddons[i][j].align or AlignCenter)
+        elseif widget.tooltipAddons[i][j].icon then
+          addon:setIcon(widget.tooltipAddons[i][j].icon)
+          if widget.tooltipAddons[i][j].size then
+            addon:setSize(widget.tooltipAddons[i][j].size)
+            addon:setIconSize(widget.tooltipAddons[i][j].size)
+          end
+
+          -- Icon align only if has the icon only on group
+          if #widget.tooltipAddons[i] == 1 then
+            addon:removeAnchor(AnchorLeft)
+            addon:removeAnchor(AnchorRight)
+            local align = alignToAnchor[widget.tooltipAddons[i][j].align or AlignCenter]
+            addon:addAnchor(align, 'parent', align)
+          end
+        end
+
+        addon:show()
+        addon:raise()
+        addon:enable()
+        g_effects.fadeIn(addon, fadeInTime)
+
+        addonsWidthSum = addonsWidthSum + addon:getWidth()
+        local height   = (widget.tooltipAddons[i][j].icon and addon:getIconHeight() or addon:getHeight())
+        higherHeight   = higherHeight > height and higherHeight or height
+      end
+
+      toolTipAddonGroupLabels[i]:setWidth(addonsWidthSum)
+      toolTipAddonGroupLabels[i]:setHeight(higherHeight)
+      toolTipAddonGroupLabels[i]:show()
+      toolTipAddonGroupLabels[i]:enable()
+
+      higherWidth    = higherWidth > addonsWidthSum and higherWidth or addonsWidthSum
+      heightTotalSum = heightTotalSum + higherHeight
     end
+
+    toolTipLabel:setWidth(higherWidth)
 
     -- Background
-    toolTipAddonBackgroundLabel:setBackgroundColor(widget.toolTipAddonBackground and widget.toolTipAddonBackground.backgroundColor or '#111111cc')
-    toolTipAddonBackgroundLabel:setWidth(higherWidth + 8)
-    toolTipAddonBackgroundLabel:setHeight(heightSum + 8)
-    toolTipAddonBackgroundLabel:show()
-    toolTipAddonBackgroundLabel:enable()
-    toolTipAddonBackgroundLabel:addAnchor(AnchorTop, 'toolTip', AnchorTop)
-    toolTipAddonBackgroundLabel:addAnchor(AnchorHorizontalCenter, 'toolTip', AnchorHorizontalCenter)
-    toolTipAddonBackgroundLabel:setMarginTop(-6) -- Vertical position fix
-    if widget.toolTipAddonBackground and widget.toolTipAddonBackground.onAddonBackground then
-      widget.toolTipAddonBackground.onAddonBackground(toolTipAddonBackgroundLabel)
+    --[[
+      Options:
+      - backgroundColor
+      - onAddonsBackground
+    ]]
+    toolTipAddonsBackgroundLabel:setBackgroundColor(widget.toolTipAddonsBackground and widget.toolTipAddonsBackground.backgroundColor or '#111111cc')
+    toolTipAddonsBackgroundLabel:setWidth(higherWidth + 8)
+    toolTipAddonsBackgroundLabel:setHeight(heightTotalSum + 8)
+    toolTipAddonsBackgroundLabel:show()
+    toolTipAddonsBackgroundLabel:enable()
+    toolTipAddonsBackgroundLabel:addAnchor(AnchorTop, 'toolTip', AnchorTop)
+    toolTipAddonsBackgroundLabel:addAnchor(AnchorHorizontalCenter, 'toolTip', AnchorHorizontalCenter)
+    if widget.toolTipAddonsBackground and widget.toolTipAddonsBackground.onAddonsBackground then
+      widget.toolTipAddonsBackground.onAddonsBackground(toolTipAddonsBackgroundLabel)
     end
-    g_effects.fadeIn(toolTipAddonBackgroundLabel, fadeInTime)
+    g_effects.fadeIn(toolTipAddonsBackgroundLabel, fadeInTime)
 
-    -- Fix size/alignment, and effect
-    toolTipLabel:setWidth(higherWidth)
     for i = 1, #widget.tooltipAddons do
-      if widget.tooltipAddons[i].text then
-        toolTipAddonLabels[i]:setWidth(higherWidth)
-        toolTipAddonLabels[i]:setTextAlign(widget.tooltipAddons[i].align or AlignCenter)
-      elseif widget.tooltipAddons[i].icon then
-        if widget.tooltipAddons[i].align == AlignLeft then
-          toolTipAddonLabels[i]:removeAnchor(AnchorHorizontalCenter)
-          toolTipAddonLabels[i]:addAnchor(AnchorLeft, 'toolTip', AnchorLeft)
-        elseif widget.tooltipAddons[i].align == AlignRight then
-          toolTipAddonLabels[i]:removeAnchor(AnchorHorizontalCenter)
-          toolTipAddonLabels[i]:addAnchor(AnchorRight, 'toolTip', AnchorRight)
+      for j = 1, #widget.tooltipAddons[i] do
+        if widget.tooltipAddons[i][j].onAddon then
+          widget.tooltipAddons[i][j].onAddon(toolTipAddonGroupLabels[i], toolTipAddonLabels[i][j], i, j)
         end
       end
-
-      if widget.tooltipAddons[i].onAddon then
-        widget.tooltipAddons[i].onAddon(toolTipAddonLabels[i], i)
-      end
-      g_effects.fadeIn(toolTipAddonLabels[i], fadeInTime)
     end
   end
 
@@ -221,18 +294,19 @@ function g_tooltip.hide(widget)
   end
 
   if widget.tooltipAddons then
-    g_effects.fadeOut(toolTipAddonBackgroundLabel, fadeOutTime)
+    g_effects.fadeOut(toolTipAddonsBackgroundLabel, fadeOutTime)
     for i = 1, #toolTipAddonLabels do
-      if toolTipAddonLabels[i] then
-        g_effects.fadeOut(toolTipAddonLabels[i], fadeOutTime)
+      for j = 1, #toolTipAddonLabels[i] do
+        g_effects.fadeOut(toolTipAddonLabels[i][j], fadeOutTime)
       end
+      g_effects.fadeOut(toolTipAddonGroupLabels[i], fadeOutTime)
     end
   end
 end
 
 function g_tooltip.widgetHoverChange(widget, hovered)
   if hovered then
-    if (widget.tooltip or widget.tooltipAddons) and not g_mouse.isPressed() then
+    if widget:hasTooltip() and not g_mouse.isPressed() then
       g_tooltip.display(widget)
       currentHoveredWidget = widget
     end
@@ -244,6 +318,12 @@ function g_tooltip.widgetHoverChange(widget, hovered)
   end
 end
 
+function g_tooltip.widgetUpdateHover(widget, hovered)
+  g_tooltip.hide(widget)
+  addEvent(function()
+    g_tooltip.widgetHoverChange(widget, hovered)
+  end)
+end
 
 -- @docclass UIWidget @{
 
@@ -259,26 +339,27 @@ end
 
   Custom:
     Lua:
-      widget:setTooltip({ { text = 'Title message.' }, { icon = '/images/topbuttons/battle', size = { width = 20, height = 20 }, align = AlignRight, onAddon = function(widget, index) print_r(widget:getSize(), index) end }, { text = 'Left', backgroundColor = '#00ff0077', color = 'red', align = AlignLeft }, { text = 'Right', align = AlignRight } }, { backgroundColor = '#00007777', onAddonBackground = function (widget) print_r(widget:getSize()) end })
+      widget:setTooltip({ {{ text = 'First message.\nSecond message.' }, backgroundColor = '#ffff0077', backgroundIcon = '/images/topbuttons/questlog', onGroupBackground = function(group, i) print_r(group:getSize(), i) end}, {{ icon = '/images/topbuttons/battle', size = { width = 20, height = 20 }, align = AlignCenter, onAddon = function(group, addon, i, j) print_r(group:getSize(), addon:getSize(), i, j) end }, { text = 'Duplicated!', color = 'green' }, backgroundColor = '#ff000077'}, {{ text = 'Left', backgroundColor = '#00ff0077', color = 'red', align = AlignLeft }}, {{ text = 'Right', align = AlignRight }} }, { backgroundColor = '#00007777', onAddonsBackground = function (widget) print_r(widget:getSize()) end })
     Otui:
       UIWidget
-        &tooltipAddons: { { text = 'Title message.' }, { icon = '/images/topbuttons/battle', size = { width = 20, height = 20 }, align = AlignRight, onAddon = function(widget, index) print_r(widget:getSize(), index) end }, { text = 'Left', backgroundColor = '#00ff0077', color = 'red', align = AlignLeft }, { text = 'Right', align = AlignRight } }
-        &toolTipAddonBackground: { backgroundColor = '#00007777', onAddonBackground = function (widget) print_r(widget:getSize()) end }
+        &tooltipAddons: { {{ text = 'First message.\nSecond message.' }, backgroundColor = '#ffff0077', backgroundIcon = '/images/topbuttons/questlog', onGroupBackground = function(group, i) print_r(group:getSize(), i) end}, {{ icon = '/images/topbuttons/battle', size = { width = 20, height = 20 }, align = AlignCenter, onAddon = function(group, addon, i, j) print_r(group:getSize(), addon:getSize(), i, j) end }, { text = 'Duplicated!', color = 'green' }, backgroundColor = '#ff000077'}, {{ text = 'Left', backgroundColor = '#00ff0077', color = 'red', align = AlignLeft }}, {{ text = 'Right', align = AlignRight }} }
+        &toolTipAddonsBackground: { backgroundColor = '#00007777', onAddonsBackground = function (widget) print_r(widget:getSize()) end }
 ]]
 
 -- UIWidget extensions
 function UIWidget:removeTooltip()
   self.tooltip = nil
   self.tooltipAddons = nil
+  self.toolTipAddonsBackground = nil
 end
 
-function UIWidget:setTooltip(tooltip, toolTipAddonBackground)
+function UIWidget:setTooltip(tooltip, toolTipAddonsBackground)
   self:removeTooltip()
   if type(tooltip) == "string" then
     self.tooltip = tooltip
   elseif type(tooltip) == "table" then
     self.tooltipAddons = tooltip
-    self.toolTipAddonBackground = toolTipAddonBackground
+    self.toolTipAddonsBackground = toolTipAddonsBackground
   end
 end
 
@@ -288,6 +369,14 @@ end
 
 function UIWidget:getTooltipAddons()
   return self.tooltipAddons
+end
+
+function UIWidget:getTooltipAddonsBackground()
+  return self.toolTipAddonsBackground
+end
+
+function UIWidget:hasTooltip()
+  return (self.tooltip or self.tooltipAddons) and true or false
 end
 
 -- @}

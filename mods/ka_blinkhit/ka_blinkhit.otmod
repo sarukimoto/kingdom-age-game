@@ -1,9 +1,0 @@
-Module
-  name: ka_blinkhit
-  description: Blink Hit System
-  author: River
-  sandboxed: true
-  autoload: true
-  scripts: [ ka_blinkhit ]
-  @onLoad: init()
-  @onUnload: terminate()

@@ -8,11 +8,15 @@ function draw_debug_boxes()
 end
 
 function hide_map()
-  modules.game_interface.getMapPanel():hide()
+  local mod = modules.game_interface
+  if not mod then return end
+  mod.getMapPanel():hide()
 end
 
 function show_map()
-  modules.game_interface.getMapPanel():show()
+  local mod = modules.game_interface
+  if not mod then return end
+  mod.getMapPanel():show()
 end
 
 function live_textures_reload()

@@ -1,0 +1,10 @@
+Module
+  name: ka_client_audio
+  description: Audio
+  author: River
+  sandboxed: true
+  autoload: true
+  scripts: [ ka_client_audio ]
+  dependencies: [ client_options ]
+  @onLoad: init()
+  @onUnload: terminate()

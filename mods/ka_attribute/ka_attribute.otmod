@@ -1,9 +1,0 @@
-Module
-  name: ka_attribute
-  description: Customize attributes
-  author: River
-  sandboxed: true
-  autoload: true
-  scripts: [ ka_attribute ]
-  @onLoad: init()
-  @onUnload: terminate()

@@ -23,8 +23,8 @@ Panel
     anchors.right: parent.right
     margin-top: 5
     @onSetup: |
-      local value = modules.client_options.getOption('walkingSensitivityScrollBar')
-      self:setText(tr('Walking keys sensitivity: %s%%', value))
+        local value = getOption('walkingSensitivityScrollBar')
+        self:setText(tr('Walking keys sensitivity: %s', value < 100 and string.format('%d%%', value) or 'max'))
 
   OptionScrollbar
     id: walkingSensitivityScrollBar
@@ -42,8 +42,8 @@ Panel
     anchors.right: parent.right
     margin-top: 5
     @onSetup: |
-      local value = modules.client_options.getOption('walkingRepeatDelayScrollBar')
-      self:setText(tr('Walking keys auto-repeat delay: %s miliseconds', value))
+        local value = getOption('walkingRepeatDelayScrollBar')
+        self:setText(tr('Walking keys auto-repeat delay: %s', value < 200 and string.format('%d ms', value) or 'max'))
 
   OptionScrollbar
     id: walkingRepeatDelayScrollBar
@@ -61,8 +61,8 @@ Panel
     anchors.right: parent.right
     margin-top: 5
     @onSetup: |
-      local value = modules.client_options.getOption('bouncingKeysDelayScrollBar')
-      self:setText(tr('Auto bouncing keys interval: %s miliseconds', value))
+        local value = getOption('bouncingKeysDelayScrollBar')
+        self:setText(tr('Auto bouncing keys interval: %s', value < 1000 and string.format('%d ms', value) or 'max'))
 
   OptionScrollbar
     id: bouncingKeysDelayScrollBar

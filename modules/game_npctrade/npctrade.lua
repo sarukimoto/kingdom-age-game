@@ -352,8 +352,10 @@ function refreshPlayerGoods()
   checkSellAllTooltip()
 
   moneyLabel:setText(string.format('%s (%s)', formatCurrency(playerMoney), playerMoneyFromBank and 'from bank' or 'holding'))
-  tradeButton:setTooltip(CURRENCY_ISVIP and getCurrentTradeType() == BUY and 'Your VIP money may not be displayed correctly\nif points are added through the website\nwhile keeping the trade opened.' or '')
+  tradeButton:setTooltip(CURRENCY_ISVIP and 'Your VIP money may not be displayed correctly\nif points are added through the website\nwhile keeping the trade opened.' or '')
   capacityLabel:setText(string.format('%.2f', playerFreeCapacity) .. ' ' .. WEIGHT_UNIT)
+
+  buyWithBackpack:setTooltip(CURRENCY_ISVIP and 'This option is disabled on VIP Shop.' or '')
 
   local currentTradeType = getCurrentTradeType()
   local searchFilter = searchText:getText():lower()
@@ -567,7 +569,7 @@ function getBuyAmount(item, count) -- (item[, count])
   local capacityMaxCount = not ignoreCapacity:isChecked() and math.floor(playerFreeCapacity / item.weight) or 65535
   items = math.max(0, math.min(count or items, getMaxAmount(), capacityMaxCount))
   local backpacks = buyWithBackpacks and (not item.ptr:isStackable() and math.ceil(items / backpackSize) or items >= 1 and 1 or 0) or 0
-  local price     = items * item.price + backpacks * backpackPrice
+  local price     = items * item.price + (not CURRENCY_ISVIP and backpacks * backpackPrice or 0)
 
   if count and count > items then
     return 0, 0, 0

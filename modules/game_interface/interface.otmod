@@ -5,8 +5,11 @@ Module
   website: www.otclient.info
   sandboxed: true
   scripts: [ widgets/uigamemap, widgets/uiitem, gameinterface ]
-  load-later:
+  dependencies: [ client_topmenu, client_background, client_options ]
+  @onLoad: init()
+  @onUnload: terminate()
 
+  load-later:
     - game_textmessage
     - game_console
     - game_outfit
@@ -28,5 +31,11 @@ Module
     - game_market
     - game_modaldialog
     - game_unjustifiedpoints
-  @onLoad: init()
-  @onUnload: terminate()
+    - ka_game_screenimage
+    - ka_game_hotkeybars
+    - ka_game_conditionlist
+    - ka_game_attribute
+    - ka_game_powerslist
+    - ka_game_blinkhit
+    - ka_game_loot
+    - ka_game_ui

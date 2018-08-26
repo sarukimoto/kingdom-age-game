@@ -180,7 +180,7 @@ function onChangeCategory(comboBox, option)
     bugPositionY:setText(0)
     bugPositionZ:setText(0)
   end
-  bugOkButton:setTooltip(isMap and 'Do not enter your actual player position.\nLeave the default position if you are on the bug position.' or '')
+  bugOkButton:setTooltip(isMap and 'Do not enter your actual player position.\nLeave the default position in blank,\nif you are at the bug position.' or '')
   bugPositionX:setEnabled(isMap)
   bugPositionY:setEnabled(isMap)
   bugPositionZ:setEnabled(isMap)
@@ -546,7 +546,7 @@ function bugViewRemoveRow()
   end
 
   if not removeConfirmWindowLock then
-    displayCustomBox('Warning', 'Are you sure that you want to remove the row id ' .. row.id .. '?', {{ text = 'Yes', buttonCallback = function() modules.game_bugreport.removeRow(bugViewList, row) modules.game_bugreport.setRemoveConfirmWindowLock(false) end }}, 1, 'No', function() modules.game_bugreport.setRemoveConfirmWindowLock(false) end, nil)
+    displayCustomBox('Warning', 'Are you sure that you want to remove the row id ' .. row.id .. '?', {{ text = 'Yes', buttonCallback = function() local mod = modules.game_bugreport if not mod then return end mod.removeRow(bugViewList, row) mod.setRemoveConfirmWindowLock(false) end }}, 1, 'No', function() local mod = modules.game_bugreport if not mod then return end mod.setRemoveConfirmWindowLock(false) end, nil)
     setRemoveConfirmWindowLock(true)
   end
 end

@@ -96,7 +96,7 @@ function bindKeys()
   g_keyboard.bindKeyPress('Ctrl+=', function() gameMapPanel:zoomIn() modules.client_options.setOption('gameScreenSize', gameMapPanel:getZoom(), false) end, gameRootPanel)
   g_keyboard.bindKeyPress('Ctrl+-', function() gameMapPanel:zoomOut() modules.client_options.setOption('gameScreenSize', gameMapPanel:getZoom(), false) end, gameRootPanel)
   g_keyboard.bindKeyDown('Ctrl+L', function() tryLogout(false) end, gameRootPanel)
-  --g_keyboard.bindKeyDown('Ctrl+W', function() g_map.cleanTexts() modules.game_textmessage.clearMessages() end, gameRootPanel)
+  --g_keyboard.bindKeyDown('Ctrl+W', function() g_map.cleanTexts() local mod = modules.game_textmessage if not mod then return end mod.clearMessages() end, gameRootPanel)
   g_keyboard.bindKeyDown('Ctrl+.', nextViewMode, gameRootPanel)
 end
 
@@ -545,8 +545,8 @@ function createThingMenu(menuPosition, lookThing, useThing, creatureThing)
       if g_game.getAccountType() >= ACCOUNT_TYPE_GAMEMASTER then
         menu:addSeparator()
 
-        menu:addOption(tr('View rule violations'), function() modules.game_ruleviolation.showViewWindow() end)
-        menu:addOption(tr('View bugs'), function() modules.game_bugreport.showViewWindow() end)
+        menu:addOption(tr('View rule violations'), function() local mod = modules.game_ruleviolation if not mod then return end mod.showViewWindow() end)
+        menu:addOption(tr('View bugs'), function() local mod = modules.game_bugreport if not mod then return end mod.showViewWindow() end)
       end
 
     else
@@ -571,18 +571,24 @@ function createThingMenu(menuPosition, lookThing, useThing, creatureThing)
         menu:addSeparator()
 
         menu:addOption(tr('Message to') .. ' ' .. creatureName, function() g_game.openPrivateChannel(creatureName) end)
-        if modules.game_console.getOwnPrivateTab() then
-          menu:addOption(tr('Invite to private chat'), function() g_game.inviteToOwnChannel(creatureName) end)
-          menu:addOption(tr('Exclude from private chat'), function() g_game.excludeFromOwnChannel(creatureName) end) -- [TODO] must be removed after message's popup labels been implemented
+
+        local mod = modules.game_console
+        if mod then
+          if mod.getOwnPrivateTab() then
+            menu:addOption(tr('Invite to private chat'), function() g_game.inviteToOwnChannel(creatureName) end)
+            menu:addOption(tr('Exclude from private chat'), function() g_game.excludeFromOwnChannel(creatureName) end) -- [TODO] must be removed after message's popup labels been implemented
+          end
         end
         if not localPlayer:hasVip(creatureName) then
           menu:addOption(tr('Add to VIP list'), function() g_game.addVip(creatureName) end)
         end
 
-        if modules.game_console.isIgnored(creatureName) then
-          menu:addOption(tr('Unignore') .. ' ' .. creatureName, function() modules.game_console.removeIgnoredPlayer(creatureName) end)
-        else
-          menu:addOption(tr('Ignore') .. ' ' .. creatureName, function() modules.game_console.addIgnoredPlayer(creatureName) end)
+        if mod then
+          if mod.isIgnored(creatureName) then
+            menu:addOption(tr('Unignore') .. ' ' .. creatureName, function() mod.removeIgnoredPlayer(creatureName) end)
+          else
+            menu:addOption(tr('Ignore') .. ' ' .. creatureName, function() mod.addIgnoredPlayer(creatureName) end)
+          end
         end
 
         local localPlayerShield = localPlayer:getShield()
@@ -611,14 +617,17 @@ function createThingMenu(menuPosition, lookThing, useThing, creatureThing)
         if localPlayer ~= creatureThing then
           menu:addSeparator()
 
-          if g_game.getAccountType() >= ACCOUNT_TYPE_GAMEMASTER then
-            menu:addOption(tr('Add rule violation'), function() modules.game_ruleviolation.showViewWindow(creatureName) end)
-          end
+          local mod = modules.game_ruleviolation
+          if mod then
+            if g_game.getAccountType() >= ACCOUNT_TYPE_GAMEMASTER then
+              menu:addOption(tr('Add rule violation'), function() mod.showViewWindow(creatureName) end)
+            end
 
-          local REPORT_TYPE_NAME      = 0
-          local REPORT_TYPE_VIOLATION = 2
-          menu:addOption(tr('Report name'), function() modules.game_ruleviolation.showRuleViolationReportWindow(REPORT_TYPE_NAME, creatureName) end)
-          menu:addOption(tr('Report violation'), function() modules.game_ruleviolation.showRuleViolationReportWindow(REPORT_TYPE_VIOLATION, creatureName) end)
+            local REPORT_TYPE_NAME      = 0
+            local REPORT_TYPE_VIOLATION = 2
+            menu:addOption(tr('Report name'), function() mod.showRuleViolationReportWindow(REPORT_TYPE_NAME, creatureName) end)
+            menu:addOption(tr('Report violation'), function() mod.showRuleViolationReportWindow(REPORT_TYPE_VIOLATION, creatureName) end)
+          end
         end
       end
     end

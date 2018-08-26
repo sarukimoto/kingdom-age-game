@@ -1,0 +1,10 @@
+Module
+  name: ka_game_powerslist
+  description: View available powers
+  author: River
+  sandboxed: true
+  autoload: true
+  scripts: [ ka_game_powerslist ]
+  dependencies: [ client_topmenu, game_interface ]
+  @onLoad: init()
+  @onUnload: terminate()

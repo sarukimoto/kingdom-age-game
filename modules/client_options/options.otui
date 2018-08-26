@@ -1,5 +1,5 @@
 OptionCheckBox < CheckBox
-  @onCheckChange: modules.client_options.setOption(self:getId(), self:isChecked())
+  @onCheckChange: setOption(self:getId(), self:isChecked())
   height: 16
 
   $first:
@@ -15,7 +15,7 @@ OptionCheckBox < CheckBox
 
 OptionScrollbar < HorizontalScrollBar
   step: 1
-  @onValueChange: modules.client_options.setOption(self:getId(), self:getValue())
+  @onValueChange: setOption(self:getId(), self:getValue())
 
 MainWindow
   id: optionsWindow
@@ -23,8 +23,8 @@ MainWindow
   size: 480 400
   &save: true
 
-  @onEnter: modules.client_options.hide()
-  @onEscape: modules.client_options.hide()
+  @onEnter: hide()
+  @onEscape: hide()
 
   TabBarVertical
     id: optionsTabBar
@@ -45,4 +45,4 @@ MainWindow
     width: 64
     anchors.right: parent.right
     anchors.bottom: parent.bottom
-    @onClick: modules.client_options.hide()
+    @onClick: hide()

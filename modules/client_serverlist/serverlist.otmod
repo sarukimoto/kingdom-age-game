@@ -3,9 +3,7 @@ Module
   description: Manages a server list of previously entered servers
   author: BeniS
   website: www.otclient.info
-
-  dependencies:
-    - client_entergame
+  dependencies: [ client_entergame ]
 
   @onLoad: |
     dofile 'serverlist'

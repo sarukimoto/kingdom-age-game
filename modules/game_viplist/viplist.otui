@@ -15,11 +15,11 @@ MiniWindow
   !text: tr('VIP List')
   height: 100
   icon: /images/topbuttons/viplist
-  @onClose: modules.game_viplist.onMiniWindowClose()
+  @onClose: onMiniWindowClose()
   &save: true
 
   MiniWindowContents
     layout: verticalBox
     padding-left: 5
     padding-right: 5
-    &onMousePress: modules.game_viplist.onVipListMousePress
+    &onMousePress: onVipListMousePress

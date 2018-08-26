@@ -3,9 +3,7 @@ Module
   description: Contains game related classes
   author: OTClient team
   website: www.otclient.info
-
-  dependencies:
-    - game_things
+  dependencies: [ game_things ]
 
   @onLoad: |
     dofile 'const'

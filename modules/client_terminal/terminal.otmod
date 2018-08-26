@@ -4,6 +4,8 @@ Module
   author: edubart
   website: www.otclient.info
   scripts: [ terminal ]
+  dependencies: [ game_things ]
+  //dependencies: [ client_topmenu ]
   sandboxed: true
   @onLoad: init()
   @onUnload: terminate()

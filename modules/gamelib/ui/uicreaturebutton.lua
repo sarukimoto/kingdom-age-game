@@ -3,22 +3,22 @@ UICreatureButton = extends(UIWidget, "UICreatureButton")
 
 local aa = 'AA' -- alpha
 local CreatureButtonColors = {
-  onIdle = {notHovered = '#888888'..aa, hovered = '#FFFFFF'..aa },
-  onTargetedOffensive = {notHovered = '#FF0000'..aa, hovered = '#FF8888'..aa },
-  onTargetedBalanced  = {notHovered = '#FFFF00'..aa, hovered = '#FFFF88'..aa },
-  onTargetedDefensive = {notHovered = '#00FFFF'..aa, hovered = '#88FFFF'..aa },
-  onFollowed = {notHovered = '#00FF00'..aa, hovered = '#88FF88'..aa }
+  onIdle = { notHovered = '#888888'..aa, hovered = '#FFFFFF'..aa },
+  onTargetedOffensive = { notHovered = '#FF0000'..aa, hovered = '#FF8888'..aa },
+  onTargetedBalanced  = { notHovered = '#FFFF00'..aa, hovered = '#FFFF88'..aa },
+  onTargetedDefensive = { notHovered = '#00FFFF'..aa, hovered = '#88FFFF'..aa },
+  onFollowed = { notHovered = '#00FF00'..aa, hovered = '#88FF88'..aa }
 }
 
 local LifeBarColor = '#FF4444'
 -- local LifeBarColors = {} -- Must be sorted by percentAbove
--- table.insert(LifeBarColors, {percentAbove = 92, color = '#00BC00' } )
--- table.insert(LifeBarColors, {percentAbove = 60, color = '#50A150' } )
--- table.insert(LifeBarColors, {percentAbove = 30, color = '#A1A100' } )
--- table.insert(LifeBarColors, {percentAbove = 8, color = '#BF0A0A' } )
--- table.insert(LifeBarColors, {percentAbove = 3, color = '#910F0F' } )
--- table.insert(LifeBarColors, {percentAbove = -1, color = '#850C0C' } )
--- table.insert(LifeBarColors, {percentAbove = -1, color = '#FF4444' } )
+-- table.insert(LifeBarColors, { percentAbove = 92, color = '#00BC00' } )
+-- table.insert(LifeBarColors, { percentAbove = 60, color = '#50A150' } )
+-- table.insert(LifeBarColors, { percentAbove = 30, color = '#A1A100' } )
+-- table.insert(LifeBarColors, { percentAbove = 8, color = '#BF0A0A' } )
+-- table.insert(LifeBarColors, { percentAbove = 3, color = '#910F0F' } )
+-- table.insert(LifeBarColors, { percentAbove = -1, color = '#850C0C' } )
+-- table.insert(LifeBarColors, { percentAbove = -1, color = '#FF4444' } )
 
 function UICreatureButton.create()
   local button = UICreatureButton.internalCreate()
@@ -31,7 +31,7 @@ function UICreatureButton.create()
 end
 
 function UICreatureButton:setCreature(creature)
-    self.creature = creature
+  self.creature = creature
 end
 
 function UICreatureButton:getCreature()
@@ -39,7 +39,7 @@ function UICreatureButton:getCreature()
 end
 
 function UICreatureButton:getCreatureId()
-    return self.creature:getId()
+  return self.creature:getId()
 end
 
 function UICreatureButton:setup(creature)
@@ -47,7 +47,7 @@ function UICreatureButton:setup(creature)
 
   local creatureWidget = self:getChildById('creature')
   local labelWidget = self:getChildById('label')
-  local lifeBarWidget = self:getChildById('lifeBar')
+  -- local lifeBarWidget = self:getChildById('lifeBar')
 
   labelWidget:setText(creature:getName())
   creatureWidget:setCreature(creature)

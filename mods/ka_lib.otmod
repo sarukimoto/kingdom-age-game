@@ -1,8 +1,0 @@
-Module
-  name: ka_lib
-  description: Kingdom Age libs
-  author: River
-  autoload: true
-  autoload-priority: 1000
-  @onLoad: |
-    dofiles('ka_lib')

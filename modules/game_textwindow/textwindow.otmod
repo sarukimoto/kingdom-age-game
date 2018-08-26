@@ -4,7 +4,7 @@ Module
   author: edubart, BeniS
   website: www.otclient.info
   sandboxed: true
-  dependencies: [ game_interface ]
   scripts: [ textwindow ]
+  dependencies: [ game_interface ]
   @onLoad: init()
   @onUnload: terminate()

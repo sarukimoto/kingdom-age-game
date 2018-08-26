@@ -19,3 +19,5 @@ Module
     - client_terminal
     - client_modulemanager
     - client_serverlist
+    - ka_client_devmode
+    - ka_client_audio

@@ -39,10 +39,10 @@ local defaultOptions = {
   leftStickerOpacityScrollbar = 100,
   rightStickerOpacityScrollbar = 100,
   smoothWalk = true,
-  walkingRepeatDelayScrollBar = 250,
-  walkingSensitivityScrollBar = 40,
-  bouncingKeys = false,
-  bouncingKeysDelayScrollBar = 200,
+  walkingSensitivityScrollBar = 100,
+  walkingRepeatDelayScrollBar = 200,
+  bouncingKeys = true,
+  bouncingKeysDelayScrollBar = 1000,
 }
 
 
@@ -231,8 +231,10 @@ end
 
 function setOption(key, value, force)
   if not force and options[key] == value then return end
-  local gameMapPanel = modules.game_interface.getMapPanel()
+  local mod = modules.game_interface
+  if not mod then return end
 
+  local gameMapPanel = mod.getMapPanel()
   if key == 'vsync' then
     g_window.setVerticalSync(value)
   elseif key == 'showFps' then
@@ -259,31 +261,34 @@ function setOption(key, value, force)
     g_sounds.getChannel(AudioChannels.Music):setEnabled(getOption('enableAudio') and value)
 
   elseif key == 'musicVolume' then
-    if modules.ka_audio then
-      modules.ka_audio.setMusicVolume(value / 100)
-      audioPanel:getChildById('musicVolumeLabel'):setText(tr('Music volume') .. ': ' .. value .. '%')
+    local mod = modules.ka_client_audio
+    if mod then
+      mod.setMusicVolume(value / 100)
+      audioPanel:getChildById('musicVolumeLabel'):setText(tr('Music volume') .. ': ' .. (value < 100 and string.format('%d%%', value) or 'max'))
     end
 
   elseif key == 'enableSoundAmbient' then
     g_sounds.getChannel(AudioChannels.Ambient):setEnabled(getOption('enableAudio') and value)
 
   elseif key == 'soundAmbientVolume' then
-    if modules.ka_audio then
-      modules.ka_audio.setAmbientVolume(value / 100)
-      audioPanel:getChildById('soundAmbientVolumeLabel'):setText(tr('Ambient sounds volume') .. ': ' .. value .. '%')
+    local mod = modules.ka_client_audio
+    if mod then
+      mod.setAmbientVolume(value / 100)
+      audioPanel:getChildById('soundAmbientVolumeLabel'):setText(tr('Ambient sounds volume') .. ': ' .. (value < 100 and string.format('%d%%', value) or 'max'))
     end
 
   elseif key == 'enableSoundEffect' then
     g_sounds.getChannel(AudioChannels.Effect):setEnabled(getOption('enableAudio') and value)
 
   elseif key == 'soundEffectVolume' then
-    if modules.ka_audio then
-      modules.ka_audio.setEffectVolume(value / 100)
-      audioPanel:getChildById('soundEffectVolumeLabel'):setText(tr('Effect sounds volume') .. ': ' .. value .. '%')
+    local mod = modules.ka_client_audio
+    if mod then
+      mod.setEffectVolume(value / 100)
+      audioPanel:getChildById('soundEffectVolumeLabel'):setText(tr('Effect sounds volume') .. ': ' .. (value < 100 and string.format('%d%%', value) or 'max'))
     end
 
   elseif key == 'showLeftPanel' then
-    modules.game_interface.getLeftPanel():setOn(value)
+    mod.getLeftPanel():setOn(value)
     updateStickers()
   elseif key == 'gameScreenSize' then
     local zoom = value % 2 == 0 and value + 1 or value
@@ -314,35 +319,38 @@ function setOption(key, value, force)
   elseif key == 'displayText' then
     gameMapPanel:setDrawTexts(value)
   elseif key == 'displayHotkeybars' then
-    modules.ka_hotkeybars.onDisplay(value)
+    local mod = modules.ka_game_hotkeybars
+    if mod then
+      mod.onDisplay(value)
+    end
   elseif key == 'showNpcDialogWindows' then
     g_game.setNpcDialogWindows(value)
   elseif key == 'dontStretchShrink' then
     addEvent(function()
-      modules.game_interface.updateStretchShrink()
+      mod.updateStretchShrink()
     end)
   elseif key == 'leftStickerOpacityScrollbar' then
     local op = generalPanel:getChildById('leftSticketOpacityLabel')
     op:setText(string.format(op.baseText, math.ceil(100 * value / 255)))
     local alpha = (value < 16 and "0" or "") ..  string.format("%x", value)
-    modules.game_interface.getLeftPanel():setImageColor(tocolor("#FFFFFF" .. alpha))
+    mod.getLeftPanel():setImageColor(tocolor("#FFFFFF" .. alpha))
   elseif key == 'rightStickerOpacityScrollbar' then
     local op = generalPanel:getChildById('rightSticketOpacityLabel')
     op:setText(string.format(op.baseText, math.ceil(100 * value / 255)))
     local alpha = (value < 16 and "0" or "") ..  string.format("%x", value)
-    modules.game_interface.getRightPanel():setImageColor(tocolor("#FFFFFF" .. alpha))
+    mod.getRightPanel():setImageColor(tocolor("#FFFFFF" .. alpha))
   elseif key == "leftStickerComboBox" then
     leftStickerComboBox:setCurrentOption(value)
   elseif key == "rightStickerComboBox" then
     rightStickerComboBox:setCurrentOption(value)
-  elseif key == 'bouncingKeysDelayScrollBar' then
-    keyboardPanel:getChildById('bouncingKeysDelayLabel'):setText(tr('Auto bouncing keys interval: %s ms', value))
   elseif key == 'walkingSensitivityScrollBar' then
-    keyboardPanel:getChildById('walkingSensitivityLabel'):setText(tr('Walking keys sensitivity: %s%%', value))
+    keyboardPanel:getChildById('walkingSensitivityLabel'):setText(tr('Walking keys sensitivity: %s', value < 100 and string.format('%d%%', value) or 'max'))
   elseif key == 'walkingRepeatDelayScrollBar' then
-    keyboardPanel:getChildById('walkingRepeatDelayLabel'):setText(tr('Walking keys auto-repeat delay: %s ms', value))
+    keyboardPanel:getChildById('walkingRepeatDelayLabel'):setText(tr('Walking keys auto-repeat delay: %s', value < 200 and string.format('%d ms', value) or 'max'))
     local scrollBar = keyboardPanel:getChildById('walkingRepeatDelayScrollBar')
-    modules.game_interface.setWalkingRepeatDelay(value)
+    mod.setWalkingRepeatDelay(value)
+  elseif key == 'bouncingKeysDelayScrollBar' then
+    keyboardPanel:getChildById('bouncingKeysDelayLabel'):setText(tr('Auto bouncing keys interval: %s', value < 1000 and string.format('%d ms', value) or 'max'))
   elseif key == 'smoothWalk' then
     keyboardPanel:getChildById('walkingSensitivityScrollBar'):setEnabled(value)
     keyboardPanel:getChildById('walkingSensitivityLabel'):setEnabled(value)
@@ -387,9 +395,9 @@ end
 -- Panels Stickers
 
 function updateStickers()
-  if not modules.game_interface then
-    return
-  end
+  local mod = modules.game_interface
+  if not mod then return end
+
   local opt, panel
 
   -- Left panel
@@ -398,7 +406,7 @@ function updateStickers()
     opt = defaultOptions.leftSticker
   end
   leftStickerComboBox:setCurrentOption(opt)
-  panel = modules.game_interface.getLeftPanel()
+  panel = mod.getLeftPanel()
   if panel:isOn() then
     panel:setImageSource(stickers[opt])
   end
@@ -409,7 +417,7 @@ function updateStickers()
     opt = defaultOptions.rightSticker
   end
   rightStickerComboBox:setCurrentOption(opt)
-  panel = modules.game_interface.getRightPanel()
+  panel = mod.getRightPanel()
   if panel:isOn() then
     panel:setImageSource(stickers[opt])
   end

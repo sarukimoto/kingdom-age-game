@@ -1,0 +1,10 @@
+Module
+  name: ka_game_ui
+  description: Interface
+  author: River
+  website: www.otclient.info
+  sandboxed: true
+  autoload: true
+  scripts: [ ka_game_ui ]
+  @onLoad: init()
+  @onUnload: terminate()

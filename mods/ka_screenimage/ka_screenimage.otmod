@@ -1,9 +1,0 @@
-Module
-  name: ka_screenimage
-  description: Display images on game screen
-  author: River
-  sandboxed: true
-  autoload: true
-  scripts: [ ka_screenimage ]
-  @onLoad: init()
-  @onUnload: terminate()

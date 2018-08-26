@@ -47,7 +47,7 @@ RVWindow < MainWindow
   id: ruleViolationWindow
   size: 400 600
   @onEscape: |
-    modules.game_ruleviolation.destroyRuleViolationReportWindow()
+    destroyRuleViolationReportWindow()
 
   RVLabel
     id: rvLabel
@@ -141,7 +141,7 @@ RVWindow < MainWindow
     anchors.bottom: parent.bottom
     width: 80
     @onClick: |
-      modules.game_ruleviolation.destroyRuleViolationReportWindow()
+      destroyRuleViolationReportWindow()
 
   Button
     id: okButton
@@ -151,4 +151,4 @@ RVWindow < MainWindow
     margin-right: 5
     width: 80
     @onClick: |
-      modules.game_ruleviolation.report()
+      report()

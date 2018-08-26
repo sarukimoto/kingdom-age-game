@@ -69,7 +69,10 @@ function online()
   showGameButtons()
 
   addEvent(function()
-    if modules.client_options.getOption('showPing') and (g_game.getFeature(GameClientPing) or g_game.getFeature(GameExtendedClientPing)) then
+    local mod = modules.client_options
+    if not mod then return end
+
+    if mod.getOption('showPing') and (g_game.getFeature(GameClientPing) or g_game.getFeature(GameExtendedClientPing)) then
       pingLabel:show()
     else
       pingLabel:hide()

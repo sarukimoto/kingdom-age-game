@@ -1,0 +1,13 @@
+Module
+  name: kalib
+  description: Contains Kingdom Age related classes
+  author: River
+  website: www.otclient.info
+  dependencies: [ game_things ]
+
+  @onLoad: |
+    dofile 'const'
+    dofile 'util'
+    dofile 'function'
+
+    dofile 'player'

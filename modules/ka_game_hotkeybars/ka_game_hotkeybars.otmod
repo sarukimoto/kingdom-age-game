@@ -1,0 +1,14 @@
+Module
+  name: ka_game_hotkeybars
+  description: Hotkey bars
+  author: River
+  sandboxed: true
+  autoload: true
+  scripts: [ ka_game_hotkeybars ]
+  dependencies:
+    - client_topmenu
+    - game_interface
+    - game_console
+    - game_hotkeys
+  @onLoad: init()
+  @onUnload: terminate()

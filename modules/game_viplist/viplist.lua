@@ -335,7 +335,10 @@ function onVipStateChange(id, state)
   onAddVip(id, name, state, description, iconId, notify)
 
   if notify and state ~= VipState.Pending then
-    modules.game_textmessage.displayFailureMessage(tr('%s has logged ' .. (state == VipState.Online and 'in' or 'out') .. '.', name))
+    local mod = modules.game_textmessage
+    if mod then
+      mod.displayFailureMessage(tr('%s has logged ' .. (state == VipState.Online and 'in' or 'out') .. '.', name))
+    end
   end
 end
 
@@ -386,7 +389,8 @@ function onVipListLabelMousePress(widget, mousePos, mouseButton)
   menu:addSeparator()
   menu:addOption(tr('Copy name'), function() g_window.setClipboardText(widget:getText()) end)
 
-  if modules.game_console.getOwnPrivateTab() then
+  local mod = modules.game_console
+  if mod and mod.getOwnPrivateTab() then
     menu:addSeparator()
     menu:addOption(tr('Invite to private chat'), function() g_game.inviteToOwnChannel(widget:getText()) end)
     menu:addOption(tr('Exclude from private chat'), function() g_game.excludeFromOwnChannel(widget:getText()) end)

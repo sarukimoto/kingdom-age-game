@@ -3,9 +3,7 @@ Module
   description: Manages enter game and character list windows
   author: edubart
   website: www.otclient.info
-
-  dependencies:
-    - client_topmenu
+  dependencies: [ game_things, client_topmenu ]
 
   @onLoad: |
     dofile 'entergame'

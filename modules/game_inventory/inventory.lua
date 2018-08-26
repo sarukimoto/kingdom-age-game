@@ -333,7 +333,9 @@ function update()
 end
 
 function check()
-  if modules.client_options.getOption('autoChaseOverride') then
+  local mod = modules.client_options
+  if not mod then return end
+  if mod.getOption('autoChaseOverride') then
     if g_game.isAttacking() and g_game.getChaseMode() == ChaseOpponent then
       g_game.setChaseMode(false, DontChase)
     end
@@ -354,7 +356,7 @@ function onSetFightMode(self, selectedFightButton)
   g_game.setFightMode(false, fightMode)
 
   if g_game.isOnline() then
-    scheduleEvent(function() modules.game_battle.checkCreatures() end, 1)
+    scheduleEvent(function() local mod = modules.game_battle if not mod then return end mod.checkCreatures() end, 1)
   end
 end
 

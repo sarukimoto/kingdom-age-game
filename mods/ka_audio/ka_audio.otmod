@@ -1,9 +1,0 @@
-Module
-  name: ka_audio
-  description: Audio
-  author: River
-  sandboxed: true
-  autoload: true
-  scripts: [ ka_audio ]
-  @onLoad: init()
-  @onUnload: terminate()

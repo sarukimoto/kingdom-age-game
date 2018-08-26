@@ -181,11 +181,11 @@ function showChat(bool) -- showChat([bool])
 
   if enable then
     splitter:setMarginBottom(150)
-    hideChatButton:setTooltip('Hide chat (' .. hideChatShortcut .. ')')
+    hideChatButton:setTooltip(string.format('Hide chat (%s)', hideChatShortcut))
     hideChatButton:setIcon('/images/game/console/chathide')
   else
     splitter:setMarginBottom(-splitter:getHeight())
-    hideChatButton:setTooltip('Show chat (' .. hideChatShortcut .. ')')
+    hideChatButton:setTooltip(string.format('Show chat (%s)', hideChatShortcut))
     hideChatButton:setIcon('/images/game/console/chatshow')
   end
 end
@@ -210,12 +210,12 @@ function showTopMenu(bool) -- showTopMenu([bool])
   if enable then
     margin = 0
     topMenu:setMarginTop(-topMenu:getHeight())
-    hideTopMenuButton:setTooltip('Show top menu (' .. hideTopMenuShortcut .. ')')
+    hideTopMenuButton:setTooltip(string.format('Show top menu (%s)', hideTopMenuShortcut))
     hideTopMenuButton:setIcon('/images/game/console/topmenushow')
   else
     margin = modules.client_topmenu.getTopMenu():getHeight() - leftPanel:getPaddingTop()
     topMenu:setMarginTop(0)
-    hideTopMenuButton:setTooltip('Hide top menu (' .. hideTopMenuShortcut .. ')')
+    hideTopMenuButton:setTooltip(string.format('Hide top menu (%s)', hideTopMenuShortcut))
     hideTopMenuButton:setIcon('/images/game/console/topmenuhide')
   end
 
@@ -784,7 +784,10 @@ function processChannelTabMenu(tab, mousePos, mouseButton)
       end
 
       g_resources.writeFileContents(filepath, table.concat(lines, '\n'))
-      modules.game_textmessage.displayStatusMessage(tr('Channel appended to %s', filename))
+      local mod = modules.game_textmessage
+      if mod then
+        mod.displayStatusMessage(tr('Channel appended to %s', filename))
+      end
     end)
   end
 
@@ -802,7 +805,7 @@ function processMessageMenu(mousePos, mouseButton, creatureName, text, label, ta
         if not localPlayer:hasVip(creatureName) then
           menu:addOption(tr('Add to VIP list'), function () g_game.addVip(creatureName) end)
         end
-        if modules.game_console.getOwnPrivateTab() then
+        if getOwnPrivateTab() then
           menu:addSeparator()
           menu:addOption(tr('Invite to private chat'), function() g_game.inviteToOwnChannel(creatureName) end)
           menu:addOption(tr('Exclude from private chat'), function() g_game.excludeFromOwnChannel(creatureName) end)
@@ -815,11 +818,11 @@ function processMessageMenu(mousePos, mouseButton, creatureName, text, label, ta
         menu:addSeparator()
 
         if g_game.getAccountType() >= ACCOUNT_TYPE_GAMEMASTER then
-          menu:addOption(tr('Add rule violation'), function() modules.game_ruleviolation.showViewWindow(creatureName, text:sub(0, 255)) end)
+          menu:addOption(tr('Add rule violation'), function() local mod = modules.game_ruleviolation if not mod then return end mod.showViewWindow(creatureName, text:sub(0, 255)) end)
         end
 
         local REPORT_TYPE_STATEMENT = 1
-        menu:addOption(tr('Report statement'), function() modules.game_ruleviolation.showRuleViolationReportWindow(REPORT_TYPE_STATEMENT, creatureName, text:match('.+%:%s(.+)')) end)
+        menu:addOption(tr('Report statement'), function() local mod = modules.game_ruleviolation if not mod then return end mod.showRuleViolationReportWindow(REPORT_TYPE_STATEMENT, creatureName, text:match('.+%:%s(.+)')) end)
         menu:addSeparator()
       end
     end
@@ -1043,7 +1046,10 @@ end
 
 function onTalk(name, level, mode, message, channelId, creaturePos)
   if mode == MessageModes.GamemasterBroadcast then
-    modules.game_textmessage.displayBroadcastMessage(name .. ': ' .. message)
+    local mod = modules.game_textmessage
+    if mod then
+      mod.displayBroadcastMessage(name .. ': ' .. message)
+    end
     return
   end
 
@@ -1104,7 +1110,10 @@ function onTalk(name, level, mode, message, channelId, creaturePos)
   if speaktype.private then
     addPrivateText(composedMessage, speaktype, name, false, name)
     if modules.client_options.getOption('showPrivateMessagesOnScreen') and speaktype ~= SpeakTypesSettings.privateNpcToPlayer then
-      modules.game_textmessage.displayPrivateMessage(name .. ':\n' .. message)
+      local mod = modules.game_textmessage
+      if mod then
+        mod.displayPrivateMessage(name .. ':\n' .. message)
+      end
     end
   else
     local channel = tr('Default')
@@ -1157,7 +1166,10 @@ function doChannelListSubmit()
     if openPrivateChannelWith:lower() ~= g_game.getCharacterName():lower() then
       g_game.openPrivateChannel(openPrivateChannelWith)
     else
-      modules.game_textmessage.displayFailureMessage(tr('You cannot create a private chat channel with yourself.'))
+      local mod = modules.game_textmessage
+      if mod then
+        mod.displayFailureMessage(tr('You cannot create a private chat channel with yourself.'))
+      end
     end
   else
     local selectedChannelLabel = channelListPanel:getFocusedChild()
@@ -1438,25 +1450,23 @@ function online()
   end
   scheduleEvent(function() ignoredChannels = {} end, 3000)
 
-  local gameInterface = modules.game_interface
-
-  local splitter = gameInterface.getSplitter()
-  local hideChatButton = gameInterface.getHideChatButton()
+  local splitter = modules.game_interface.getSplitter()
+  local hideChatButton = modules.game_interface.getHideChatButton()
   if splitter:getMarginBottom() > 0 then
-    hideChatButton:setTooltip('Hide chat (' .. hideChatShortcut .. ')')
+    hideChatButton:setTooltip(string.format('Hide chat (%s)', hideChatShortcut))
     hideChatButton:setIcon('/images/game/console/chathide')
   else
-    hideChatButton:setTooltip('Show chat (' .. hideChatShortcut .. ')')
+    hideChatButton:setTooltip(string.format('Show chat (%s)', hideChatShortcut))
     hideChatButton:setIcon('/images/game/console/chatshow')
   end
 
   local topMenu           = modules.client_topmenu.getTopMenu()
-  local hideTopMenuButton = gameInterface.getHideTopMenuButton()
+  local hideTopMenuButton = modules.game_interface.getHideTopMenuButton()
   if topMenu:getMarginTop() < 0 then
-    hideTopMenuButton:setTooltip('Show top menu (' .. hideTopMenuShortcut .. ')')
+    hideTopMenuButton:setTooltip(string.format('Show top menu (%s)', hideTopMenuShortcut))
     hideTopMenuButton:setIcon('/images/game/console/topmenushow')
   else
-    hideTopMenuButton:setTooltip('Hide top menu (' .. hideTopMenuShortcut .. ')')
+    hideTopMenuButton:setTooltip(string.format('Hide top menu (%s)', hideTopMenuShortcut))
     hideTopMenuButton:setIcon('/images/game/console/topmenuhide')
   end
 end

@@ -780,7 +780,7 @@ function rvViewRemoveRow()
   end
 
   if not confirmWindowLock then
-    displayCustomBox('Warning', 'Are you sure that you want to remove the row id ' .. row.id .. '?', {{ text = 'Yes', buttonCallback = function() modules.game_ruleviolation.removeRow(rvViewList, row) modules.game_ruleviolation.setConfirmWindowLock(false) end }}, 1, 'No', function() modules.game_ruleviolation.setConfirmWindowLock(false) end, nil)
+    displayCustomBox('Warning', 'Are you sure that you want to remove the row id ' .. row.id .. '?', {{ text = 'Yes', buttonCallback = function() local mod = modules.game_ruleviolation if not mod then return end mod.removeRow(rvViewList, row) mod.setConfirmWindowLock(false) end }}, 1, 'No', function() local mod = modules.game_ruleviolation if not mod then return end mod.setConfirmWindowLock(false) end, nil)
     setConfirmWindowLock(true)
   end
 end
@@ -942,7 +942,7 @@ function rvViewAction()
   end
 
   if not confirmWindowLock then
-    displayCustomBox('Warning', message, {{ text = 'Yes', buttonCallback = function() modules.game_ruleviolation.action(row, targetName) modules.game_ruleviolation.setConfirmWindowLock(false) end }}, 1, 'No', function() modules.game_ruleviolation.setConfirmWindowLock(false) end, nil)
+    displayCustomBox('Warning', message, {{ text = 'Yes', buttonCallback = function() local mod = modules.game_ruleviolation if not mod then return end mod.action(row, targetName) mod.setConfirmWindowLock(false) end }}, 1, 'No', function() local mod = modules.game_ruleviolation if not mod then return end mod.setConfirmWindowLock(false) end, nil)
     setConfirmWindowLock(true)
   end
 end

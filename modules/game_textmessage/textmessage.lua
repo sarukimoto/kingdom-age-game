@@ -113,7 +113,10 @@ function displayMessage(mode, text)
   if msgtype == MessageSettings.none then return end
 
   if msgtype.consoleTab ~= nil and (msgtype.consoleOption == nil or modules.client_options.getOption(msgtype.consoleOption)) then
-    modules.game_console.addText(text, msgtype, tr(msgtype.consoleTab))
+    local mod = modules.game_console
+    if mod then
+      mod.addText(text, msgtype, tr(msgtype.consoleTab))
+    end
     --TODO move to game_console
   end
 
@@ -160,5 +163,8 @@ function clearMessages()
 end
 
 function LocalPlayer:onAutoWalkFail(player)
-  modules.game_textmessage.displayFailureMessage(tr('There is no way.'))
+  local mod = modules.game_textmessage
+  if mod then
+    mod.displayFailureMessage(tr('There is no way.'))
+  end
 end

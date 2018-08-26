@@ -52,7 +52,7 @@ powerBoost_startAt       = nil
 
 power_flag_start      = -1
 power_flag_cancel     = -2
-power_flag_updateList = -3 -- Used on ka_powerslist
+power_flag_updateList = -3 -- Used on ka_game_powerslist
 
 -- Power Boost Effect
 
@@ -159,8 +159,9 @@ end
 function online()
   scheduleEvent(function()
     reload()
-    if modules.ka_hotkeybars then
-      modules.ka_hotkeybars.onUpdateHotkeys()
+    local mod = modules.ka_game_hotkeybars
+    if mod then
+      mod.onUpdateHotkeys()
     end
   end, 10)
   hide()
@@ -175,8 +176,9 @@ function show()
   if not g_game.isOnline() then
     return
   end
-  if modules.ka_hotkeybars then
-    modules.ka_hotkeybars.updateDraggable(true)
+  local mod = modules.ka_game_hotkeybars
+  if mod then
+    mod.updateDraggable(true)
   end
   hotkeysWindow:show()
   hotkeysWindow:raise()
@@ -186,8 +188,9 @@ end
 
 function hide()
   hotkeysWindow:hide()
-  if modules.ka_hotkeybars then
-    modules.ka_hotkeybars.updateDraggable(false)
+  local mod = modules.ka_game_hotkeybars
+  if mod then
+    mod.updateDraggable(false)
   end
   hotkeysButton:setOn(false)
 end
@@ -202,8 +205,9 @@ end
 
 function ok()
   save()
-  if modules.ka_hotkeybars then
-    modules.ka_hotkeybars.onUpdateHotkeys()
+  local mod = modules.ka_game_hotkeybars
+  if mod then
+    mod.onUpdateHotkeys()
   end
   hide()
 end
@@ -363,8 +367,9 @@ function onChooseItemMouseRelease(self, mousePosition, mouseButton)
     currentHotkeyLabel.autoSend = false
     updateHotkeyLabel(currentHotkeyLabel)
     updateHotkeyForm(true)
-    if modules.ka_hotkeybars then
-      modules.ka_hotkeybars.onUpdateHotkeys()
+    local mod = modules.ka_game_hotkeybars
+    if mod then
+      mod.onUpdateHotkeys()
     end
   end
 
@@ -390,8 +395,9 @@ function clearObject()
   currentHotkeyLabel.value = nil
   updateHotkeyLabel(currentHotkeyLabel)
   updateHotkeyForm(true)
-  if modules.ka_hotkeybars then
-    modules.ka_hotkeybars.onUpdateHotkeys()
+  local mod = modules.ka_game_hotkeybars
+  if mod then
+    mod.onUpdateHotkeys()
   end
 end
 
@@ -483,8 +489,9 @@ function doKeyCombo(keyCombo, clickedWidget)
           powerBoost_startAt = g_clock.millis()
 
           sendPowerBoostStart()
-          if modules.ka_hotkeybars then
-            modules.ka_hotkeybars.setPowerIcon(powerBoost_keyCombo, true)
+          local mod = modules.ka_game_hotkeybars
+          if mod then
+            mod.setPowerIcon(powerBoost_keyCombo, true)
           end
 
           if clickedWidget then
@@ -501,8 +508,9 @@ function doKeyCombo(keyCombo, clickedWidget)
                 end
                 sendPower()
                 disconnect(clickedWidget, 'onMouseRelease')
-                if modules.ka_hotkeybars then
-                  modules.ka_hotkeybars.setPowerIcon(powerBoost_keyCombo, false)
+                local mod = modules.ka_game_hotkeybars
+                if mod then
+                  mod.setPowerIcon(powerBoost_keyCombo, false)
                 end
                 scheduleEvent(function()
                   powerBoost_lastPower = 0
@@ -513,8 +521,9 @@ function doKeyCombo(keyCombo, clickedWidget)
             g_keyboard.bindKeyUp(keyCombo, function ()
               sendPower()
               g_keyboard.unbindKeyUp(keyCombo)
-              if modules.ka_hotkeybars then
-                modules.ka_hotkeybars.setPowerIcon(powerBoost_keyCombo, false)
+              local mod = modules.ka_game_hotkeybars
+              if mod then
+                mod.setPowerIcon(powerBoost_keyCombo, false)
               end
               scheduleEvent(function()
                 powerBoost_lastPower = 0
@@ -531,13 +540,9 @@ function doKeyCombo(keyCombo, clickedWidget)
         return
       end
 
-      if modules.game_console then
-        modules.game_console.sendMessage(hotKey.value)
-      end
+      modules.game_console.sendMessage(hotKey.value)
     else
-      if modules.game_console then
-        modules.game_console.setTextEditText(hotKey.value)
-      end
+      modules.game_console.setTextEditText(hotKey.value)
     end
   elseif hotKey.useType == HOTKEY_MANAGER_USE then
     if g_game.getClientVersion() < 780 or hotKey.subType then
@@ -603,14 +608,12 @@ function getHotkey(keyCombo)
       local powerId = getPowerIdByString(hotKey.value)
       if powerId then
         local ret = { type = 'power', id = powerId }
-        if modules.ka_powerslist then
-          local power = modules.ka_powerslist.getPower(powerId)
+        local mod = modules.ka_game_powerslist
+        if mod then
+          local power = mod.getPower(powerId)
           if power then
-            ret.data =
-            {
-              name  = power.name,
-              level = power.level
-            }
+            ret.name  = power.name
+            ret.level = power.level
           end
         end
         return ret
@@ -641,8 +644,11 @@ function updateHotkeyLabel(hotkeyLabel)
     local powerId = getPowerIdByString(hotkeyLabel.value)
     if hotkeyLabel.value then
       if powerId then
-        local name = getPowerNameById(powerId)
-        text = text .. (name ~= '' and name or '[Power] You are not able to use this power.')
+        local mod   = modules.ka_game_powerslist
+        local power = mod and mod.getPower(powerId) or nil
+        local name  = power and power.name or nil
+        local level = power and power.level or nil
+        text = string.format("%s[Power] %s", text, name and string.format('%s%s', name, level and string.format(' (level %d)', level) or '') or 'You are not able to use this power.')
       elseif hotkeyLabel.value ~= '' then
         text = text .. '[Text] ' .. hotkeyLabel.value
       end
@@ -696,15 +702,20 @@ function updateHotkeyForm(reset)
     elseif powerId then
       --useOnSelf:disable()
       --useOnTarget:disable()
-      useWith:disable()
-      useRadioGroup:clearSelected()
+      local oldValue = currentHotkeyLabel.value
+      hotkeyText:clearText()
       hotkeyText:disable()
-      hotKeyTextLabel:enable()
-      sendAutomatically:setChecked(currentHotkeyLabel.autoSend)
+      hotKeyTextLabel:disable()
+      sendAutomatically:setChecked(true)
       sendAutomatically:disable()
       selectObjectButton:disable()
       clearObjectButton:enable()
       currentItemPreview:setIcon('/images/game/powers/' .. powerId .. '_off')
+      useWith:disable()
+      useRadioGroup:clearSelected()
+      -- Keeps hotkeyText invisible
+      currentHotkeyLabel.value = oldValue
+      updateHotkeyLabel(currentHotkeyLabel)
 
     else
       --useOnSelf:disable()
@@ -821,13 +832,6 @@ end
 
 -- Power
 
--- Power.getNameById
-function getPowerNameById(id)
-  if not id then return '' end
-  local power = rootWidget:recursiveGetChildById('power_' .. id)
-  return power and power.name or ''
-end
-
 -- Power.getIdByString
 function getPowerIdByString(str)
   str = str and tostring(str) or ''
@@ -863,8 +867,9 @@ function cancelPower(forceStop)
   sendPower(power_flag_cancel)
   removePowerBoostEffect()
 
-  if modules.ka_hotkeybars then
-    modules.ka_hotkeybars.setPowerIcon(powerBoost_keyCombo, false)
+  local mod = modules.ka_game_hotkeybars
+  if mod then
+    mod.setPowerIcon(powerBoost_keyCombo, false)
   end
 
   if forceStop then
@@ -902,10 +907,11 @@ end
 
 function removePowerBoostImage()
   powerBoost_state_image = false
-  if modules.ka_screenimage then
+  local mod = modules.ka_game_screenimage
+  if mod then
     for boostLevel = powerBoost_first, powerBoost_last do
-      modules.ka_screenimage.removeImage(string.format("system/power_boost/normal_%d.png", boostLevel), powerBoost_fadeout, 0)
-      modules.ka_screenimage.removeImage(string.format("system/power_boost/extra_%d.png", boostLevel), powerBoost_fadeout, 0)
+      mod.removeImage(string.format("system/power_boost/normal_%d.png", boostLevel), powerBoost_fadeout, 0)
+      mod.removeImage(string.format("system/power_boost/extra_%d.png", boostLevel), powerBoost_fadeout, 0)
     end
   end
 
@@ -945,21 +951,22 @@ function setPowerBoostImage(boostTime) -- ([boostTime])
   boostTime  = boostTime and boostTime + powerBoost_time or 0
   boostLevel = math.min(math.max(powerBoost_first, math.ceil(boostTime / powerBoost_time)), powerBoost_last)
 
+  local mod = modules.ka_game_screenimage
   if boostLevel == 1 then
     removePowerBoostImage()
     powerBoost_state_image = true
   else
-    if modules.ka_screenimage then
-      modules.ka_screenimage.removeImage(string.format("system/power_boost/normal_%d.png", boostLevel - 1), powerBoost_fadeout, 0)
-      modules.ka_screenimage.removeImage(string.format("system/power_boost/extra_%d.png", boostLevel - 1), powerBoost_fadeout, 0)
+    if mod then
+      mod.removeImage(string.format("system/power_boost/normal_%d.png", boostLevel - 1), powerBoost_fadeout, 0)
+      mod.removeImage(string.format("system/power_boost/extra_%d.png", boostLevel - 1), powerBoost_fadeout, 0)
     end
   end
 
   local ret = false
   if powerBoost_state_image then
-    if boostTime ~= 0 and modules.ka_screenimage then
-      modules.ka_screenimage.addImage(string.format("system/power_boost/normal_%d.png", boostLevel), powerBoost_fadein, 1, powerBoost_resizex, powerBoost_resizey, 0)
-      modules.ka_screenimage.addImage(string.format("system/power_boost/extra_%d.png", boostLevel), powerBoost_fadein, 1, powerBoost_resizex, powerBoost_resizey, 0)
+    if boostTime ~= 0 and mod then
+      mod.addImage(string.format("system/power_boost/normal_%d.png", boostLevel), powerBoost_fadein, 1, powerBoost_resizex, powerBoost_resizey, 0)
+      mod.addImage(string.format("system/power_boost/extra_%d.png", boostLevel), powerBoost_fadein, 1, powerBoost_resizex, powerBoost_resizey, 0)
     end
 
     powerBoost_event_image = scheduleEvent(function() setPowerBoostImage(boostTime) end, boostTime ~= 0 and powerBoost_time or 0)

@@ -1,0 +1,10 @@
+Module
+  name: ka_client_devmode
+  description: Developer mode module
+  author: River
+  sandboxed: true
+  autoload: true
+  scripts: [ ka_client_devmode ]
+  dependencies: [ kingdomage ]
+  @onLoad: init()
+  @onUnload: terminate()

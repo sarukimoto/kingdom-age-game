@@ -48,12 +48,8 @@ Panel
     anchors.top: prev.bottom
     margin-top: 12
     @onSetup: |
-      local value = modules.client_options.getOption('gameScreenSize')
-      local text = value
-      if value < 11 or value >= 18 then
-        text = 'max'
-      end
-      self:setText(tr('Game screen size') .. ': ' .. text .. ' SQMs')
+      local value = getOption('gameScreenSize')
+      self:setText(tr('Game screen size') .. ': ' .. (value > 10 and value < 18 and value or 'max') .. ' SQMs')
 
   OptionScrollbar
     id: gameScreenSize
@@ -73,12 +69,8 @@ Panel
     anchors.top: prev.bottom
     margin-top: 6
     @onSetup: |
-      local value = modules.client_options.getOption('backgroundFrameRate')
-      local text = value
-      if value <= 0 or value >= 201 then
-        text = 'max'
-      end
-      self:setText(tr('Game framerate limit') .. ': ' .. text)
+      local value = getOption('backgroundFrameRate')
+      self:setText(tr('Game framerate limit') .. ': ' .. (value > 0 and value < 201 and value or 'max'))
 
   OptionScrollbar
     id: backgroundFrameRate
@@ -96,12 +88,8 @@ Panel
     anchors.top: prev.bottom
     margin-top: 6
     @onSetup: |
-      local value = modules.client_options.getOption('foregroundFrameRate')
-      local text = value
-      if value <= 0 or value >= 61 then
-        text = 'max'
-      end
-      self:setText(tr('Interface framerate limit') .. ': ' .. text)
+      local value = getOption('foregroundFrameRate')
+      self:setText(tr('Interface framerate limit') .. ': ' .. (value > 0 and value < 61 and value or 'max'))
 
   OptionScrollbar
     id: foregroundFrameRate

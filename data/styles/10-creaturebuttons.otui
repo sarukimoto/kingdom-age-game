@@ -19,21 +19,21 @@ CreatureButton < UICreatureButton
   UIWidget
     id: skull
     height: 11
-    anchors.left: spacer.right
-    anchors.top: spacer.top
+    anchors.left: prev.right
+    anchors.top: creature.top
     phantom: true
 
   UIWidget
     id: emblem
     height: 11
-    anchors.left: skull.right
+    anchors.left: prev.right
     anchors.top: creature.top
     phantom: true
 
   UIWidget
     id: specialIcon
     height: 11
-    anchors.left: emblem.right
+    anchors.left: prev.right
     anchors.top: creature.top
     phantom: true
 
@@ -43,13 +43,12 @@ CreatureButton < UICreatureButton
     anchors.left: specialIcon.right
     anchors.top: creature.top
     color: #888888
-    margin-left: 2
     phantom: true
 
   LifeProgressBar
     id: lifeBar
     height: 5
-    anchors.left: spacer.right
+    anchors.left: creature.right
     anchors.right: parent.right
     anchors.top: label.bottom
     margin-top: 2

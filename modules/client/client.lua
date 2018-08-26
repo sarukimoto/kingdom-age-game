@@ -12,7 +12,10 @@ function reloadScripts()
 
   local message = tr('All modules and scripts were reloaded.')
 
-  modules.game_textmessage.displayGameMessage(message)
+  local mod = modules.game_textmessage
+  if mod then
+    mod.displayGameMessage(message)
+  end
   print(message)
 end
 
@@ -22,7 +25,10 @@ function startup()
   connect(g_game, { onGameStart = function() musicChannel:stop(1) end })
   connect(g_game, { onGameEnd = function()
     --g_sounds.stopAll()
-    modules.ka_audio.clearAudios()
+    local mod = modules.ka_client_audio
+    if mod then
+      mod.clearAudios()
+    end
     musicChannel:play(musicFilename, 1.0, -1, 7)
   end })
 

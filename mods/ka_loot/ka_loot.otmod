@@ -1,9 +1,0 @@
-Module
-  name: ka_loot
-  description: Display loot
-  author: River
-  sandboxed: true
-  autoload: true
-  scripts: [ ka_loot ]
-  @onLoad: init()
-  @onUnload: terminate()

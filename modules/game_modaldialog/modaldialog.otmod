@@ -4,7 +4,7 @@ Module
   author: Summ
   website: www.otclient.info
   sandboxed: true
-  dependencies: [ game_interface ]
   scripts: [ modaldialog ]
+  dependencies: [ game_interface ]
   @onLoad: init()
   @onUnload: terminate()

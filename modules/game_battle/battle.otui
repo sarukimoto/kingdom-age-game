@@ -41,7 +41,7 @@ MiniWindow
   !text: tr('Battle')
   height: 166
   icon: /images/topbuttons/battle
-  @onClose: modules.game_battle.onMiniWindowClose()
+  @onClose: onMiniWindowClose()
   &save: true
 
   UIButton
@@ -52,7 +52,7 @@ MiniWindow
     size: 14 14
     image-source: /images/ui/miniwindow_buttons
     image-clip: 70 0 14 14
-    @onClick: modules.game_battle.onMiniWindowBallButton()
+    @onClick: onMiniWindowBallButton()
 
     $hover:
       image-clip: 70 14 14 14
@@ -76,27 +76,34 @@ MiniWindow
       BattlePlayers
         id: hidePlayers
         !tooltip: tr('Hide players')
-        @onCheckChange: modules.game_battle.checkCreatures()
+        @onCheckChange: checkCreatures()
 
       BattleNPCs
         id: hideNPCs
         !tooltip: tr('Hide npcs')
-        @onCheckChange: modules.game_battle.checkCreatures()
+        @onCheckChange: checkCreatures()
 
       BattleMonsters
         id: hideMonsters
         !tooltip: tr('Hide monsters')
-        @onCheckChange: modules.game_battle.checkCreatures()
+        @onCheckChange: checkCreatures()
 
       BattleSkulls
         id: hideSkulls
         !tooltip: tr('Hide safe players')
-        @onCheckChange: modules.game_battle.checkCreatures()
+        @onCheckChange: checkCreatures()
 
       BattleParty
         id: hideParty
         !tooltip: tr('Hide party members')
-        @onCheckChange: modules.game_battle.checkCreatures()
+        @onCheckChange: checkCreatures()
+
+    HorizontalSeparator
+      id: horizontalSeparator
+      anchors.top: prev.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      margin-top: 5
 
       //Panel
         //anchors.top: prev.bottom
@@ -135,15 +142,8 @@ MiniWindow
         //image-source: /images/ui/arrow_vertical
         //image-rect: 0 0 21 12
         //image-clip: 21 0 21 12
-        //@onClick: modules.game_battle.toggleFilterPanel()
+        //@onClick: toggleFilterPanel()
         //phantom: false
-
-    //HorizontalSeparator
-      //anchors.top: prev.top
-      //anchors.left: parent.left
-      //anchors.right: miniwindowScrollBar.left
-      //margin-right: 1
-      //margin-top: 11
 
     Panel
       id: battlePanel

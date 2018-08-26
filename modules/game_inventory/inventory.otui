@@ -159,7 +159,7 @@ MiniWindow
   !text: tr('Character')
   icon: /images/topbuttons/healthinfo
   height: 261
-  @onClose: modules.game_inventory.onMiniWindowClose()
+  @onClose: onMiniWindowClose()
   &save: true
 
   UIButton
@@ -170,7 +170,7 @@ MiniWindow
     size: 14 14
     image-source: /images/ui/miniwindow_buttons
     image-clip: 70 0 14 14
-    @onClick: modules.game_inventory.onMiniWindowBallButton()
+    @onClick: onMiniWindowBallButton()
 
     $hover:
       image-clip: 70 14 14 14

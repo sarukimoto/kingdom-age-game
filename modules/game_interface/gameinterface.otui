@@ -82,7 +82,11 @@ UIWidget
     anchors.right: bottomSplitter.right
     margin-bottom: 5
     margin-right: 5
-    @onClick: modules.game_console.showChat()
+    @onClick: |
+      local mod = modules.game_console
+      if mod then
+        mod.showChat()
+      end
 
   TabButton
     id: hideTopMenuButton
@@ -91,7 +95,11 @@ UIWidget
     anchors.right: bottomSplitter.right
     margin-top: 5
     margin-right: 5
-    @onClick: modules.game_console.showTopMenu()
+    @onClick: |
+      local mod = modules.game_console
+      if mod then
+        mod.showTopMenu()
+      end
 
   UIWidget
     id: mouseGrabber

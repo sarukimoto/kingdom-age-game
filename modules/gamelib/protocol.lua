@@ -25,6 +25,7 @@ GameServerOpcodes =
     GameServerCreatureSpecialIcon     = 55,
     GameServerAttributesList          = 56,
     GameServerPowersList              = 57,
+    GameServerConditionsList          = 58,
 
     -- original tibia ONLY
     GameServerFullMap                 = 100,
@@ -133,9 +134,10 @@ GameServerExtOpcodes =
     GameServerQuestLog          = 8,
     GameServerBugReport         = 9,
     GameServerRuleViolation     = 10,
+    GameServerConditionsList    = 11,
 }
 
--- Client to Server
+-- Opcodes - Client to Server Source
 ClientOpcodes =
 {
     ClientEnterAccount              = 1,
@@ -229,6 +231,7 @@ ClientOpcodes =
     ClientRequestTransactionHistory = 254, -- 1080
 }
 
+-- Extended Opcodes - Client to Server onExtendedOpcode Player Event
 ClientExtOpcodes =
 {
     ClientLocale            = 0,
@@ -240,6 +243,7 @@ ClientExtOpcodes =
     ClientQuestLog          = 6,
     ClientBugReport         = 7,
     ClientRuleViolation     = 8,
+    ClientConditionsList    = 9,
 }
 
 ClientActions =

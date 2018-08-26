@@ -10,3 +10,11 @@ end
 function UIButton:onMouseRelease(pos, button)
   return self:isPressed()
 end
+
+function UIButton:onMouseRelease(mousePos, mouseButton)
+  g_tooltip.widgetUpdateHover(self, true)
+end
+
+function UIButton:onDestroy()
+  g_tooltip.hide(self)
+end

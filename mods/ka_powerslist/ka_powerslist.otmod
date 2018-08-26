@@ -1,9 +1,0 @@
-Module
-  name: ka_powerslist
-  description: View available powers
-  author: River
-  sandboxed: true
-  autoload: true
-  scripts: [ ka_powerslist ]
-  @onLoad: init()
-  @onUnload: terminate()

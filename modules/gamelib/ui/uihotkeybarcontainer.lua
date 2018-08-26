@@ -48,7 +48,10 @@ function UIHotkeybarContainer:updateLook()
   -- Text
   self:setText('')
 
-  local view = modules.game_hotkeys.getHotkey(self.keyCombo)
+  local mod = modules.game_hotkeys
+  if not mod then return end
+
+  local view = mod.getHotkey(self.keyCombo)
   if not view then
     return
   end
@@ -60,18 +63,20 @@ function UIHotkeybarContainer:updateLook()
     powerWidget:setImageSource('/images/game/powers/' .. view.id .. '_off')
     powerWidget:setVisible(true)
     self.powerid = view.id
-    if view.data and view.data.name and view.data.level then
-      tooltipText = string.format("%s %s (level %d)", tooltipText, view.data.name, view.data.level)
+    if view.name and view.level then
+      tooltipText = string.format("%s %s (level %d)", tooltipText, view.name, view.level)
+    else
+      tooltipText = string.format("%s You are not able to use this power.", tooltipText)
     end
   elseif view.type == 'item' and itemWidget then
     itemWidget:setVisible(true)
     itemWidget:setItemId(view.id)
 
-    if view.useType == modules.game_hotkeys.HOTKEY_MANAGER_USEONSELF then
+    if view.useType == mod.HOTKEY_MANAGER_USEONSELF then
       tooltipText = tooltipText .. '\nUse on self'
-    elseif view.useType == modules.game_hotkeys.HOTKEY_MANAGER_USEONTARGET then
+    elseif view.useType == mod.HOTKEY_MANAGER_USEONTARGET then
       tooltipText = tooltipText .. '\nUse on target'
-    elseif view.useType == modules.game_hotkeys.HOTKEY_MANAGER_USEWITH then
+    elseif view.useType == mod.HOTKEY_MANAGER_USEWITH then
       tooltipText = tooltipText .. '\nUse with'
     end
   end
