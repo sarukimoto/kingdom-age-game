@@ -541,6 +541,12 @@ function sellAll()
       local quantity = getSellQuantity(item.ptr)
       if quantity > 0 then
         g_game.sellItem(item.ptr, item.maskptr, quantity, ignoreEquipped:isChecked())
+        checkSellAllTooltip()
+        addEvent(function()
+          if g_tooltip then
+            g_tooltip.hide(sellAllButton)
+          end
+        end)
       end
     end
   end

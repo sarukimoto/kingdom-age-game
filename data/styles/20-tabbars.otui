@@ -26,7 +26,7 @@ MoveableTabBarButton < UIButton
     color: #D8E7F0
 
   $on !checked:
-    color: #F55E5E
+    color: #59EB59
 
 TabBar < UITabBar
   size: 80 20
@@ -65,7 +65,7 @@ TabBarButton < UIButton
     color: #80c7f8
 
   $on !checked:
-    color: #F55E5E
+    color: #59EB59
 
 TabBarRounded < TabBar
 TabBarRoundedPanel < TabBarPanel
@@ -122,4 +122,4 @@ TabBarVerticalButton < UIButton
     icon-color: #ffffff
     color: #80c7f8
   $on !checked:
-    color: #F55E5E
+    color: #59EB59

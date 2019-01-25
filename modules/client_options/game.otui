@@ -13,10 +13,6 @@ Panel
     !tooltip: tr('Display connection speed to the server\n(milliseconds).')
 
   OptionCheckBox
-    id: showLeftPanel
-    !text: tr('Show left panel')
-
-  OptionCheckBox
     id: showNpcDialogWindows
     !text: tr('Show NPCs dialog windows')
     !tooltip: tr('Display a dialog window to choose an option\nwithout typing any message, just by clicking. You\ncan also choose the recommended option by pressing\n\'Enter\' or cancel by pressing \'Esc\'.\nNote: It wont appear on all messages, only basic.')
@@ -30,12 +26,20 @@ Panel
     !text: tr('Display creature levels')
 
   OptionCheckBox
+    id: displayIcons
+    !text: tr('Display creature icons')
+
+  OptionCheckBox
     id: displayHealth
     !text: tr('Display creature health bar')
 
   OptionCheckBox
     id: displayMana
     !text: tr('Display player mana bar')
+
+  OptionCheckBox
+    id: displayExpBar
+    !text: tr('Display player experience bar')
 
   OptionCheckBox
     id: displayText

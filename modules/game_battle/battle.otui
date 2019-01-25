@@ -21,38 +21,39 @@ BattleIcon < UICheckBox
   $disabled:
     image-color: #ffffff88
 
-BattlePlayers < BattleIcon
-  image-source: /images/game/battle/battle_players
-
-BattleNPCs < BattleIcon
-  image-source: /images/game/battle/battle_npcs
-
-BattleMonsters < BattleIcon
-  image-source: /images/game/battle/battle_monsters
-
-BattleSkulls < BattleIcon
-  image-source: /images/game/battle/battle_skulls
-
-BattleParty < BattleIcon
-  image-source: /images/game/battle/battle_party
-
 MiniWindow
   id: battleWindow
   !text: tr('Battle')
-  height: 166
+  height: 80
   icon: /images/topbuttons/battle
   @onClose: onMiniWindowClose()
   &save: true
 
   UIButton
-    id: ballButton
+    id: sortMenuButton
     anchors.top: minimizeButton.top
     anchors.right: minimizeButton.left
     margin-right: 3
     size: 14 14
     image-source: /images/ui/miniwindow_buttons
-    image-clip: 70 0 14 14
-    @onClick: onMiniWindowBallButton()
+    image-clip: 56 0 14 14
+    @onClick: createSortMenu()
+
+    $hover:
+      image-clip: 56 14 14 14
+
+    $pressed:
+      image-clip: 56 28 14 14
+
+
+  UIButton
+    id: toggleFilterPanelButton
+    anchors.top: sortMenuButton.top
+    anchors.right: sortMenuButton.left
+    margin-right: 3
+    size: 14 14
+    image-source: /images/ui/miniwindow_buttons
+    @onClick: onClickFilterPanelButton(self, not self:isOn())
 
     $hover:
       image-clip: 70 14 14 14
@@ -60,50 +61,98 @@ MiniWindow
     $pressed:
       image-clip: 70 28 14 14
 
+    $!on:
+      image-clip: 70 0 14 14
+      !tooltip: tr('Show options')
+
+    $on:
+      image-clip: 70 28 14 14
+      !tooltip: tr('Hide options')
+
   MiniWindowContents
-    anchors.top: parent.top
 
     Panel
       id: filterPanel
       anchors.top: parent.top
-      anchors.horizontalCenter: parent.horizontalCenter
-      height: 20
-      width: 120
-      layout:
-        type: horizontalBox
-        spacing: 5
+      anchors.left: parent.left
+      anchors.right: parent.right
 
-      BattlePlayers
-        id: hidePlayers
-        !tooltip: tr('Hide players')
-        @onCheckChange: checkCreatures()
+      $on:
+        height: 20
 
-      BattleNPCs
-        id: hideNPCs
-        !tooltip: tr('Hide npcs')
-        @onCheckChange: checkCreatures()
+      $!on:
+        height: 0
 
-      BattleMonsters
-        id: hideMonsters
-        !tooltip: tr('Hide monsters')
-        @onCheckChange: checkCreatures()
+      Panel
+        id: filterList
+        anchors.top: parent.top
+        anchors.horizontalCenter: parent.horizontalCenter
+        size: 120 20
+        layout:
+          type: horizontalBox
+          spacing: 5
 
-      BattleSkulls
-        id: hideSkulls
-        !tooltip: tr('Hide safe players')
-        @onCheckChange: checkCreatures()
+        BattleIcon
+          id: filterPlayers
+          image-source: /images/game/battle/filter_players
+          @onCheckChange: onClickFilterPlayers(self)
 
-      BattleParty
-        id: hideParty
-        !tooltip: tr('Hide party members')
-        @onCheckChange: checkCreatures()
+          $!checked:
+            !tooltip: tr('Show players')
+          $checked:
+            !tooltip: tr('Hide players')
+
+        BattleIcon
+          id: filterNPCs
+          image-source: /images/game/battle/filter_npcs
+          @onCheckChange: onClickFilterNPCs(self)
+
+          $!checked:
+            !tooltip: tr('Show npcs')
+          $checked:
+            !tooltip: tr('Hide npcs')
+
+        BattleIcon
+          id: filterMonsters
+          image-source: /images/game/battle/filter_monsters
+          @onCheckChange: onClickFilterMonsters(self)
+
+          $!checked:
+            !tooltip: tr('Show monsters')
+          $checked:
+            !tooltip: tr('Hide monsters')
+
+        BattleIcon
+          id: filterSkulls
+          image-source: /images/game/battle/filter_skulls
+          @onCheckChange: onClickFilterSkulls(self)
+
+          $!checked:
+            !tooltip: tr('Show safe players')
+          $checked:
+            !tooltip: tr('Hide safe players')
+
+        BattleIcon
+          id: filterParty
+          image-source: /images/game/battle/filter_party
+          @onCheckChange: onClickFilterParty(self)
+
+          $!checked:
+            !tooltip: tr('Show party members')
+          $checked:
+            !tooltip: tr('Hide party members')
 
     HorizontalSeparator
-      id: horizontalSeparator
+      id: firstHorizontalSeparator
       anchors.top: prev.bottom
       anchors.left: parent.left
       anchors.right: parent.right
-      margin-top: 5
+
+      $on:
+        margin-top: 5
+
+      $!on:
+        margin-top: 0
 
       //Panel
         //anchors.top: prev.bottom
@@ -151,8 +200,7 @@ MiniWindow
       anchors.top: prev.bottom
       anchors.left: parent.left
       anchors.right: parent.right
-      margin-top: 5
-      padding-right: 5
+      padding: 5
       layout:
         type: verticalBox
         fit-children: true

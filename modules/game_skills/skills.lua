@@ -5,16 +5,16 @@ function init()
   connect(LocalPlayer, {
     onExperienceChange = onExperienceChange,
     onLevelChange = onLevelChange,
-    onHealthChange = onHealthChange,
-    onManaChange = onManaChange,
+    -- onHealthChange = onHealthChange,
+    -- onManaChange = onManaChange,
     -- onSoulChange = onSoulChange,
-    onFreeCapacityChange = onFreeCapacityChange,
-    onTotalCapacityChange = onTotalCapacityChange,
+    -- onFreeCapacityChange = onFreeCapacityChange,
+    -- onTotalCapacityChange = onTotalCapacityChange,
     onStaminaChange = onStaminaChange,
     --onOfflineTrainingChange = onOfflineTrainingChange,
     onRegenerationChange = onRegenerationChange,
-    --onSpeedChange = onSpeedChange,
-    --onBaseSpeedChange = onBaseSpeedChange,
+    onSpeedChange = onSpeedChange,
+    onBaseSpeedChange = onBaseSpeedChange,
     --onMagicLevelChange = onMagicLevelChange,
     --onBaseMagicLevelChange = onBaseMagicLevelChange,
     --onSkillChange = onSkillChange,
@@ -36,19 +36,21 @@ function init()
 end
 
 function terminate()
+  setupRegeneration(0)
+
   disconnect(LocalPlayer, {
     onExperienceChange = onExperienceChange,
     onLevelChange = onLevelChange,
-    onHealthChange = onHealthChange,
-    onManaChange = onManaChange,
+    -- onHealthChange = onHealthChange,
+    -- onManaChange = onManaChange,
     -- onSoulChange = onSoulChange,
-    onFreeCapacityChange = onFreeCapacityChange,
-    onTotalCapacityChange = onTotalCapacityChange,
+    -- onFreeCapacityChange = onFreeCapacityChange,
+    -- onTotalCapacityChange = onTotalCapacityChange,
     onStaminaChange = onStaminaChange,
     --onOfflineTrainingChange = onOfflineTrainingChange,
     onRegenerationChange = onRegenerationChange,
-    --onSpeedChange = onSpeedChange,
-    --onBaseSpeedChange = onBaseSpeedChange,
+    onSpeedChange = onSpeedChange,
+    onBaseSpeedChange = onBaseSpeedChange,
     --onMagicLevelChange = onMagicLevelChange,
     --onBaseMagicLevelChange = onBaseMagicLevelChange,
     --onSkillChange = onSkillChange,
@@ -62,14 +64,6 @@ function terminate()
   g_keyboard.unbindKeyDown('Ctrl+T')
   skillsWindow:destroy()
   skillsButton:destroy()
-end
-
-function expForLevel(level)
-  return math.floor((50*level*level*level)/3 - 100*level*level + (850*level)/3 - 200)
-end
-
-function expToAdvance(currentLevel, currentExp)
-  return expForLevel(currentLevel+1) - currentExp
 end
 
 function resetSkillColor(id)
@@ -203,15 +197,15 @@ function refresh()
 
   onExperienceChange(player, player:getExperience())
   onLevelChange(player, player:getLevel(), player:getLevelPercent())
-  onHealthChange(player, player:getHealth(), player:getMaxHealth())
-  onManaChange(player, player:getMana(), player:getMaxMana())
+  -- onHealthChange(player, player:getHealth(), player:getMaxHealth())
+  -- onManaChange(player, player:getMana(), player:getMaxMana())
   -- onSoulChange(player, player:getSoul())
-  onFreeCapacityChange(player, player:getFreeCapacity())
+  -- onFreeCapacityChange(player, player:getFreeCapacity())
   onStaminaChange(player, player:getStamina())
   --onMagicLevelChange(player, player:getMagicLevel(), player:getMagicLevelPercent())
   --onOfflineTrainingChange(player, player:getOfflineTrainingTime())
   onRegenerationChange(player, player:getRegenerationTime())
-  --onSpeedChange(player, player:getSpeed())
+  onSpeedChange(player, player:getSpeed())
 
   --[[
   local hasAdditionalSkills = g_game.getFeature(GameAdditionalSkills)
@@ -236,11 +230,12 @@ function refresh()
   end
   ]]
 
-  skillsWindow:setContentMaximumHeight(140)
+  skillsWindow:setContentMaximumHeight(106)
 end
 
 function offline()
   if expSpeedEvent then expSpeedEvent:cancel() expSpeedEvent = nil end
+  setupRegeneration(0)
 end
 
 function toggle()
@@ -293,23 +288,10 @@ end
 
 function onLevelChange(localPlayer, value, percent)
   setSkillValue('level', value)
-  local text = tr('You have %d%% to go\n%d of experience left', 100 - percent, expToAdvance(localPlayer:getLevel(), localPlayer:getExperience()))
-
-  if localPlayer.expSpeed ~= nil then
-     local expPerHour = math.floor(localPlayer.expSpeed * 3600)
-     if expPerHour > 0 then
-        local nextLevelExp = expForLevel(localPlayer:getLevel()+1)
-        local hoursLeft = (nextLevelExp - localPlayer:getExperience()) / expPerHour
-        local minutesLeft = math.floor((hoursLeft - math.floor(hoursLeft))*60)
-        hoursLeft = math.floor(hoursLeft)
-        text = text .. '\n' .. tr('%d of experience per hour', expPerHour)
-        text = text .. '\n' .. tr('Next level in %d hours and %d minutes', hoursLeft, minutesLeft)
-     end
-  end
-
-  setSkillPercent('level', percent, text)
+  setSkillPercent('level', percent, getExperienceTooltipText(localPlayer, value, percent))
 end
 
+--[[
 function onHealthChange(localPlayer, health, maxHealth)
   setSkillValue('health', health)
   checkAlert('health', health, maxHealth, 30)
@@ -320,11 +302,9 @@ function onManaChange(localPlayer, mana, maxMana)
   checkAlert('mana', mana, maxMana, 30)
 end
 
---[[
 function onSoulChange(localPlayer, soul)
   setSkillValue('soul', soul)
 end
-]]
 
 function onFreeCapacityChange(localPlayer, freeCapacity)
   setSkillValue('capacity', freeCapacity)
@@ -334,6 +314,7 @@ end
 function onTotalCapacityChange(localPlayer, totalCapacity)
   checkAlert('capacity', localPlayer:getFreeCapacity(), totalCapacity, 20)
 end
+]]
 
 function onStaminaChange(localPlayer, stamina)
   local hours = math.floor(stamina / 60)
@@ -341,10 +322,23 @@ function onStaminaChange(localPlayer, stamina)
   if minutes < 10 then
     minutes = '0' .. minutes
   end
-  local percent = math.floor(100 * stamina / (42 * 60)) -- max is 42 hours
 
   setSkillValue('stamina', hours .. ":" .. minutes)
-  setSkillPercent('stamina', percent, tr('You have %s percent', percent))
+
+  local isPremium = localPlayer:isPremium()
+  local percent   = math.floor(100 * stamina / (42 * 60)) -- max is 42 hours
+  local text      = tr('Remaining %s%% (%s hours and %s minutes)', percent, hours, minutes)
+  if stamina > 2400 and isPremium then -- green phase
+    text = string.format("%s\n%s", text, tr("You are receiving +50%% of experience\nbecause you are premium"))
+  elseif stamina > 2400 and not isPremium then -- #89F013 phase
+    text = string.format("%s\n%s", text, tr("You are receiving normal experience\nbecause you are not premium"))
+  -- elseif stamina <= 2400 and stamina > 840 then -- orange phase
+  elseif stamina <= 840 and stamina > 0 then -- red phase
+    text = string.format("%s\n%s", text, tr("You are receiving only 50%% of experience\nand you may not receive loot from monsters"))
+  elseif stamina == 0 then
+    text = string.format("%s\n%s", text, tr("You may not receive experience and loot from monsters"))
+  end
+  setSkillPercent('stamina', percent, text)
 end
 
 --[[
@@ -364,31 +358,56 @@ function onOfflineTrainingChange(localPlayer, offlineTrainingTime)
 end
 ]]
 
-function onRegenerationChange(localPlayer, regenerationTime)
-  if not g_game.getFeature(GamePlayerRegenerationTime) or regenerationTime < 0 then
-    return
+local regenerationEvent       = nil
+local regenerationTime        = 0
+local elapsedRegenerationTime = 0
+function setupRegeneration(time)
+  if time <= 0 then
+    removeEvent(regenerationEvent)
+    regenerationEvent = nil
+
+    if time < 0 then
+      time = 0
+    end
   end
-  local minutes = math.floor(regenerationTime / 60)
-  local seconds = regenerationTime % 60
+
+  local minutes = math.floor(time / 60)
+  local seconds = time % 60
   if seconds < 10 then
     seconds = '0' .. seconds
   end
 
   setSkillValue('regenerationTime', minutes .. ":" .. seconds)
-  checkAlert('regenerationTime', regenerationTime, false, 300)
+  checkAlert('regenerationTime', time, false, 300)
+end
+function onRegenerationChange(localPlayer, time)
+  if not g_game.getFeature(GamePlayerRegenerationTime) or time < 0 then
+    return
+  end
+
+  regenerationTime        = time
+  elapsedRegenerationTime = 0
+
+  removeEvent(regenerationEvent)
+  regenerationEvent = cycleEvent(function()
+    setupRegeneration(regenerationTime - elapsedRegenerationTime)
+    elapsedRegenerationTime = elapsedRegenerationTime + 1
+  end, 1000)
+
+  setupRegeneration(time)
 end
 
---[[
 function onSpeedChange(localPlayer, speed)
-  setSkillValue('speed', speed)
+  setSkillValue('speed', speed * 2)
 
   onBaseSpeedChange(localPlayer, localPlayer:getBaseSpeed())
 end
 
 function onBaseSpeedChange(localPlayer, baseSpeed)
-  setSkillBase('speed', localPlayer:getSpeed(), baseSpeed)
+  setSkillBase('speed', localPlayer:getSpeed() * 2, baseSpeed * 2)
 end
 
+--[[
 function onMagicLevelChange(localPlayer, magiclevel, percent)
   setSkillValue('magiclevel', magiclevel)
   setSkillPercent('magiclevel', percent, tr('You have %s percent to go', 100 - percent))

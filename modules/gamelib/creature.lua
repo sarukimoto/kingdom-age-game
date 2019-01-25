@@ -34,6 +34,12 @@ NpcIconTrade = 2
 NpcIconQuest = 3
 NpcIconTradeQuest = 4
 
+CreatureTypePlayer = 0
+CreatureTypeMonster = 1
+CreatureTypeNpc = 2
+CreatureTypeSummonOwn = 3
+CreatureTypeSummonOther = 4
+
 SpecialIconNone = 0
 SpecialIconWanted = 1
 
@@ -110,6 +116,16 @@ function getEmblemImagePath(emblemId)
   return path
 end
 
+function getCreatureTypeImagePath(typeId)
+  local path
+  if typeId == CreatureTypeSummonOwn then
+    path = '/images/game/creaturetype/summon_own'
+  elseif typeId == CreatureTypeSummonOther then
+    path = '/images/game/creaturetype/summon_other'
+  end
+  return path
+end
+
 function getIconImagePath(iconId)
   local path
   if iconId == NpcIconChat then
@@ -150,6 +166,13 @@ function Creature:onEmblemChange(emblemId)
   local imagePath = getEmblemImagePath(emblemId)
   if imagePath then
     self:setEmblemTexture(imagePath)
+  end
+end
+
+function Creature:onTypeChange(typeId)
+  local imagePath = getCreatureTypeImagePath(typeId)
+  if imagePath then
+    self:setTypeTexture(imagePath)
   end
 end
 

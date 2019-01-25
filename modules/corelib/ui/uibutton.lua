@@ -12,9 +12,13 @@ function UIButton:onMouseRelease(pos, button)
 end
 
 function UIButton:onMouseRelease(mousePos, mouseButton)
-  g_tooltip.widgetUpdateHover(self, true)
+  if g_tooltip then
+    g_tooltip.onWidgetMouseRelease(self, mousePos, mouseButton)
+  end
 end
 
 function UIButton:onDestroy()
-  g_tooltip.hide(self)
+  if g_tooltip then
+    g_tooltip.onWidgetDestroy(self)
+  end
 end

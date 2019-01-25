@@ -47,8 +47,7 @@ local function moveToolTip(firstDisplay)
     end
 
     if not widget then -- No widget found (e.g., client background area)
-      removeTooltip()
-      currentHoveredWidget = nil
+      g_tooltip.hide()
       return
     end
   end
@@ -56,16 +55,16 @@ local function moveToolTip(firstDisplay)
   local pos    = g_window.getMousePosition()
   local width  = toolTipLabel:getWidth()
   local height = toolTipLabel:getHeight()
-  if widget.tooltipAddons then
+  if widget and widget.tooltipAddons then
     width  = toolTipAddonsBackgroundLabel:getWidth()
     height = toolTipAddonsBackgroundLabel:getHeight()
   end
 
   local ydif = g_window.getSize().height - (pos.y + height)
-  pos.y = ydif <= 10 and pos.y - height - (widget.tooltipAddons and -6 or 0) or pos.y + (widget.tooltipAddons and 6 or 0)
+  pos.y = ydif <= 10 and pos.y - height - (widget and widget.tooltipAddons and -6 or 0) or pos.y + (widget and widget.tooltipAddons and 6 or 0)
 
   local xdif = g_window.getSize().width - (pos.x + width)
-  pos.x = xdif <= 10 and pos.x - width - (widget.tooltipAddons and 6 or 10) or pos.x + (widget.tooltipAddons and 15 or 11)
+  pos.x = xdif <= 10 and pos.x - width - (widget and widget.tooltipAddons and 6 or 10) or pos.x + (widget and widget.tooltipAddons and 15 or 11)
 
   toolTipLabel:setPosition(pos)
 end
@@ -126,6 +125,7 @@ end
 
 function g_tooltip.display(widget)
   if not widget.tooltip and not widget.tooltipAddons or not toolTipLabel then return end
+  currentHoveredWidget = widget
 
   toolTipLabel:setBackgroundColor('#111111cc')
   toolTipLabel:setText(widget.tooltip or '')
@@ -289,32 +289,28 @@ function g_tooltip.display(widget)
 end
 
 function g_tooltip.hide(widget)
-  if widget.tooltip then
-    g_effects.fadeOut(toolTipLabel, fadeOutTime)
-  end
+  currentHoveredWidget = nil
 
-  if widget.tooltipAddons then
-    g_effects.fadeOut(toolTipAddonsBackgroundLabel, fadeOutTime)
-    for i = 1, #toolTipAddonLabels do
-      for j = 1, #toolTipAddonLabels[i] do
-        g_effects.fadeOut(toolTipAddonLabels[i][j], fadeOutTime)
-      end
-      g_effects.fadeOut(toolTipAddonGroupLabels[i], fadeOutTime)
+  g_effects.fadeOut(toolTipLabel, fadeOutTime)
+
+  g_effects.fadeOut(toolTipAddonsBackgroundLabel, fadeOutTime)
+  for i = 1, #toolTipAddonLabels do
+    for j = 1, #toolTipAddonLabels[i] do
+      g_effects.fadeOut(toolTipAddonLabels[i][j], fadeOutTime)
     end
+    g_effects.fadeOut(toolTipAddonGroupLabels[i], fadeOutTime)
   end
 end
 
 function g_tooltip.widgetHoverChange(widget, hovered)
   if hovered then
-    if widget:hasTooltip() and not g_mouse.isPressed() then
+    if not g_mouse.isPressed() and widget:hasTooltip() and widget:isVisible() and widget:isEnabled() then
       g_tooltip.display(widget)
-      currentHoveredWidget = widget
     end
   else
-    if widget == currentHoveredWidget then
+    -- if widget == currentHoveredWidget then
       g_tooltip.hide(widget)
-      currentHoveredWidget = nil
-    end
+    -- end
   end
 end
 
@@ -323,6 +319,16 @@ function g_tooltip.widgetUpdateHover(widget, hovered)
   addEvent(function()
     g_tooltip.widgetHoverChange(widget, hovered)
   end)
+end
+
+-- Widget callbacks
+
+function g_tooltip.onWidgetMouseRelease(widget, mousePos, mouseButton)
+  g_tooltip.widgetUpdateHover(widget, true)
+end
+
+function g_tooltip.onWidgetDestroy(widget)
+  g_tooltip.hide(widget)
 end
 
 -- @docclass UIWidget @{

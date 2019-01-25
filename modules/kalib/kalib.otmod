@@ -2,7 +2,8 @@ Module
   name: kalib
   description: Contains Kingdom Age related classes
   author: River
-  website: www.otclient.info
+  reloadable: false
+  website: https://github.com/edubart/otclient
   dependencies: [ game_things ]
 
   @onLoad: |

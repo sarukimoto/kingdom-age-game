@@ -47,6 +47,30 @@ MiniWindow
       InstanceLabel
       PosLabel
 
+    MinimapFloorUpButton
+      id: floorUp
+      @onClick: getMinimapWidget():floorUp(1)
+
+    MinimapFloorDownButton
+      id: floorDown
+      @onClick: getMinimapWidget():floorDown(1)
+
+    MinimapZoomInButton
+      id: zoomIn
+      @onClick: getMinimapWidget():zoomIn()
+
+    MinimapZoomOutButton
+      id: zoomOut
+      @onClick: getMinimapWidget():zoomOut()
+
+    MinimapResetButton
+      id: reset
+      @onClick: |
+        local widget = getMinimapWidget()
+        local zoom = widget:getZoom()
+        widget:reset()
+        widget:setZoom(zoom)
+
 //  ResizeBorder
 //    anchors.right: parent.right
 //    anchors.top: parent.top

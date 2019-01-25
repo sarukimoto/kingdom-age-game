@@ -1,0 +1,166 @@
+PowerListHideIcon < UICheckBox
+  size: 20 20
+  image-color: white
+  image-rect: 0 0 20 20
+
+  $hover !disabled:
+    color: #cccccc
+
+  $!checked:
+    image-clip: 0 0 20 20
+
+  $hover !checked:
+    image-clip: 0 40 20 20
+
+  $checked:
+    image-clip: 0 20 20 20
+
+  $hover checked:
+    image-clip: 0 60 20 20
+
+  $disabled:
+    image-color: #ffffff88
+
+MiniWindow
+  id: powersWindow
+  !text: tr('Powers')
+  height: 80
+  icon: powers
+  @onClose: onMiniWindowClose()
+  &save: true
+
+  UIButton
+    id: sortMenuButton
+    anchors.top: minimizeButton.top
+    anchors.right: minimizeButton.left
+    margin-right: 3
+    size: 14 14
+    image-source: /images/ui/miniwindow_buttons
+    image-clip: 56 0 14 14
+    @onClick: createSortMenu()
+
+    $hover:
+      image-clip: 56 14 14 14
+
+    $pressed:
+      image-clip: 56 28 14 14
+
+
+  UIButton
+    id: toggleFilterPanelButton
+    anchors.top: sortMenuButton.top
+    anchors.right: sortMenuButton.left
+    margin-right: 3
+    size: 14 14
+    image-source: /images/ui/miniwindow_buttons
+    @onClick: onClickFilterPanelButton(self, not self:isOn())
+
+    $hover:
+      image-clip: 70 14 14 14
+
+    $pressed:
+      image-clip: 70 28 14 14
+
+    $!on:
+      image-clip: 70 0 14 14
+      !tooltip: tr('Show options')
+
+    $on:
+      image-clip: 70 28 14 14
+      !tooltip: tr('Hide options')
+
+  Label
+    text: ?
+    text-align: center
+    phantom: false
+    &tooltipAddons: { {{ text = '1. Powers should be used on hotkeys.\n\n2. Power hotkeys can be pressed to boost it\'s power\n- it will increase the mana\'s cost also.\n\n3. Some powers needs the mouse on game screen to target.\n', align = AlignLeft }}, {{ text = 'Note: All powers shows informations according to your\ncharacter\'s status. So, your attributes, equipments and\nothers can change these informations in real time. Also,\ndamages may change according to target\'s defense.', color = '#E6DB74', align = AlignLeft }} }
+    anchors.top: toggleFilterPanelButton.top
+    anchors.right: toggleFilterPanelButton.left
+    margin-right: 3
+    size: 14 14
+
+  MiniWindowContents
+
+    Panel
+      id: filterPanel
+      anchors.top: parent.top
+      anchors.left: parent.left
+      anchors.right: parent.right
+
+      $on:
+        height: 20
+
+      $!on:
+        height: 0
+
+      Panel
+        id: filterList
+        anchors.top: parent.top
+        anchors.horizontalCenter: parent.horizontalCenter
+        size: 95 20
+        layout:
+          type: horizontalBox
+          spacing: 5
+
+        PowerListHideIcon
+          id: filterNonAggressive
+          image-source: /images/game/powers/filter_nonaggressive
+          @onCheckChange: onClickFilterNonAggressive(self)
+
+          $!checked:
+            !tooltip: tr('Show non aggressive powers')
+          $checked:
+            !tooltip: tr('Hide non aggressive powers')
+
+        PowerListHideIcon
+          id: filterAggressive
+          image-source: /images/game/powers/filter_aggressive
+          @onCheckChange: onClickFilterAggressive(self)
+
+          $!checked:
+            !tooltip: tr('Show aggressive powers')
+          $checked:
+            !tooltip: tr('Hide aggressive powers')
+
+        PowerListHideIcon
+          id: filterNonPremium
+          image-source: /images/game/powers/filter_nonpremium
+          @onCheckChange: onClickFilterNonPremium(self)
+
+          $!checked:
+            !tooltip: tr('Show non premium powers')
+          $checked:
+            !tooltip: tr('Hide non premium powers')
+
+        PowerListHideIcon
+          id: filterPremium
+          image-source: /images/game/powers/filter_premium
+          @onCheckChange: onClickFilterPremium(self)
+
+          $!checked:
+            !tooltip: tr('Show premium powers')
+          $checked:
+            !tooltip: tr('Hide premium powers')
+
+    HorizontalSeparator
+      id: firstHorizontalSeparator
+      anchors.top: prev.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+
+      $on:
+        margin-top: 5
+
+      $!on:
+        margin-top: 0
+
+    Panel
+      id: powersPanel
+      focusable: false
+      anchors.top: prev.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      padding: 5
+      layout:
+        type: verticalBox
+        fit-children: true

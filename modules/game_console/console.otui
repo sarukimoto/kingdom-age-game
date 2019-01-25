@@ -58,6 +58,7 @@ ConsoleTabBarButton < MoveableTabBarButton
 Panel
   id: consolePanel
   anchors.fill: parent
+  phantom: false
 
   CheckBox
     id: toggleChat
@@ -66,7 +67,7 @@ Panel
     anchors.top: parent.top
     margin-left: 13
     margin-top: 8
-    @onCheckChange: toggleChat()
+    @onCheckChange: toggleConsoleChat()
 
   TabButton
     id: prevChannelButton

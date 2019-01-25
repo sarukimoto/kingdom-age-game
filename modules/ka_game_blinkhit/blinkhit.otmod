@@ -1,0 +1,9 @@
+Module
+  name: ka_game_blinkhit
+  description: Blink Hit System
+  author: River
+  sandboxed: true
+  autoload: true
+  scripts: [ blinkhit ]
+  @onLoad: init()
+  @onUnload: terminate()

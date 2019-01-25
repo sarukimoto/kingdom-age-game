@@ -1,0 +1,10 @@
+Module
+  name: ka_game_conditions
+  description: Manage conditions window
+  author: River, Kamenuvol
+  sandboxed: true
+  autoload: true
+  scripts: [ condition, conditions ]
+  dependencies: [ client_topmenu, game_interface ]
+  @onLoad: init()
+  @onUnload: terminate()

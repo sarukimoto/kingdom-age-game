@@ -45,6 +45,11 @@ TopMenuPanel < Panel
   image-source: /images/ui/panel_top
   image-repeated: true
   focusable: false
+  visible: true
+  on: true
+
+  $!on:
+    visible: false
 
 TopMenuFrameCounterLabel < Label
   font: verdana-11px-rounded

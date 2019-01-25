@@ -10,7 +10,7 @@ NPCItemBox < UICheckBox
   color: #aaaaaa
   text-align: center
   text-offset: 0 30
-  @onCheckChange: onItemBoxChecked(self)
+  @onCheckChange: modules.game_npctrade.onItemBoxChecked(self)
 
   Item
     id: item

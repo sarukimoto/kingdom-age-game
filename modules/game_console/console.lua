@@ -1,5 +1,8 @@
-local hideChatShortcut = 'Ctrl+Shift+W'
-local hideTopMenuShortcut = 'Ctrl+Shift+Q'
+-- See interface.otui
+local toggleTopMenuShortcut = 'Ctrl+Shift+Q'
+local toggleChatShortcut    = 'Ctrl+Shift+W'
+local toggleLeftPanel       = 'Ctrl+Shift+A'
+local toggleRightPanel      = 'Ctrl+Shift+S'
 
 SpeakTypesSettings = {
   none = {},
@@ -66,7 +69,6 @@ currentMessageIndex = 0
 ignoreNpcMessages = false
 defaultTab = nil
 serverTab = nil
-ignoredChannels = {}
 filters = {}
 
 local communicationSettings = {
@@ -126,8 +128,11 @@ function init()
   g_keyboard.bindKeyDown('Ctrl+O', g_game.requestChannels)
   g_keyboard.bindKeyDown('Ctrl+W', removeCurrentTab)
   -- g_keyboard.bindKeyDown('Ctrl+H', openHelp)
-  g_keyboard.bindKeyDown(hideChatShortcut, toggleChatHide)
-  g_keyboard.bindKeyDown(hideTopMenuShortcut, toggleTopMenuHide)
+
+  g_keyboard.bindKeyDown(toggleTopMenuShortcut, function() local mod = modules.client_options if not mod then return end mod.setOption('showTopMenu', not mod.getOption('showTopMenu')) end)
+  g_keyboard.bindKeyDown(toggleChatShortcut, function() local mod = modules.client_options if not mod then return end mod.setOption('showChat', not mod.getOption('showChat')) end)
+  g_keyboard.bindKeyDown(toggleLeftPanel, function() local mod = modules.client_options if not mod then return end mod.setOption('showLeftPanel', not mod.getOption('showLeftPanel')) end)
+  g_keyboard.bindKeyDown(toggleRightPanel, function() local mod = modules.client_options if not mod then return end mod.setOption('showRightPanel', not mod.getOption('showRightPanel')) end)
 
   consoleToggleChat = consolePanel:getChildById('toggleChat')
   local splitter = modules.game_interface.getSplitter()
@@ -161,7 +166,7 @@ function selectAll(consoleBuffer)
   end
 end
 
-function toggleChat()
+function toggleConsoleChat()
   if consoleToggleChat:isChecked() then
     disableChat()
   else
@@ -169,70 +174,10 @@ function toggleChat()
   end
 end
 
-function showChat(bool) -- showChat([bool])
-  local gameInterface  = modules.game_interface
-  local splitter       = gameInterface.getSplitter()
-  local hideChatButton = gameInterface.getHideChatButton()
-
-  local enable = splitter:getMarginBottom() <= 0
-  if type(bool) == "boolean" then
-    enable = bool
-  end
-
-  if enable then
-    splitter:setMarginBottom(150)
-    hideChatButton:setTooltip(string.format('Hide chat (%s)', hideChatShortcut))
-    hideChatButton:setIcon('/images/game/console/chathide')
-  else
-    splitter:setMarginBottom(-splitter:getHeight())
-    hideChatButton:setTooltip(string.format('Show chat (%s)', hideChatShortcut))
-    hideChatButton:setIcon('/images/game/console/chatshow')
-  end
-end
-
 function onSplitterDoubleClick()
-  showChat(true)
-end
-
-function showTopMenu(bool) -- showTopMenu([bool])
-  local gameInterface     = modules.game_interface
-  local topMenu           = modules.client_topmenu.getTopMenu()
-  local hideTopMenuButton = gameInterface.getHideTopMenuButton()
-  local leftPanel         = gameInterface.getLeftPanel()
-  local rightPanel        = gameInterface.getRightPanel()
-
-  local enable = topMenu:getMarginTop() >= 0
-  if type(bool) == "boolean" then
-    enable = bool
-  end
-
-  local margin = 0
-  if enable then
-    margin = 0
-    topMenu:setMarginTop(-topMenu:getHeight())
-    hideTopMenuButton:setTooltip(string.format('Show top menu (%s)', hideTopMenuShortcut))
-    hideTopMenuButton:setIcon('/images/game/console/topmenushow')
-  else
-    margin = modules.client_topmenu.getTopMenu():getHeight() - leftPanel:getPaddingTop()
-    topMenu:setMarginTop(0)
-    hideTopMenuButton:setTooltip(string.format('Hide top menu (%s)', hideTopMenuShortcut))
-    hideTopMenuButton:setIcon('/images/game/console/topmenuhide')
-  end
-
-  if enable or gameInterface.getCurrentViewMode() == 2 then
-    -- See more of these margins at setupViewMode() on game_interface/gameinterface.lua
-    leftPanel:setMarginTop(margin)
-    rightPanel:setMarginTop(margin)
-    hideTopMenuButton:setMarginTop(margin + 5)
-  end
-end
-
-function toggleChatHide()
-  showChat()
-end
-
-function toggleTopMenuHide()
-  showTopMenu()
+  local mod = modules.client_options
+  if not mod then return end
+  mod.setOption('showChat', not mod.getOption('showChat'))
 end
 
 function enableChat()
@@ -292,10 +237,10 @@ function disableChat()
   local gameRootPanel = modules.game_interface.getRootPanel()
   local changeWalkDir = modules.game_interface.changeWalkDir
   if gameRootPanel and changeWalkDir then
-    g_keyboard.bindKeyPress('Ctrl+W', function() if not g_game.canHoldDirectionChange(North) then return end g_game.turn(North) changeWalkDir(North) end, gameRootPanel)
-    g_keyboard.bindKeyPress('Ctrl+D', function() if not g_game.canHoldDirectionChange(East) then return end g_game.turn(East) changeWalkDir(East) end, gameRootPanel)
-    g_keyboard.bindKeyPress('Ctrl+S', function() if not g_game.canHoldDirectionChange(South) then return end g_game.turn(South) changeWalkDir(South) end, gameRootPanel)
-    g_keyboard.bindKeyPress('Ctrl+A', function() if not g_game.canHoldDirectionChange(West) then return end g_game.turn(West) changeWalkDir(West) end, gameRootPanel)
+    gameInterface.bindTurnKey('Ctrl+W', North)
+    gameInterface.bindTurnKey('Ctrl+A', West)
+    gameInterface.bindTurnKey('Ctrl+S', South)
+    gameInterface.bindTurnKey('Ctrl+D', East)
   end
 
   consoleToggleChat:setTooltip(tr('Enable chat mode'))
@@ -318,8 +263,11 @@ function terminate()
   g_keyboard.unbindKeyDown('Ctrl+O')
   g_keyboard.unbindKeyDown('Ctrl+W')
   -- g_keyboard.unbindKeyDown('Ctrl+H')
-  g_keyboard.unbindKeyDown(hideChatShortcut)
-  g_keyboard.unbindKeyDown(hideTopMenuShortcut)
+
+  g_keyboard.unbindKeyDown(toggleTopMenuShortcut)
+  g_keyboard.unbindKeyDown(toggleChatShortcut)
+  g_keyboard.unbindKeyDown(toggleLeftPanel)
+  g_keyboard.unbindKeyDown(toggleRightPanel)
 
   saveCommunicationSettings()
 
@@ -504,7 +452,6 @@ end
 
 function addChannel(name, id)
   channels[id] = name
-  local focus = not table.find(ignoredChannels, id)
   local tab = addTab(name, focus)
   tab.channelId = id
   return tab
@@ -773,7 +720,8 @@ function processChannelTabMenu(tab, mousePos, mouseButton)
         table.insert(lines, label:getText())
       end
 
-      local filename = channelName .. '.txt'
+      local characterName = g_game.getCharacterName()
+      local filename = characterName .. ' - ' .. channelName .. '.txt'
       local filepath = '/' .. filename
 
       -- extra information at the beginning
@@ -1152,9 +1100,9 @@ function onCloseChannel(channelId)
     local tab = getTab(channel)
     if tab then
       consoleTabBar:removeTab(tab)
-    end
-    for k, v in pairs(channels) do
-      if (k == tab.channelId) then channels[k] = nil end
+      for k, v in pairs(channels) do
+        if (k == tab.channelId) then channels[k] = nil end
+      end
     end
   end
 end
@@ -1439,35 +1387,11 @@ function online()
     if savedChannels then
       for channelName, channelId in pairs(savedChannels) do
         channelId = tonumber(channelId)
-        if channelId ~= -1 and channelId < 100 then
-          if not table.find(channels, channelId) then
-            g_game.joinChannel(channelId)
-            table.insert(ignoredChannels, channelId)
-          end
+        if channelId ~= -1 and not table.find(channels, channelId) then
+          g_game.joinChannel(channelId)
         end
       end
     end
-  end
-  scheduleEvent(function() ignoredChannels = {} end, 3000)
-
-  local splitter = modules.game_interface.getSplitter()
-  local hideChatButton = modules.game_interface.getHideChatButton()
-  if splitter:getMarginBottom() > 0 then
-    hideChatButton:setTooltip(string.format('Hide chat (%s)', hideChatShortcut))
-    hideChatButton:setIcon('/images/game/console/chathide')
-  else
-    hideChatButton:setTooltip(string.format('Show chat (%s)', hideChatShortcut))
-    hideChatButton:setIcon('/images/game/console/chatshow')
-  end
-
-  local topMenu           = modules.client_topmenu.getTopMenu()
-  local hideTopMenuButton = modules.game_interface.getHideTopMenuButton()
-  if topMenu:getMarginTop() < 0 then
-    hideTopMenuButton:setTooltip(string.format('Show top menu (%s)', hideTopMenuShortcut))
-    hideTopMenuButton:setIcon('/images/game/console/topmenushow')
-  else
-    hideTopMenuButton:setTooltip(string.format('Hide top menu (%s)', hideTopMenuShortcut))
-    hideTopMenuButton:setIcon('/images/game/console/topmenuhide')
   end
 end
 

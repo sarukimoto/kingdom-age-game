@@ -116,12 +116,6 @@ if not G.currentRsa then
   g_game.setRsa(OTSERV_RSA)
 end
 
-function g_game.canHoldDirectionChange(direction)
-  if not g_game.isOnline() then return false end
-  local localPlayer = g_game.getLocalPlayer()
-  return localPlayer and localPlayer:canHoldDirectionChange(direction)
-end
-
 function g_game.getWidgetByPos(wantsPhantom, parentWidget)
   if wantsPhantom == nil then
     wantsPhantom = false

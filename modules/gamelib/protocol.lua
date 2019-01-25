@@ -26,6 +26,7 @@ GameServerOpcodes =
     GameServerAttributesList          = 56,
     GameServerPowersList              = 57,
     GameServerConditionsList          = 58,
+    GameServerCreatureJump            = 59,
 
     -- original tibia ONLY
     GameServerFullMap                 = 100,
@@ -134,7 +135,6 @@ GameServerExtOpcodes =
     GameServerQuestLog          = 8,
     GameServerBugReport         = 9,
     GameServerRuleViolation     = 10,
-    GameServerConditionsList    = 11,
 }
 
 -- Opcodes - Client to Server Source

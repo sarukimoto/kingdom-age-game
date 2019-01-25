@@ -35,23 +35,22 @@ function UIConditionButton:setup(condition)
 end
 
 function UIConditionButton:updateData(condition)
-  --setup icon
+  -- Setup icon
   local conditionIconWidget = self:getChildById('conditionIcon')
   if condition.powerId then
     conditionIconWidget:setIcon(string.format('/images/game/powers/%d_off', condition.powerId))
-    conditionIconWidget:setIconSize({ width = 18, height = 18 })
+    conditionIconWidget:setIconSize({ width = 16, height = 16 })
     conditionIconWidget:setIconOffset({ x = 2, y = 2})
     conditionIconWidget:setBackgroundColor(boostColors[condition.boost])
   else
     conditionIconWidget:setText(string.format('%d,%d', condition.id, condition.subId))
   end
 
-  --setup aggressive type
+  -- Setup aggressive type
   local conditionTypeWidget = self:getChildById('conditionType')
-  local basePath = '/images/game/conditions/condition_type_'
-  conditionTypeWidget:setImageSource(condition.isAggressive and basePath .. 'aggressive' or basePath .. 'nonaggressive')
+  conditionTypeWidget:setImageSource(condition.isAggressive and '/images/game/conditions/type_aggressive' or '/images/game/conditions/type_nonaggressive')
 
-  --setup clock
+  -- Setup clock
   local conditionClockWidget = self:getChildById('conditionClock')
   if condition.remainingTime then
     self.clock:start()
@@ -88,8 +87,7 @@ function UIConditionButton:setTooltipText()
   local nameBlock = { { text = c.name }, backgroundColor = '#2C374C77' }
   local infoBlock = {
     { text = "Combat: ", align = AlignLeft},
-    { icon = string.format('/images/game/conditions/condition_type_%s', c.isAggressive and 'aggressive' or 'nonaggressive'),
-        size = { width = 11, height = 11 }, align = AlignLeft },
+    { icon = string.format('/images/game/conditions/type_%s', c.isAggressive and 'aggressive' or 'nonaggressive'), size = { width = 11, height = 11 }, align = AlignLeft },
     { text = string.format(' %s', c.isAggressive and "Aggressive" or "Non-Aggressive"), align = AlignLeft},
   }
   local attributeStr = ""
@@ -105,8 +103,7 @@ function UIConditionButton:setTooltipText()
   local attributeBlock = { { text = string.format("Attribute: %s%s", ATTRIBUTE_NAMES[c.attribute], attributeStr), align = AlignLeft } }
   local durationBlock = { {  text = "Duration: " .. (self.clock and self.clock:getString()), align = AlignLeft } }
   local powerBlock = {
-    { icon = c.powerId and string.format('/images/game/powers/%d_off', c.powerId),
-        size = { width = 20, height = 20 } },
+    { icon = c.powerId and string.format('/images/game/powers/%d_off', c.powerId), size = { width = 20, height = 20 } },
     { text = c.powerId and c.powerName or 'Unknown' },
     backgroundColor = boostColors[c.boost]
   }

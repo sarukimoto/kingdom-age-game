@@ -1,0 +1,45 @@
+ConditionButton < UIConditionButton
+  margin-bottom: 5
+  &isConditionButton: true
+
+  $on:
+    height: 22
+    visible: true
+
+  $!on:
+    height: 0
+    visible: false
+
+  UIWidget
+    id: conditionIcon
+    size: 20 20
+    anchors.top: parent.top
+    anchors.left: parent.left
+    phantom: true
+
+  UIWidget
+    id: conditionType
+    size: 11 11
+    anchors.top: parent.top
+    anchors.right: parent.right
+    phantom: true
+
+  Label
+    id: conditionClock
+    anchors.top: parent.top
+    anchors.left: conditionIcon.right
+    anchors.right: conditionType.left
+    margin-left: 2
+    margin-right: 2
+    text-align: right
+    color: #888888
+    phantom: true
+
+  LifeProgressBar
+    id: conditionBar
+    height: 5
+    anchors.top: conditionClock.bottom
+    anchors.left: conditionIcon.right
+    anchors.right: parent.right
+    margin-left: 2
+    phantom: true

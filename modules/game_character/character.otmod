@@ -1,0 +1,11 @@
+Module
+  name: game_character
+  description: View local player character window
+  author: baxnie, edubart, BeniS
+  website: https://github.com/edubart/otclient
+  reloadable: false
+  sandboxed: true
+  scripts: [ character ]
+  dependencies: [ client_topmenu, game_interface ]
+  @onLoad: init()
+  @onUnload: terminate()

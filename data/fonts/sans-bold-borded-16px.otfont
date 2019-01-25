@@ -1,0 +1,6 @@
+Font
+  name: sans-bold-borded-16px
+  texture: sans-bold-borded-16px_cp1252
+  height: 24
+  glyph-size: 28 28
+  space-width: 6

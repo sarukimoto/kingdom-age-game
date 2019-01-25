@@ -116,7 +116,7 @@ function UIPowerButton:setTooltipText(text)
 
   local exhaustTime = power.exhaustTime / 1000
 
-  local isOffensiveBlock          = {{ icon = power.isOffensive and '/images/game/powers/power_type_offensive' or '/images/game/powers/power_type_nonoffensive', size = { width = 11, height = 11 } }}
+  local isOffensiveBlock          = {{ icon = power.isOffensive and '/images/game/powers/type_aggressive' or '/images/game/powers/type_nonaggressive', size = { width = 11, height = 11 } }}
   local mainInfoBlock             = {{ text = string.format('Name: %s\nClass: %s\nVocations: %s\nLevel: %d\nMana Cost: [%s]\nExhaust Time: %s second%s\nPremium: %s', power.name or 'Unknown', POWER_CLASS_STRING[power.class or 0], self:getVocations(), power.level, self:getMana(), exhaustTime, exhaustTime > 1 and 's' or '', power.isPremium and 'Yes' or 'No'), align = AlignLeft }}
   local descriptionBlock          = power.description and power.description ~= '' and {{ text = string.format('\n%s%s', power.description, power.descriptionBoostNone and power.descriptionBoostNone ~= '' and '\n' or ''), color = '#E6DB74' }} or nil
   local descriptionBoostNoneBlock = power.descriptionBoostNone and power.descriptionBoostNone ~= '' and {{ text = power.descriptionBoostNone, backgroundColor = '#FF754977' }} or nil
@@ -138,7 +138,7 @@ function UIPowerButton:setTooltipText(text)
     table.insert(blocks, descriptionBoostHighBlock)
   end
 
-  self.onTooltipHoverChange = power.onHover
+  self.onTooltipHoverChange = power.onTooltipHoverChange
 
   self:setTooltip(blocks)
 end
@@ -148,7 +148,7 @@ function UIPowerButton:updateOffensiveIcon()
   local labelWidget     = self:getChildById('label')
 
   local power = self.power
-  offensiveWidget:setImageSource(power.isOffensive and '/images/game/powers/power_type_offensive' or '/images/game/powers/power_type_nonoffensive')
+  offensiveWidget:setImageSource(power.isOffensive and '/images/game/powers/type_aggressive' or '/images/game/powers/type_nonaggressive')
 end
 
 

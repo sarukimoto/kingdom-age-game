@@ -65,26 +65,6 @@ Minimap < UIMinimap
   cross: true
   color: black
 
-  MinimapFloorUpButton
-    id: floorUp
-    @onClick: self:getParent():floorUp(1)
-
-  MinimapFloorDownButton
-    id: floorDown
-    @onClick: self:getParent():floorDown(1)
-
-  MinimapZoomInButton
-    id: zoomIn
-    @onClick: self:getParent():zoomIn()
-
-  MinimapZoomOutButton
-    id: zoomOut
-    @onClick: self:getParent():zoomOut()
-
-  MinimapResetButton
-    id: reset
-    @onClick: self:getParent():reset()
-
 
 // Minimap Flag Create Window
 
@@ -146,7 +126,7 @@ MinimapFlagWindow < MainWindow
     anchors.left: parent.left
     anchors.top: prev.bottom
     margin-top: 6
-    margin-left: 0  
+    margin-left: 0
 
   MinimapFlagCheckBox
     id: flag1
@@ -190,7 +170,7 @@ MinimapFlagWindow < MainWindow
     anchors.left: parent.left
     anchors.top: prev.bottom
     margin-top: 6
-    margin-left: 0  
+    margin-left: 0
 
   MinimapFlagCheckBox
     id: flag11

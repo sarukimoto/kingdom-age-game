@@ -36,7 +36,7 @@ SkillPercentPanel < ProgressBar
 MiniWindow
   id: skillWindow
   !text: tr('Stats')
-  height: 140
+  height: 106
   icon: /images/topbuttons/skills
   @onClose: onMiniWindowClose()
   &save: true
@@ -52,7 +52,7 @@ MiniWindow
         !text: tr('LV')
       SkillValueLabel
       SkillPercentPanel
-        background-color: red
+        background-color: green
 
     SkillButton
       margin-top: 5
@@ -62,19 +62,19 @@ MiniWindow
         !text: tr('XP')
       SkillValueLabel
 
-    SkillButton
-      id: health
-      height: 15
-      SkillNameLabel
-        !text: tr('HP')
-      SkillValueLabel
+//    SkillButton
+//      id: health
+//      height: 15
+//      SkillNameLabel
+//        !text: tr('HP')
+//      SkillValueLabel
 
-    SkillButton
-      id: mana
-      height: 15
-      SkillNameLabel
-        !text: tr('MP')
-      SkillValueLabel
+//    SkillButton
+//      id: mana
+//      height: 15
+//      SkillNameLabel
+//        !text: tr('MP')
+//      SkillValueLabel
 
 //    SkillButton
 //      id: soul
@@ -83,19 +83,19 @@ MiniWindow
 //        !text: tr('Attributes')
 //      SkillValueLabel
 
-    SkillButton
-      id: capacity
-      height: 15
-      SkillNameLabel
-        !text: tr('Capacity')
-      SkillValueLabel
-
 //    SkillButton
-//      id: speed
+//      id: capacity
 //      height: 15
 //      SkillNameLabel
-//        !text: tr('Speed')
+//        !text: tr('Capacity')
 //      SkillValueLabel
+
+    SkillButton
+      id: speed
+      height: 15
+      SkillNameLabel
+        !text: tr('Speed')
+      SkillValueLabel
 
     SkillButton
       id: regenerationTime
@@ -110,6 +110,7 @@ MiniWindow
         !text: tr('Stamina')
       SkillValueLabel
       SkillPercentPanel
+        background-color: orange
 
 //    SkillButton
 //      id: offlineTraining

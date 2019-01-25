@@ -1,0 +1,333 @@
+HealthBar < ProgressBar
+  id: healthBar
+  background-color: #ff4444
+  anchors.top: parent.top
+  anchors.left: parent.left
+  anchors.right: parent.right
+  margin: 1
+
+ManaBar < ProgressBar
+  id: manaBar
+  background-color: #aa44ff
+  anchors.top: prev.bottom
+  anchors.left: parent.left
+  anchors.right: parent.right
+  margin: 1
+  margin-top: 3
+
+ExperienceBar < ProgressBar
+  id: experienceBar
+  background-color: #B6E866
+  anchors.top: prev.bottom
+  anchors.left: parent.left
+  anchors.right: parent.right
+  margin: 1
+  margin-top: 3
+
+ConditionWidget < UIWidget
+  size: 18 18
+
+  $!first:
+    margin-left: 2
+
+
+
+
+
+InventoryItem < Item
+  $on:
+    image-source: /images/ui/item-blessed
+
+HeadSlot < InventoryItem
+  id: slot1
+  image-source: /images/game/slots/head
+  &position: {x=65535, y=1, z=0}
+  $on:
+    image-source: /images/game/slots/head-blessed
+
+BodySlot < InventoryItem
+  id: slot4
+  image-source: /images/game/slots/body
+  &position: {x=65535, y=4, z=0}
+  $on:
+    image-source: /images/game/slots/body-blessed
+
+LegSlot < InventoryItem
+  id: slot7
+  image-source: /images/game/slots/legs
+  &position: {x=65535, y=7, z=0}
+  $on:
+    image-source: /images/game/slots/legs-blessed
+
+FeetSlot < InventoryItem
+  id: slot8
+  image-source: /images/game/slots/feet
+  &position: {x=65535, y=8, z=0}
+  $on:
+    image-source: /images/game/slots/feet-blessed
+
+NeckSlot < InventoryItem
+  id: slot2
+  image-source: /images/game/slots/neck
+  &position: {x=65535, y=2, z=0}
+  $on:
+    image-source: /images/game/slots/neck-blessed
+
+LeftSlot < InventoryItem
+  id: slot6
+  image-source: /images/game/slots/left-hand
+  &position: {x=65535, y=6, z=0}
+  $on:
+    image-source: /images/game/slots/left-hand-blessed
+
+FingerSlot < InventoryItem
+  id: slot9
+  image-source: /images/game/slots/finger
+  &position: {x=65535, y=9, z=0}
+  $on:
+    image-source: /images/game/slots/finger-blessed
+
+BackSlot < InventoryItem
+  id: slot3
+  image-source: /images/game/slots/back
+  &position: {x=65535, y=3, z=0}
+  $on:
+    image-source: /images/game/slots/back-blessed
+
+RightSlot < InventoryItem
+  id: slot5
+  image-source: /images/game/slots/right-hand
+  &position: {x=65535, y=5, z=0}
+  $on:
+    image-source: /images/game/slots/right-hand-blessed
+
+AmmoSlot < InventoryItem
+  id: slot10
+  image-source: /images/game/slots/ammo
+  &position: {x=65535, y=10, z=0}
+  $on:
+    image-source: /images/game/slots/ammo-blessed
+
+//PurseButton < Button
+  //id: purseButton
+  //size: 26 26
+  //!tooltip: tr('Open purse')
+  //icon-source: /images/game/slots/purse
+  //icon-size: 24 24
+  //icon-offset: 1 1
+
+
+
+
+
+CombatBox < UICheckBox
+  size: 20 20
+  image-clip: 0 0 20 20
+
+  $checked:
+    image-clip: 0 20 20 20
+
+FightOffensiveBox < CombatBox
+  image-source: /images/game/combatmodes/fightoffensive
+FightBalancedBox < CombatBox
+  image-source: /images/game/combatmodes/fightbalanced
+FightDefensiveBox < CombatBox
+  image-source: /images/game/combatmodes/fightdefensive
+ChaseModeBox < CombatBox
+  image-source: /images/game/combatmodes/chasemode
+SafeFightBox < CombatBox
+  image-source: /images/game/combatmodes/safefight
+
+MountButton < CombatBox
+  image-source: /images/game/combatmodes/mount
+
+WhiteDoveBox < CombatBox
+  image-source: /images/game/combatmodes/whitedovemode
+WhiteHandBox < CombatBox
+  image-source: /images/game/combatmodes/whitehandmode
+YellowHandBox < CombatBox
+  image-source: /images/game/combatmodes/yellowhandmode
+RedFistBox < CombatBox
+  image-source: /images/game/combatmodes/redfistmode
+
+
+
+
+
+MiniWindow
+  id: inventoryWindow
+  !text: tr('Character')
+  icon: /images/topbuttons/healthinfo
+  height: 287
+  @onClose: onMiniWindowClose()
+  &save: true
+
+  UIButton
+    id: ballButton
+    anchors.top: minimizeButton.top
+    anchors.right: minimizeButton.left
+    margin-right: 3
+    size: 14 14
+    image-source: /images/ui/miniwindow_buttons
+    image-clip: 70 0 14 14
+    @onClick: onMiniWindowBallButton()
+
+    $hover:
+      image-clip: 70 14 14 14
+
+    $pressed:
+      image-clip: 70 28 14 14
+
+  MiniWindowContents
+    HealthBar
+    ManaBar
+    ExperienceBar
+
+    Creature
+      id: outfitCreatureBox
+      anchors.top: prev.bottom
+      anchors.horizontalCenter: parent.horizontalCenter
+      image-source: /images/ui/alpha
+      size: 80 80
+      margin-top: 5
+      padding: 0
+      fixed-creature-size: true
+
+    HeadSlot
+      anchors.top: prev.top
+      anchors.left: parent.left
+      margin-left: 10
+
+    BodySlot
+      anchors.top: prev.bottom
+      anchors.left: prev.left
+      margin-top: 3
+
+    LegSlot
+      anchors.top: prev.bottom
+      anchors.left: prev.left
+      margin-top: 3
+
+    FeetSlot
+      anchors.top: prev.bottom
+      anchors.left: prev.left
+      margin-top: 3
+
+    BackSlot
+      anchors.top: slot1.top
+      anchors.right: parent.right
+      margin-right: 10
+
+    NeckSlot
+      anchors.top: prev.bottom
+      anchors.right: prev.right
+      margin-top: 3
+
+    FingerSlot
+      anchors.top: prev.bottom
+      anchors.right: prev.right
+      margin-top: 3
+
+    AmmoSlot
+      anchors.top: prev.bottom
+      anchors.right: prev.right
+      margin-top: 3
+
+    LeftSlot
+      anchors.top: outfitCreatureBox.bottom
+      anchors.left: outfitCreatureBox.left
+      margin-top: 5
+
+    RightSlot
+      anchors.top: prev.top
+      anchors.right: outfitCreatureBox.right
+
+    //PurseButton
+      //margin-top: 3
+      //anchors.top: prev.bottom
+      //anchors.horizontalCenter: prev.horizontalCenter
+
+    GameLabel
+      id: combatControls
+      // CombatBox buttons size
+      // 58 40
+      size: 64 42
+      anchors.top: prev.bottom
+      anchors.horizontalCenter: parent.horizontalCenter
+      //anchors.verticalCenter: slot5.verticalCenter
+      //margin-right: 14
+      margin-top: 5
+      padding: 0
+      //border-width: 1
+      //border-color: #00000077
+      //background-color: #191919ff
+
+      FightOffensiveBox
+        id: fightOffensiveBox
+        anchors.top: parent.top
+        anchors.left: parent.left
+      FightBalancedBox
+        id: fightBalancedBox
+        anchors.top: prev.top
+        anchors.left: prev.right
+        margin-left: 3
+      FightDefensiveBox
+        id: fightDefensiveBox
+        anchors.top: prev.top
+        anchors.left: prev.right
+        margin-left: 3
+      ChaseModeBox
+        id: chaseModeBox
+        anchors.top: prev.bottom
+        anchors.left: parent.left
+        margin-top: 3
+      SafeFightBox
+        id: safeFightBox
+        anchors.top: prev.top
+        anchors.left: prev.right
+        margin-left: 3
+      MountButton
+        id: mountButton
+        anchors.top: prev.top
+        anchors.left: prev.right
+        margin-left: 3
+
+    GameLabel
+      id: capLabel
+      height: 14
+      color: white
+      font: verdana-11px-rounded
+      text-offset: 4 0
+      text-align: center
+      anchors.bottom: parent.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      padding: 2
+      //border-width: 1
+      //border-color: #00000077
+      background-color: #ffffff11
+
+    //Panel
+      //id: pvpModesPanel
+      //anchors.left: parent.left
+      //anchors.right: parent.right
+      //anchors.bottom: parent.bottom
+      //height: 20
+
+      //WhiteDoveBox
+        //id: whiteDoveBox
+        //anchors.left: parent.left
+        //anchors.bottom: parent.bottom
+        //margin: 2 1
+      //WhiteHandBox
+        //id: whiteHandBox
+        //anchors.left: prev.right
+        //anchors.bottom: parent.bottom
+      //YellowHandBox
+        //id: yellowHandBox
+        //anchors.left: prev.right
+        //anchors.bottom: parent.bottom
+      //RedFistBox
+        //id: redFistBox
+        //anchors.left: prev.right
+        //anchors.bottom: parent.bottom

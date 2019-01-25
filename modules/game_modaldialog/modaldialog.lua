@@ -37,6 +37,9 @@ function onModalDialog(id, title, message, spectatorId, buttons, enterButton, es
   local choiceScrollbar = modalDialog:getChildById('choiceScrollBar')
   local buttonsPanel = modalDialog:getChildById('buttonsPanel')
 
+  g_keyboard.bindKeyPress('Up', function() choiceList:focusPreviousChild(KeyboardFocusReason) end, modalDialog)
+  g_keyboard.bindKeyPress('Down', function() choiceList:focusNextChild(KeyboardFocusReason) end, modalDialog)
+
   modalDialog:setText(title)
   messageLabel:setText(message)
 
@@ -54,7 +57,6 @@ function onModalDialog(id, title, message, spectatorId, buttons, enterButton, es
       labelHeight = label:getHeight()
     end
   end
-  choiceList:focusNextChild()
 
   local buttonsWidth = 0
   for i = 1, #buttons do
@@ -137,4 +139,6 @@ function onModalDialog(id, title, message, spectatorId, buttons, enterButton, es
 
   modalDialog.onEnter = enterFunc
   modalDialog.onEscape = escapeFunc
+
+  choiceList:focusNextChild()
 end

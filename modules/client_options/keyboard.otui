@@ -23,8 +23,8 @@ Panel
     anchors.right: parent.right
     margin-top: 5
     @onSetup: |
-        local value = getOption('walkingSensitivityScrollBar')
-        self:setText(tr('Walking keys sensitivity: %s', value < 100 and string.format('%d%%', value) or 'max'))
+      local value = getOption('walkingSensitivityScrollBar')
+      self:setText(tr('Walking keys sensitivity: %s', value < 100 and string.format('%d%%', value) or 'max'))
 
   OptionScrollbar
     id: walkingSensitivityScrollBar
@@ -42,8 +42,8 @@ Panel
     anchors.right: parent.right
     margin-top: 5
     @onSetup: |
-        local value = getOption('walkingRepeatDelayScrollBar')
-        self:setText(tr('Walking keys auto-repeat delay: %s', value < 200 and string.format('%d ms', value) or 'max'))
+      local value = getOption('walkingRepeatDelayScrollBar')
+      self:setText(tr('Walking keys auto-repeat delay: %s', value < 200 and string.format('%d ms', value) or 'max'))
 
   OptionScrollbar
     id: walkingRepeatDelayScrollBar
@@ -61,8 +61,8 @@ Panel
     anchors.right: parent.right
     margin-top: 5
     @onSetup: |
-        local value = getOption('bouncingKeysDelayScrollBar')
-        self:setText(tr('Auto bouncing keys interval: %s', value < 1000 and string.format('%d ms', value) or 'max'))
+      local value = getOption('bouncingKeysDelayScrollBar')
+      self:setText(tr('Auto bouncing keys interval: %s', value < 1000 and string.format('%d ms', value) or 'max'))
 
   OptionScrollbar
     id: bouncingKeysDelayScrollBar
@@ -72,3 +72,43 @@ Panel
     margin-top: 3
     minimum: 100
     maximum: 1000
+
+  Label
+    id: turnDelayLabel
+    !text: tr('Turn delay: %sms', 30)
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: prev.bottom
+    margin-top: 5
+    @onSetup: |
+      local value = modules.client_options.getOption('turnDelay')
+      self:setText(tr('Turn delay: %d ms', value))
+
+  OptionScrollbar
+    id: turnDelay
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: prev.bottom
+    margin-top: 3
+    minimum: 30
+    maximum: 250
+
+  Label
+    id: hotkeyDelayLabel
+    !text: tr('Hotkey delay: %dms', 30)
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: prev.bottom
+    margin-top: 5
+    @onSetup: |
+      local value = modules.client_options.getOption('hotkeyDelay')
+      self:setText(tr('Hotkey delay: %d ms', value))
+
+  OptionScrollbar
+    id: hotkeyDelay
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: prev.bottom
+    margin-top: 3
+    minimum: 30
+    maximum: 250

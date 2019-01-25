@@ -1,0 +1,35 @@
+PowersListButton < UIPowerButton
+  margin-bottom: 5
+  &isPowerButton: true
+
+  $on:
+  height: 34
+  visible: true
+
+  $!on:
+    height: 0
+    visible: false
+
+  UIWidget
+    id: power
+    size: 34 34
+    anchors.left: parent.left
+    anchors.top: parent.top
+    phantom: true
+
+  UIWidget
+    id: offensive
+    size: 11 11
+    anchors.top: power.top
+    anchors.left: power.right
+    margin-left: 2
+    phantom: true
+
+  Label
+    id: label
+    anchors.top: power.top
+    anchors.left: offensive.right
+    anchors.right: parent.right
+    margin-left: 2
+    color: #888888
+    phantom: true

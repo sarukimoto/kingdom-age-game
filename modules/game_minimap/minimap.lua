@@ -1,6 +1,11 @@
-minimapWidget = nil
-minimapButton = nil
 minimapWindow = nil
+minimapButton = nil
+minimapWidget = nil
+minimapFloorUpButton = nil
+minimapFloorDownButton = nil
+minimapZoomInButton = nil
+minimapZoomOutButton = nil
+minimapResetButton = nil
 otmm = true
 preloaded = false
 fullmapView = false
@@ -17,6 +22,11 @@ function init()
   minimapWindow:setContentMinimumHeight(64)
 
   minimapWidget = minimapWindow:recursiveGetChildById('minimap')
+  minimapFloorUpButton = minimapWindow:recursiveGetChildById('floorUp')
+  minimapFloorDownButton = minimapWindow:recursiveGetChildById('floorDown')
+  minimapZoomInButton = minimapWindow:recursiveGetChildById('zoomIn')
+  minimapZoomOutButton = minimapWindow:recursiveGetChildById('zoomOut')
+  minimapResetButton = minimapWindow:recursiveGetChildById('reset')
 
   local gameRootPanel = modules.game_interface.getRootPanel()
   g_keyboard.bindKeyPress('Alt+Left', function() minimapWidget:move(1,0) end, gameRootPanel)
@@ -158,20 +168,52 @@ function updateCameraPosition()
 end
 
 function toggleFullMap()
+  local parent
   if not fullmapView then
     fullmapView = true
+    parent = modules.game_interface.getRootPanel()
     minimapWindow:hide()
-    minimapWidget:setParent(modules.game_interface.getRootPanel())
+    minimapWidget:setParent(parent)
     minimapWidget:fill('parent')
     minimapWidget:setAlternativeWidgetsVisible(true)
     minimapWidget:setOpacity(0.30)
   else
     fullmapView = false
-    minimapWidget:setParent(minimapWindow:getChildById('contentsPanel'))
+    parent = minimapWindow:getChildById('contentsPanel')
+    minimapWidget:setParent(parent)
     minimapWidget:fill('parent')
     minimapWindow:show()
     minimapWidget:setAlternativeWidgetsVisible(false)
     minimapWidget:setOpacity(1.0)
+  end
+
+  minimapFloorUpButton:setParent(parent)
+  minimapFloorDownButton:setParent(parent)
+  minimapZoomInButton:setParent(parent)
+  minimapZoomOutButton:setParent(parent)
+  minimapResetButton:setParent(parent)
+
+  -- All other buttons anchoring to northwest
+  minimapFloorUpButton:addAnchor(AnchorRight, 'parent', AnchorRight)
+  minimapFloorUpButton:addAnchor(AnchorBottom, 'parent', AnchorBottom)
+  minimapFloorDownButton:addAnchor(AnchorRight, 'parent', AnchorRight)
+  minimapFloorDownButton:addAnchor(AnchorBottom, 'parent', AnchorBottom)
+  minimapZoomInButton:addAnchor(AnchorRight, 'parent', AnchorRight)
+  minimapZoomInButton:addAnchor(AnchorBottom, 'parent', AnchorBottom)
+  minimapZoomOutButton:addAnchor(AnchorRight, 'parent', AnchorRight)
+  minimapZoomOutButton:addAnchor(AnchorBottom, 'parent', AnchorBottom)
+
+  minimapResetButton:breakAnchors()
+  if fullmapView then
+    -- Reset button anchoring to southeast
+    minimapResetButton:addAnchor(AnchorRight, 'parent', AnchorRight)
+    minimapResetButton:addAnchor(AnchorBottom, 'parent', AnchorBottom)
+    minimapResetButton:setMarginBottom(52)
+  else
+    -- Reset button anchoring to northwest
+    minimapResetButton:addAnchor(AnchorLeft, 'parent', AnchorLeft)
+    minimapResetButton:addAnchor(AnchorTop, 'parent', AnchorTop)
+    minimapResetButton:setMarginBottom(0)
   end
 
   local zoom = oldZoom or 0

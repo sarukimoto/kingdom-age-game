@@ -1,2 +1,8 @@
 BattleButton < CreatureButton
   &isBattleButton: true
+
+  $on:
+    visible: true
+
+  $!on:
+    visible: false

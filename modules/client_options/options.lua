@@ -1,3 +1,8 @@
+local optionsShortcut = 'Ctrl+Alt+O'
+local audioShortcut = 'Ctrl+Alt+A'
+local leftPanelShortcut = 'Ctrl+Shift+A'
+local rightPanelShortcut = 'Ctrl+Shift+S'
+
 local defaultOptions = {
   vsync = false,
   showFps = false,
@@ -15,6 +20,9 @@ local defaultOptions = {
   showPrivateMessagesInConsole = true,
   showPrivateMessagesOnScreen = true,
   showLeftPanel = false,
+  showRightPanel = true,
+  showTopMenu = true,
+  showChat = true,
   gameScreenSize = 11,
   foregroundFrameRate = 61,
   backgroundFrameRate = 201,
@@ -28,8 +36,10 @@ local defaultOptions = {
   soundEffectVolume = 100,
   displayNames = true,
   displayLevel = true,
+  displayIcons = true,
   displayHealth = true,
   displayMana = true,
+  displayExpBar = true,
   displayText = true,
   displayHotkeybars = true,
   showNpcDialogWindows = true,
@@ -43,11 +53,29 @@ local defaultOptions = {
   walkingRepeatDelayScrollBar = 200,
   bouncingKeys = true,
   bouncingKeysDelayScrollBar = 1000,
+  turnDelay = 50,
+  hotkeyDelay = 50,
 }
 
 
 
--- Panels Stickers
+-- Panels
+
+function setLeftPanel(value)
+  local mod = modules.game_interface
+  if not mod then return end
+
+  mod.getLeftPanel():setOn(value)
+  updateStickers()
+end
+
+function setRightPanel(value)
+  local mod = modules.game_interface
+  if not mod then return end
+
+  mod.getRightPanel():setOn(value)
+  updateStickers()
+end
 
 local noneStickerDefaultPath = "/images/ui/stickers/sticker_0.png"
 local stickers = {
@@ -173,17 +201,17 @@ function init()
   keyboardPanel = g_ui.loadUI('keyboard')
   optionsTabBar:addTab(tr('Keyboard'), keyboardPanel, '/images/optionstab/keyboard')
 
-  optionsButton = modules.client_topmenu.addLeftButton('optionsButton', tr('Options') .. " (Ctrl+Shift+O)", '/images/topbuttons/options', toggle)
-  g_keyboard.bindKeyDown('Ctrl+Shift+O', toggle)
-  audioButton = modules.client_topmenu.addLeftButton('audioButton', tr('Audio') .. " (Ctrl+Shift+A)", '/images/topbuttons/audio', function() toggleOption('enableAudio') end)
-  g_keyboard.bindKeyDown('Ctrl+Shift+A', function() toggleOption('enableAudio') end)
+  optionsButton = modules.client_topmenu.addLeftButton('optionsButton', tr('Options') .. string.format(' (%s)', optionsShortcut), '/images/topbuttons/options', toggle)
+  g_keyboard.bindKeyDown(optionsShortcut, toggle)
+  audioButton = modules.client_topmenu.addLeftButton('audioButton', tr('Audio') .. string.format(' (%s)', audioShortcut), '/images/topbuttons/audio', function() toggleOption('enableAudio') end)
+  g_keyboard.bindKeyDown(audioShortcut, function() toggleOption('enableAudio') end)
 
   addEvent(function() setup() end)
 end
 
 function terminate()
-  g_keyboard.unbindKeyDown('Ctrl+Shift+O')
-  g_keyboard.unbindKeyDown('Ctrl+Shift+A')
+  g_keyboard.unbindKeyDown(optionsShortcut)
+  g_keyboard.unbindKeyDown(audioShortcut)
   g_keyboard.unbindKeyDown('Ctrl+Shift+F')
   optionsWindow:destroy()
   optionsButton:destroy()
@@ -235,6 +263,7 @@ function setOption(key, value, force)
   if not mod then return end
 
   local gameMapPanel = mod.getMapPanel()
+  local rootPanel    = mod.getRootPanel()
   if key == 'vsync' then
     g_window.setVerticalSync(value)
   elseif key == 'showFps' then
@@ -288,8 +317,57 @@ function setOption(key, value, force)
     end
 
   elseif key == 'showLeftPanel' then
-    mod.getLeftPanel():setOn(value)
-    updateStickers()
+    setLeftPanel(value)
+    mod.getLeftPanelButton():setOn(value)
+
+  elseif key == 'showRightPanel' then
+    setRightPanel(value)
+    mod.getRightPanelButton():setOn(value)
+
+  elseif key == 'showTopMenu' then
+    local topMenu       = modules.client_topmenu.getTopMenu()
+    local topMenuButton = mod.getTopMenuButton()
+    local leftPanel     = mod.getLeftPanel()
+    local rightPanel    = mod.getRightPanel()
+
+    local margin = 0
+    if value then
+      margin = 0
+      topMenu:setMarginTop(-topMenu:getHeight())
+      topMenuButton:setOn(false)
+    else
+      margin = topMenu:getHeight() - leftPanel:getPaddingTop()
+      topMenu:setMarginTop(0)
+      topMenuButton:setOn(true)
+    end
+
+    local viewMode = mod.getCurrentViewMode()
+    if value or viewMode == 2 then
+      -- See more of these margins at setupViewMode() on game_interface/interface.lua
+      leftPanel:setMarginTop(margin)
+      rightPanel:setMarginTop(margin)
+      topMenuButton:setMarginTop(margin + 10)
+    end
+
+    if viewMode == 2 then
+      mod = modules.ka_game_hotkeybars
+      if mod then
+        mod.updateHotkeybarPositions()
+      end
+    end
+
+  elseif key == 'showChat' then
+    local splitter   = mod.getSplitter()
+    local chatButton = mod.getChatButton()
+
+    if value then
+      splitter:setMarginBottom(150)
+      chatButton:setOn(true)
+    else
+      splitter:setMarginBottom(-splitter:getHeight())
+      chatButton:setOn(false)
+    end
+
   elseif key == 'gameScreenSize' then
     local zoom = value % 2 == 0 and value + 1 or value
     local text, v = zoom, value
@@ -312,10 +390,16 @@ function setOption(key, value, force)
     gameMapPanel:setDrawNames(value)
   elseif key == 'displayLevel' then
     gameMapPanel:setDrawLevels(value)
+  elseif key == 'displayIcons' then
+    gameMapPanel:setDrawIcons(value)
   elseif key == 'displayHealth' then
     gameMapPanel:setDrawHealthBars(value)
   elseif key == 'displayMana' then
     gameMapPanel:setDrawManaBar(value)
+  elseif key == 'displayExpBar' then
+    if modules.ka_game_ui then
+      modules.ka_game_ui.setExpBar(value)
+    end
   elseif key == 'displayText' then
     gameMapPanel:setDrawTexts(value)
   elseif key == 'displayHotkeybars' then
@@ -332,13 +416,19 @@ function setOption(key, value, force)
   elseif key == 'leftStickerOpacityScrollbar' then
     local op = generalPanel:getChildById('leftSticketOpacityLabel')
     op:setText(string.format(op.baseText, math.ceil(100 * value / 255)))
-    local alpha = (value < 16 and "0" or "") ..  string.format("%x", value)
-    mod.getLeftPanel():setImageColor(tocolor("#FFFFFF" .. alpha))
+    local leftStickerWidget = rootPanel:getChildById('gameLeftPanelSticker')
+    if leftStickerWidget then
+      local alpha = string.format("%s%x", value < 16 and "0" or "", value)
+      leftStickerWidget:setImageColor(tocolor("#FFFFFF" .. alpha))
+    end
   elseif key == 'rightStickerOpacityScrollbar' then
     local op = generalPanel:getChildById('rightSticketOpacityLabel')
     op:setText(string.format(op.baseText, math.ceil(100 * value / 255)))
-    local alpha = (value < 16 and "0" or "") ..  string.format("%x", value)
-    mod.getRightPanel():setImageColor(tocolor("#FFFFFF" .. alpha))
+    local rightStickerWidget = rootPanel:getChildById('gameRightPanelSticker')
+    if rightStickerWidget then
+      local alpha = string.format("%s%x", value < 16 and "0" or "", value)
+      rightStickerWidget:setImageColor(tocolor("#FFFFFF" .. alpha))
+    end
   elseif key == "leftStickerComboBox" then
     leftStickerComboBox:setCurrentOption(value)
   elseif key == "rightStickerComboBox" then
@@ -359,6 +449,10 @@ function setOption(key, value, force)
   elseif key == 'bouncingKeys' then
     keyboardPanel:getChildById('bouncingKeysDelayScrollBar'):setEnabled(value)
     keyboardPanel:getChildById('bouncingKeysDelayLabel'):setEnabled(value)
+  elseif key == 'turnDelay' then
+    keyboardPanel:getChildById('turnDelayLabel'):setText(tr('Turn delay: %sms', value))
+  elseif key == 'hotkeyDelay' then
+    keyboardPanel:getChildById('hotkeyDelayLabel'):setText(tr('Hotkey delay: %sms', value))
   end
 
   -- change value for keybind updates
@@ -397,29 +491,29 @@ end
 function updateStickers()
   local mod = modules.game_interface
   if not mod then return end
-
-  local opt, panel
+  local rootPanel = mod.getRootPanel()
+  if not rootPanel then return end
 
   -- Left panel
-  opt = g_settings.get(leftStickerComboBox:getId())
-  if not opt or opt == "" then
-    opt = defaultOptions.leftSticker
-  end
-  leftStickerComboBox:setCurrentOption(opt)
-  panel = mod.getLeftPanel()
-  if panel:isOn() then
-    panel:setImageSource(stickers[opt])
+  local leftStickerWidget = rootPanel:getChildById('gameLeftPanelSticker')
+  if leftStickerWidget then
+    local value = g_settings.get(leftStickerComboBox:getId())
+    value = type(value) == "string" and value ~= "" and value or defaultOptions.leftSticker
+
+    leftStickerComboBox:setCurrentOption(value) -- Make sure combobox has same as value at g_settings
+    leftStickerWidget:setHeight(0) -- Will make able to get height when change the image source
+    leftStickerWidget:setImageSource(stickers[value])
   end
 
   -- Right panel
-  opt = g_settings.get(rightStickerComboBox:getId())
-  if not opt or opt == "" then
-    opt = defaultOptions.rightSticker
-  end
-  rightStickerComboBox:setCurrentOption(opt)
-  panel = mod.getRightPanel()
-  if panel:isOn() then
-    panel:setImageSource(stickers[opt])
+  local rightStickerWidget = rootPanel:getChildById('gameRightPanelSticker')
+  if rightStickerWidget then
+    local value = g_settings.get(rightStickerComboBox:getId())
+    value = type(value) == "string" and value ~= "" and value or defaultOptions.rightSticker
+
+    rightStickerComboBox:setCurrentOption(value) -- Make sure combobox has same as value at g_settings
+    rightStickerWidget:setHeight(0) -- Will make able to get height when change the image source
+    rightStickerWidget:setImageSource(stickers[value])
   end
 end
 

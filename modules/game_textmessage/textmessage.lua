@@ -1,15 +1,20 @@
+DefaultFont = 'verdana-11px-rounded'
+
 MessageSettings = {
   none            = {},
-  consoleRed      = { color = TextColors.red,    consoleTab='Default' },
-  consoleOrange   = { color = TextColors.orange, consoleTab='Default' },
-  consoleBlue     = { color = TextColors.blue,   consoleTab='Default' },
-  centerRed       = { color = TextColors.red,    consoleTab='Server', screenTarget='lowCenterLabel' },
-  centerGreen     = { color = TextColors.green,  consoleTab='Server', screenTarget='highCenterLabel',   consoleOption='showInfoMessagesInConsole' },
-  centerWhite     = { color = TextColors.white,  consoleTab='Server', screenTarget='middleCenterLabel', consoleOption='showEventMessagesInConsole' },
-  bottomWhite     = { color = TextColors.white,  consoleTab='Server', screenTarget='statusLabel',       consoleOption='showEventMessagesInConsole' },
-  status          = { color = TextColors.white,  consoleTab='Server', screenTarget='statusLabel',       consoleOption='showStatusMessagesInConsole' },
-  statusSmall     = { color = TextColors.white,                       screenTarget='statusLabel' },
-  private         = { color = TextColors.lightblue,                   screenTarget='privateLabel' }
+  consoleRed      = { color = TextColors.red,       consoleTab='Default' },
+  consoleOrange   = { color = TextColors.orange,    consoleTab='Default' },
+  consoleBlue     = { color = TextColors.blue,      consoleTab='Default' },
+  centerRed       = { color = TextColors.red,       consoleTab='Server', screenTarget='lowCenterLabel' },
+  centerGreen     = { color = TextColors.green,     consoleTab='Server', screenTarget='highCenterLabel',   consoleOption='showInfoMessagesInConsole' },
+  centerWhite     = { color = TextColors.white,     consoleTab='Server', screenTarget='middleCenterLabel', consoleOption='showEventMessagesInConsole' },
+  bottomWhite     = { color = TextColors.white,     consoleTab='Server', screenTarget='statusLabel',       consoleOption='showEventMessagesInConsole' },
+  status          = { color = TextColors.white,     consoleTab='Server', screenTarget='statusLabel',       consoleOption='showStatusMessagesInConsole' },
+  statusSmall     = { color = TextColors.white,                          screenTarget='statusLabel' },
+  private         = { color = TextColors.lightblue,                      screenTarget='privateLabel' },
+  statusBigTop    = { color = '#e1e1e1',            consoleTab='Server', screenTarget='privateLabel',      consoleOption='showStatusMessagesInConsole', font='sans-bold-borded-16px' },
+  statusBigCenter = { color = '#e1e1e1',            consoleTab='Server', screenTarget='middleCenterLabel', consoleOption='showStatusMessagesInConsole', font='sans-bold-borded-16px' },
+  statusBigBottom = { color = '#e1e1e1',            consoleTab='Server', screenTarget='statusLabel',       consoleOption='showStatusMessagesInConsole', font='sans-bold-borded-16px' },
 }
 
 MessageTypes = {
@@ -48,10 +53,15 @@ MessageTypes = {
   [MessageModes.Report] = MessageSettings.consoleRed,
   [MessageModes.HotkeyUse] = MessageSettings.centerGreen,
 
+  [MessageModes.MessageGameBigTop] = MessageSettings.statusBigTop,
+  [MessageModes.MessageGameBigCenter] = MessageSettings.statusBigCenter,
+  [MessageModes.MessageGameBigBottom] = MessageSettings.statusBigBottom,
+
   [254] = MessageSettings.private
 }
 
 messagesPanel = nil
+statusLabel = nil
 
 function init()
   for messageMode, _ in pairs(MessageTypes) do
@@ -65,6 +75,7 @@ function init()
   })
 
   messagesPanel = g_ui.loadUI('textmessage', modules.game_interface.getRootPanel())
+  statusLabel = messagesPanel:getChildById('statusLabel')
 end
 
 function terminate()
@@ -83,19 +94,28 @@ function terminate()
 end
 
 local function updateStatusLabelPosition(label)
-  local mapPanel    = modules.game_interface.getMapPanel()
-  local extraMargin = modules.game_interface.getCurrentViewMode() == 2 and 46 or 4
-  label:setMarginBottom(((mapPanel:getHeight() - mapPanel:getMapHeight()) / 2) + extraMargin)
+  local mod = modules.game_interface
+  if not mod then return end
+
+  local gameExpBar = mod.getGameExpBar()
+
+  local margin
+  if mod.getCurrentViewMode() == 2 then
+    local _mod = modules.ka_game_hotkeybars
+    margin = mod.getSplitter():getMarginBottom() + (_mod and _mod.isHotkeybarsVisible() and 44 or gameExpBar:isOn() and gameExpBar:getHeight() or 0) + 4
+  else
+    local mapPanel = mod.getMapPanel()
+    margin = math.floor((mapPanel:getHeight() - mapPanel:getMapHeight()) / 2) + (gameExpBar:isOn() and gameExpBar:getHeight() or 0) + 4
+  end
+  label:setMarginBottom(margin)
 end
 
 function onGeometryChange(mapPanel)
-  local label = messagesPanel:recursiveGetChildById('statusLabel')
-  updateStatusLabelPosition(label)
+  updateStatusLabelPosition(statusLabel)
 end
 
 function onViewModeChange(mapWidget, viewMode, oldViewMode)
-  local label = messagesPanel:recursiveGetChildById('statusLabel')
-  updateStatusLabelPosition(label)
+  updateStatusLabelPosition(statusLabel)
 end
 
 function calculateVisibleTime(text)
@@ -124,6 +144,7 @@ function displayMessage(mode, text)
     local label = messagesPanel:recursiveGetChildById(msgtype.screenTarget)
     label:setText(text)
     label:setColor(msgtype.color)
+    label:setFont(msgtype.font or DefaultFont)
     label:setVisible(true)
     if msgtype.screenTarget == 'statusLabel' then
       updateStatusLabelPosition(label)

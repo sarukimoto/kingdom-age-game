@@ -164,16 +164,17 @@ GameCreatureIcons = 72
 GameHideNpcNames = 73
 
 TextColors = {
-  red       = '#f55e5e', --'#c83200'
-  orange    = '#f36500', --'#c87832'
-  yellow    = '#ffff00', --'#e6c832'
-  green     = '#00EB00', --'#3fbe32'
-  lightblue = '#5ff7f7',
-  blue      = '#9f9dfd',
+  red         = '#f55e5e', --'#c83200'
+  orange      = '#f36500', --'#c87832'
+  lightYellow = '#e6db74',
+  yellow      = '#ffff00', --'#e6c832'
+  green       = '#00eb00', --'#3fbe32'
+  lightblue   = '#5ff7f7',
+  blue        = '#9f9dfd',
   --blue1     = '#6e50dc',
   --blue2     = '#3264c8',
   --blue3     = '#0096c8',
-  white     = '#ffffff', --'#bebebe'
+  white       = '#ffffff', --'#bebebe'
 }
 
 MessageModes = {
@@ -230,6 +231,9 @@ MessageModes = {
   GameHighlight           = 50,
   NpcFromStartBlock       = 51,
   Last                    = 52,
+  MessageGameBigTop       = 53,
+  MessageGameBigCenter    = 54,
+  MessageGameBigBottom    = 55,
   Invalid                 = 255,
 }
 

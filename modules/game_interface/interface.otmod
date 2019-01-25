@@ -2,9 +2,9 @@ Module
   name: game_interface
   description: Create the game interface, where the ingame stuff starts
   author: OTClient team
-  website: www.otclient.info
+  website: https://github.com/edubart/otclient
   sandboxed: true
-  scripts: [ widgets/uigamemap, widgets/uiitem, gameinterface ]
+  scripts: [ widgets/uigamemap, widgets/uiitem, interface ]
   dependencies: [ client_topmenu, client_background, client_options ]
   @onLoad: init()
   @onUnload: terminate()
@@ -13,7 +13,7 @@ Module
     - game_textmessage
     - game_console
     - game_outfit
-    - game_inventory
+    - game_character
     - game_skills
     - game_containers
     - game_battle
@@ -33,9 +33,9 @@ Module
     - game_unjustifiedpoints
     - ka_game_screenimage
     - ka_game_hotkeybars
-    - ka_game_conditionlist
-    - ka_game_attribute
-    - ka_game_powerslist
+    - ka_game_conditions
+    - ka_game_attributes
+    - ka_game_powers
     - ka_game_blinkhit
-    - ka_game_loot
+    - ka_game_lootbar
     - ka_game_ui

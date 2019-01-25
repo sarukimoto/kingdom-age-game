@@ -1,0 +1,91 @@
+PowerSendingParticlesBoost1 < UIParticles
+  effect: powersending-boost1-effect
+  focusable: false
+
+PowerSendingParticlesBoost2 < UIParticles
+  effect: powersending-boost2-effect
+  focusable: false
+
+PowerSendingParticlesBoost3 < UIParticles
+  effect: powersending-boost3-effect
+  focusable: false
+
+HotkeybarArrowTop < UIWidget
+  id: arrowtop
+  anchors.top: parent.top
+  anchors.left: parent.left
+  margin-left: 9
+  size: 21 12
+  image-source: /images/ui/arrow_vertical
+  image-rect: 0 0 21 12
+  image-clip: 21 0 21 12
+  phantom: true
+
+  $on:
+    image-source: /images/ui/arrow_vertical_red
+
+HotkeybarArrowBottom < UIWidget
+  id: arrowbottom
+  anchors.bottom: parent.bottom
+  anchors.left: parent.left
+  margin-left: 9
+  size: 21 12
+  image-source: /images/ui/arrow_vertical
+  image-rect: 0 0 21 12
+  image-clip: 0 0 21 12
+  phantom: true
+
+  $on:
+    image-source: /images/ui/arrow_vertical_red
+
+HotkeybarArrowLeft < UIWidget
+  id: arrowbottom
+  anchors.top: parent.top
+  anchors.left: parent.left
+  margin-top: 9
+  size: 12 21
+  image-source: /images/ui/arrow_horizontal
+  image-rect: 0 0 12 21
+  image-clip: 0 0 12 21
+  phantom: true
+
+  $on:
+    image-source: /images/ui/arrow_horizontal_red
+
+HotkeybarArrowRight < UIWidget
+  id: arrowbottom
+  anchors.top: parent.top
+  anchors.right: parent.right
+  margin-top: 9
+  size: 12 21
+  image-source: /images/ui/arrow_horizontal
+  image-rect: 0 0 12 21
+  image-clip: 12 0 12 21
+  phantom: true
+
+  $on:
+    image-source: /images/ui/arrow_horizontal_red
+
+HotkeybarContainer < UIHotkeybarContainer
+  text-align: center
+  image-source: /images/ui/item
+
+  UIItem
+    id: item
+    phantom: true
+    virtual: true
+    anchors.fill: parent
+    margin: 2
+
+  UIWidget
+    id: power
+    phantom: true
+    anchors.fill: parent
+    margin: 2
+
+Hotkeybar < UIHotkeybar
+  background: alpha
+  focusable: false
+
+  $on:
+    background: #ffffff22

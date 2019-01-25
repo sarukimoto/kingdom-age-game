@@ -1,0 +1,11 @@
+Module
+  name: ka_game_ui
+  description: Interface
+  author: River
+  website: https://github.com/edubart/otclient
+  reloadable: false
+  sandboxed: true
+  autoload: true
+  scripts: [ ui ]
+  @onLoad: init()
+  @onUnload: terminate()

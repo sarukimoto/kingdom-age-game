@@ -222,3 +222,32 @@ end
 function table.unserialize(str)
   return loadstring("return " .. str)()
 end
+
+function table.insertChild(t, index, value)
+  if index then
+    table.insert(t, index, value)
+  else
+    table.insert(t, value)
+    index = #t
+  end
+
+  if type(value) == "table" then
+    value._parent = t
+    value._id = index
+  end
+  return index
+end
+
+function table.removeChild(t, index, recursive)
+  if not t then return false end
+  repeat
+    t[index] = nil
+    if table.size(t) == 2 then -- only parent and id values
+      index = t._id
+      t = t._parent
+    else
+      break
+    end
+  until not t or not recursive
+  return t
+end
