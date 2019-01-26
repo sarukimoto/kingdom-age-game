@@ -8,15 +8,21 @@ otclient.exp
 otclient.lib
 vc12/otclient.sln
 vc12/otclient.vcxproj*
-vc14/otclient.VC.db
-vc14/otclient.VC.opendb
-vc14/otclient.VC.VC.opendb
+vc14_dx9/otclient.VC.db
+vc14_dx9/otclient.VC.opendb
+vc14_dx9/otclient.VC.VC.opendb
+vc14_dx9/kingdomageclient.VC.db
+vc14_dx9/kingdomageclient.VC.opendb
+vc14_dx9/kingdomageclient.VC.VC.opendb
+vc14_ogl/otclient.VC.db
+vc14_ogl/otclient.VC.opendb
+vc14_ogl/otclient.VC.VC.opendb
+vc14_ogl/kingdomageclient.VC.db
+vc14_ogl/kingdomageclient.VC.opendb
+vc14_ogl/kingdomageclient.VC.VC.opendb
 Kingdom Age Online.exp
 Kingdom Age Online.lib
 *.lnk
-vc14/kingdomageclient.VC.db
-vc14/kingdomageclient.VC.opendb
-vc14/kingdomageclient.VC.VC.opendb
 *.zip
 *.rar
 
@@ -37,7 +43,6 @@ Makefile
 *.o
 *.gch
 *.a
-*.exe
 *.kdev*
 *.cbp
 *~
