@@ -20,6 +20,9 @@ vc14_ogl/otclient.VC.VC.opendb
 vc14_ogl/kingdomageclient.VC.db
 vc14_ogl/kingdomageclient.VC.opendb
 vc14_ogl/kingdomageclient.VC.VC.opendb
+*.exe
+!/game_directx9/*.exe
+!/game_opengl/*.exe
 Kingdom Age Online.exp
 Kingdom Age Online.lib
 *.lnk
