@@ -287,7 +287,9 @@ function onPlayerAttributes(tooltips, attributes, availablePoints, usedPoints, d
     end
 
     if attributeLabel[id] then
-      attributeLabel[id]:setTooltip(tooltips[id])
+      if table.size(tooltips) > 1 then
+        attributeLabel[id]:setTooltip(tooltips[id])
+      end
     end
   end
 

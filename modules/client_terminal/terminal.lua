@@ -257,10 +257,13 @@ function toggle()
 end
 
 function show()
-  if not g_game.isOnline() or g_game.getAccountType() < ACCOUNT_TYPE_GAMEMASTER then return end
+  if g_game.isOnline() and g_game.getAccountType() > ACCOUNT_TYPE_NORMAL then
+    commandTextEdit:setEnabled(true)
+  end
   terminalWindow:show()
   terminalWindow:raise()
   terminalWindow:focus()
+  commandTextEdit:focus()
 end
 
 function hide()

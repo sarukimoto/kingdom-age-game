@@ -5,7 +5,7 @@
 -- Version *.x.x : Major Release - Significant New Systems
 -- Version x.*.x : Minor Release - Improvements
 -- Version x.x.* : Revision Release - Bug/Issue Fixes
-CLIENT_VERSION = "1.0.1 ALPHA" -- [CLIENT VERSION] Here is just the Version Name
+CLIENT_VERSION = "1.0.1" -- [CLIENT VERSION] Here is just the Version Name
 
 -- setup logger
 g_logger.setLogFile(g_resources.getWorkDir() .. g_app.getCompactName() .. ".log")

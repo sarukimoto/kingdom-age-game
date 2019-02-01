@@ -409,6 +409,18 @@ function addHotkey()
   local comboLabel = assignWindow:getChildById('comboPreview')
   comboLabel.keyCombo = ''
   assignWindow.onKeyDown = hotkeyCapture
+
+  local addButtonWidget = assignWindow:getChildById('addButton')
+  addButtonWidget.onClick = function(widget)
+    local keyCombo = assignWindow:getChildById('comboPreview').keyCombo
+    addKeyCombo(keyCombo, nil, true)
+    assignWindow:destroy()
+  end
+
+  local cancelButton = assignWindow:getChildById('cancelButton')
+  cancelButton.onClick = function (widget)
+    assignWindow:destroy()
+  end
 end
 
 function addKeyCombo(keyCombo, keySettings, focus)
@@ -824,11 +836,6 @@ function hotkeyCapture(assignWindow, keyCode, keyboardModifiers)
   comboPreview:resizeToText()
   assignWindow:getChildById('addButton'):enable()
   return true
-end
-
-function hotkeyCaptureOk(assignWindow, keyCombo)
-  addKeyCombo(keyCombo, nil, true)
-  assignWindow:destroy()
 end
 
 function isOpen()

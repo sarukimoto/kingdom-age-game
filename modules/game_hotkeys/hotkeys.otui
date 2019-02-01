@@ -225,7 +225,6 @@ HotkeyAssignWindow < MainWindow
     anchors.right: next.left
     anchors.bottom: parent.bottom
     margin-right: 10
-    @onClick: hotkeyCaptureOk(self:getParent(), self:getParent():getChildById('comboPreview').keyCombo)
 
   Button
     id: cancelButton
@@ -233,4 +232,3 @@ HotkeyAssignWindow < MainWindow
     width: 64
     anchors.right: parent.right
     anchors.bottom: parent.bottom
-    @onClick: self:getParent():destroy()
