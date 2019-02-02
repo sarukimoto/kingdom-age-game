@@ -23,6 +23,9 @@ vc14_ogl/kingdomageclient.VC.VC.opendb
 *.exe
 !/game_directx9/*.exe
 !/game_opengl/*.exe
+*.dll
+!/game_directx9/*.dll
+!/game_opengl/*.dll
 Kingdom Age Online.exp
 Kingdom Age Online.lib
 *.lnk
