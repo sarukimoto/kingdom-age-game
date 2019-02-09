@@ -75,6 +75,7 @@ QuestLogWindow < MainWindow
     font: sans-bold-16px
     anchors.top: rewardsLabel.bottom
     anchors.left: rewardExperienceLabel.right
+    anchors.right: parent.horizontalCenter
     margin-top: 10
     margin-left: 5
     height: 20
@@ -95,6 +96,7 @@ QuestLogWindow < MainWindow
     font: sans-bold-16px
     anchors.top: rewardExperienceLabel.bottom
     anchors.left: rewardMoneyLabel.right
+    anchors.right: parent.horizontalCenter
     margin-top: 10
     margin-left: 5
     height: 20
@@ -114,9 +116,10 @@ QuestLogWindow < MainWindow
     vertical-scrollbar: otherRewardsScrollBar
     anchors.top: itemsButton.bottom
     anchors.right: otherRewardsScrollBar.left
+    anchors.left: parent.horizontalCenter
     anchors.bottom: closeButton.top
     margin-top: 5
-    margin-bottom: 10
+    margin-bottom: 5
     font: verdana-11px-antialised
     color: #aaaaaa
     text-offset: 2 3
@@ -124,7 +127,6 @@ QuestLogWindow < MainWindow
     text-wrap: true
     focusable: false
     editable: false
-    width: 250
     visible: false
 
   VerticalScrollBar
@@ -133,7 +135,7 @@ QuestLogWindow < MainWindow
     anchors.bottom: closeButton.top
     anchors.right: parent.right
     margin-top: 5
-    margin-bottom: 10
+    margin-bottom: 5
     step: 50
     pixels-scroll: true
     visible: false
