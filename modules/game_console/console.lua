@@ -292,19 +292,21 @@ function terminate()
 end
 
 function save()
-  local localPlayer = g_game.getLocalPlayer()
-  local localPlayerName = localPlayer:getName()
-  local settings = {}
+  if g_game.getAccountType() >= ACCOUNT_TYPE_GAMEMASTER then
+    local localPlayer = g_game.getLocalPlayer()
+    local localPlayerName = localPlayer:getName()
+    local settings = {}
 
-  if not settings.messageHistory then
-    settings.messageHistory = {}
+    if not settings.messageHistory then
+      settings.messageHistory = {}
+    end
+
+    settings.messageHistory[localPlayerName] = messageHistory[localPlayerName] or {}
+    g_settings.setNode('game_console', settings)
+
+    -- Exit app saving (keep history after close client)
+    g_settings.setList('console-history-' .. localPlayerName:gsub("%s", "_"), messageHistory[localPlayerName] or {})
   end
-
-  settings.messageHistory[localPlayerName] = messageHistory[localPlayerName] or {}
-  g_settings.setNode('game_console', settings)
-
-  -- Exit app saving (keep history after close client)
-  g_settings.setList('console-history-' .. localPlayerName:gsub("%s", "_"), messageHistory[localPlayerName] or {})
 end
 
 function load()

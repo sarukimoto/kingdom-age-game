@@ -325,15 +325,9 @@ function onStaminaChange(localPlayer, stamina)
 
   setSkillValue('stamina', hours .. ":" .. minutes)
 
-  local isPremium = localPlayer:isPremium()
-  local percent   = math.floor(100 * stamina / (42 * 60)) -- max is 42 hours
-  local text      = tr('Remaining %s%% (%s hours and %s minutes)', percent, hours, minutes)
-  if stamina > 2400 and isPremium then -- green phase
-    text = string.format("%s\n%s", text, tr("You are receiving +50%% of experience\nbecause you are premium"))
-  elseif stamina > 2400 and not isPremium then -- #89F013 phase
-    text = string.format("%s\n%s", text, tr("You are receiving normal experience\nbecause you are not premium"))
-  -- elseif stamina <= 2400 and stamina > 840 then -- orange phase
-  elseif stamina <= 840 and stamina > 0 then -- red phase
+  local percent = math.floor(100 * stamina / (42 * 60)) -- max is 42 hours
+  local text    = tr('Remaining %s%% (%s hours and %s minutes)', percent, hours, minutes)
+  if stamina <= 840 and stamina > 0 then -- red phase
     text = string.format("%s\n%s", text, tr("You are receiving only 50%% of experience\nand you may not receive loot from monsters"))
   elseif stamina == 0 then
     text = string.format("%s\n%s", text, tr("You may not receive experience and loot from monsters"))

@@ -208,7 +208,9 @@ function _G.tr(text, ...)
       if not translation then
         if translation == nil then
           if currentLocale.name ~= defaultLocaleName then
-            pdebug('Unable to translate: \"' .. text .. '\"')
+            if g_game.getAccountType() >= ACCOUNT_TYPE_GAMEMASTER then
+              pdebug('Unable to translate: \"' .. text .. '\"')
+            end
           end
         end
         translation = text
