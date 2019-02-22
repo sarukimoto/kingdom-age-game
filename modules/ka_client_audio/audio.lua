@@ -109,7 +109,7 @@ function parseAudioRequest(protocol, opcode, buffer)
     if not channelId or not gain then return end
     local channel = channels[channelId].channel
     if not channel then return end
-    channel:setChannelAudiosGain(gain)
+    channel:setAudioGroupGain(gain)
 
   elseif action == ACTION_CHANNEL_SETGAIN then
     local channelId = tonumber(params[2])
@@ -127,9 +127,9 @@ function parseAudioRequest(protocol, opcode, buffer)
     local channel = channels[channelId].channel
     if not channel then return end
     path = string.format('%s%s', getRootPath(), path)
-    channel:stopAudios(path, fadeOutTime)
+    channel:stopAudioGroup(path, fadeOutTime)
 
-  elseif action == ACTION_CHANNEL_AUDIOSSETGAIN then
+ --[[ elseif action == ACTION_CHANNEL_AUDIOSSETGAIN then
     local channelId = tonumber(params[2])
     local path = params[3]
     local gain = tonumber(params[4])
@@ -137,7 +137,7 @@ function parseAudioRequest(protocol, opcode, buffer)
     local channel = channels[channelId].channel
     if not channel then return end
     path = string.format('%s%s', getRootPath(), path)
-    channel:setAudiosGain(path, gain)
+    channel:setAudioGroupGain(path, gain)]]
 
   end
 end

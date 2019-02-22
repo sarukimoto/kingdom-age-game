@@ -73,7 +73,6 @@ MiniWindow
     AttributeLabel
       id: attackAttributeLabel
       !text: 'Attack'
-      !tooltip: 'It increases your physical or magical damage\n(except staffs and instruments), depending of your vocation.'
       anchors.top: topPanel.bottom
       margin-top: 10
 
@@ -87,7 +86,6 @@ MiniWindow
     AttributeLabel
       id: defenseAttributeLabel
       !text: 'Defense'
-      !tooltip: 'It increases your physical defense by shield, and your capacity.'
       anchors.top: attackAttributeLabel.bottom
 
     AttributeAddButton
@@ -100,7 +98,6 @@ MiniWindow
     AttributeLabel
       id: willPowerAttributeLabel
       !text: 'Will Power*'
-      !tooltip: 'It increases your magical defense.\n* 100 points is the maximum value for this attribute.'
       anchors.top: defenseAttributeLabel.bottom
 
     AttributeAddButton
@@ -113,7 +110,6 @@ MiniWindow
     AttributeLabel
       id: healthAttributeLabel
       !text: 'Health'
-      !tooltip: 'It increases your health points.'
       anchors.top: willPowerAttributeLabel.bottom
 
     AttributeAddButton
@@ -126,7 +122,6 @@ MiniWindow
     AttributeLabel
       id: manaAttributeLabel
       !text: 'Mana'
-      !tooltip: 'It increases your mana points.'
       anchors.top: healthAttributeLabel.bottom
 
     AttributeAddButton
@@ -139,7 +134,6 @@ MiniWindow
     AttributeLabel
       id: agilityAttributeLabel
       !text: 'Agility*'
-      !tooltip: 'It increases your attack speed.\n* 100 points is the maximum value for this attribute.'
       anchors.top: manaAttributeLabel.bottom
 
     AttributeAddButton
@@ -152,7 +146,6 @@ MiniWindow
     AttributeLabel
       id: dodgeAttributeLabel
       !text: 'Dodge*'
-      !tooltip: 'It increases your dodge chance.\n* 100 points is the maximum value for this attribute.'
       anchors.top: agilityAttributeLabel.bottom
 
     AttributeAddButton
@@ -165,7 +158,6 @@ MiniWindow
     AttributeLabel
       id: walkingAttributeLabel
       !text: 'Walking*'
-      !tooltip: 'It increases your walking speed.\n* 100 points is the maximum value for this attribute.'
       anchors.top: dodgeAttributeLabel.bottom
 
     AttributeAddButton
@@ -178,7 +170,6 @@ MiniWindow
     AttributeLabel
       id: luckAttributeLabel
       !text: 'Luck*'
-      !tooltip: 'It increases your critical hit chance.\nCritical always increases 50% of any kind of damage.\n* 100 points is the maximum value for this attribute.'
       anchors.top: walkingAttributeLabel.bottom
 
     AttributeAddButton

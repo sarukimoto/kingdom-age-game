@@ -274,7 +274,7 @@ function setOption(key, value, force)
     g_window.setFullscreen(value)
 
   elseif key == 'enableAudio' then
-    --g_sounds.setAudioEnabled(value)
+    g_sounds.setEnabled(value)
     g_sounds.getChannel(AudioChannels.Music):setEnabled(value and getOption('enableMusic'))
     g_sounds.getChannel(AudioChannels.Ambient):setEnabled(value and getOption('enableSoundAmbient'))
     g_sounds.getChannel(AudioChannels.Effect):setEnabled(value and getOption('enableSoundEffect'))
