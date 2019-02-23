@@ -19,18 +19,24 @@ function reloadScripts()
   print(message)
 end
 
-function startup()
-  musicChannel:play(musicFilename, 1.0, -1, 7)
+function onGameStart()
+  local mod = modules.ka_client_audio
+  if not mod then return end
+  mod.clearAudios()
+end
 
-  connect(g_game, { onGameStart = function() musicChannel:stop(1) end })
-  connect(g_game, { onGameEnd = function()
-    --g_sounds.stopAll()
-    local mod = modules.ka_client_audio
-    if mod then
-      mod.clearAudios()
-    end
-    musicChannel:play(musicFilename, 1.0, -1, 7)
-  end })
+function onGameEnd()
+  local mod = modules.ka_client_audio
+  if not mod then return end
+  mod.clearAudios()
+  musicChannel:play(musicFilename, 1.0, -1, 7) -- Startup music
+end
+
+function startup()
+  musicChannel:play(musicFilename, 1.0, -1, 7) -- Startup music
+
+  connect(g_game, { onGameStart = onGameStart })
+  connect(g_game, { onGameEnd = onGameEnd })
 
   -- Check for startup errors
   local errtitle = nil
