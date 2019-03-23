@@ -71,6 +71,18 @@ MiniWindow
         widget:reset()
         widget:setZoom(zoom)
 
+    OptionScrollbar
+      id: minimapOpacity
+      width: 200
+      anchors.right: parent.right
+      anchors.bottom: parent.bottom
+      margin-bottom: 10
+      margin-right: 50
+      minimum: 10
+      maximum: 100
+      visible: false
+      @onValueChange: getMinimapWidget():setOpacity(self:getValue()/100)
+
 //  ResizeBorder
 //    anchors.right: parent.right
 //    anchors.top: parent.top

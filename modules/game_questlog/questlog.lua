@@ -164,9 +164,8 @@ function parseQuestLog(protocol, opcode, buffer)
 
   if mode == 1 then -- Quest Log
     local quests = {}
-    local _quests = params[2]:split(';;')
 
-    for _, _quest in ipairs(_quests) do
+    for _, _quest in ipairs(params[2] and params[2]:split(';;') or {}) do
       local quest = {}
       local data = _quest:split("::")
       quest.id = tonumber(data[1])
@@ -185,28 +184,30 @@ function parseQuestLog(protocol, opcode, buffer)
       table.insert(quests, quest)
     end
     onGameQuestLog(quests)
+
   elseif mode == 2 then -- Quest Line
     local missions = {}
     local questId = tonumber(params[2])
-    local _missions = params[3]:split(';;')
+    if not questId then return end
 
-    for _, _mission in ipairs(_missions) do
+    for _, _mission in ipairs(params[3] and params[3]:split(';;') or {}) do
       local mission = {}
       local data = _mission:split('::')
       mission.id = tonumber(data[1])
-      if not mission.id then return end
-      mission.isComplete   = tonumber(data[2]) == 1 and true or false
-      mission.canDo        = tonumber(data[3]) == 1 and true or false
-      mission.logName      = data[4]
-      mission.minLevel     = tonumber(data[5]) or 1
-      mission.description  = data[6]
-      mission.hasTeleport  = tonumber(data[7]) == 1 and true or false
-      mission.experience   = tonumber(data[8]) or 0
-      mission.money        = tonumber(data[9]) or 0
-      mission.showItems    = tonumber(data[10]) == 1 and true or false
-      mission.otherRewards = data[11]
-      mission.otherRewards = mission.otherRewards ~= '-' and mission.otherRewards or ''
-      table.insert(missions, mission)
+      if mission.id then
+        mission.isComplete   = tonumber(data[2]) == 1 and true or false
+        mission.canDo        = tonumber(data[3]) == 1 and true or false
+        mission.logName      = data[4]
+        mission.minLevel     = tonumber(data[5]) or 1
+        mission.description  = data[6]
+        mission.hasTeleport  = tonumber(data[7]) == 1 and true or false
+        mission.experience   = tonumber(data[8]) or 0
+        mission.money        = tonumber(data[9]) or 0
+        mission.showItems    = tonumber(data[10]) == 1 and true or false
+        mission.otherRewards = data[11]
+        mission.otherRewards = mission.otherRewards ~= '-' and mission.otherRewards or ''
+        table.insert(missions, mission)
+      end
     end
     onGameQuestLine(questId, missions)
   end

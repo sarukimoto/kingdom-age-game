@@ -97,13 +97,13 @@ function UIProgressBar:updatePhases()
   -- Remove old phases
   self:destroyChildren()
 
-  local phaseWidth = math.floor((self:getWidth() - (self.bgBorderLeft + self.bgBorderRight)) / self.phases)
-  local height = self:getHeight() - (self.bgBorderTop + self.bgBorderBottom)
+  local phaseWidth = (self:getWidth() - (self.bgBorderLeft + self.bgBorderRight)) / self.phases
+  local phaseHeight = (self:getHeight() - (self.bgBorderTop + self.bgBorderBottom)) / 4
 
   for i = 1, self.phases - 1 do
-    local rect = { x = 0, y = 0, width = self.phasesBorderWidth, height = height }
+    local rect = { x = 0, y = 0, width = self.phasesBorderWidth, height = phaseHeight }
     local widget = g_ui.createWidget('UIWidget', self)
-    widget:addAnchor(AnchorTop, 'parent', AnchorTop)
+    widget:addAnchor(AnchorVerticalCenter, 'parent', AnchorVerticalCenter)
     widget:addAnchor(AnchorLeft, 'parent', AnchorLeft)
 
     widget:setMarginLeft((i * phaseWidth) + self.bgBorderLeft)

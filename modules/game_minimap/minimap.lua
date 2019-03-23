@@ -6,6 +6,7 @@ minimapFloorDownButton = nil
 minimapZoomInButton = nil
 minimapZoomOutButton = nil
 minimapResetButton = nil
+minimapOpacityScrollbar = nil
 otmm = true
 preloaded = false
 fullmapView = false
@@ -28,6 +29,10 @@ function init()
   minimapZoomOutButton = minimapWindow:recursiveGetChildById('zoomOut')
   minimapResetButton = minimapWindow:recursiveGetChildById('reset')
 
+  minimapOpacityScrollbar = minimapWindow:recursiveGetChildById('minimapOpacity')
+  minimapOpacityScrollbar:setValue(g_settings.getValue('Minimap', 'opacity', 100))
+  minimapWidget:setOpacity(1.0)
+
   local gameRootPanel = modules.game_interface.getRootPanel()
   g_keyboard.bindKeyPress('Alt+Left', function() minimapWidget:move(1,0) end, gameRootPanel)
   g_keyboard.bindKeyPress('Alt+Right', function() minimapWidget:move(-1,0) end, gameRootPanel)
@@ -35,6 +40,7 @@ function init()
   g_keyboard.bindKeyPress('Alt+Down', function() minimapWidget:move(0,-1) end, gameRootPanel)
   g_keyboard.bindKeyDown('Ctrl+M', toggle)
   g_keyboard.bindKeyDown('Ctrl+Shift+M', toggleFullMap)
+  g_keyboard.bindKeyDown('Escape', function() if fullmapView then toggleFullMap() end end)
 
   minimapWindow:setup()
 
@@ -59,6 +65,12 @@ function terminate()
     saveMap()
   end
 
+  if fullmapView then
+    toggleFullMap()
+  end
+
+  g_settings.setValue('Minimap', 'opacity', minimapOpacityScrollbar:getValue())
+
   disconnect(g_game, {
     onGameStart = online,
     onGameEnd = offline
@@ -77,12 +89,16 @@ function terminate()
   g_keyboard.unbindKeyPress('Alt+Down', gameRootPanel)
   g_keyboard.unbindKeyDown('Ctrl+M')
   g_keyboard.unbindKeyDown('Ctrl+Shift+M')
+  g_keyboard.unbindKeyDown('Escape')
 
   minimapWindow:destroy()
   minimapButton:destroy()
 end
 
 function toggle()
+  if fullmapView then
+    toggleFullMap()
+  end
   if minimapButton:isOn() then
     minimapWindow:close()
     minimapButton:setOn(false)
@@ -114,6 +130,9 @@ end
 
 function offline()
   saveMap()
+  if fullmapView then
+    toggleFullMap()
+  end
 end
 
 function loadMap(clean)
@@ -176,10 +195,12 @@ function toggleFullMap()
     minimapWidget:setParent(parent)
     minimapWidget:fill('parent')
     minimapWidget:setAlternativeWidgetsVisible(true)
-    minimapWidget:setOpacity(0.30)
+    minimapOpacityScrollbar:show()
+    minimapWidget:setOpacity(minimapOpacityScrollbar:getValue()/100)
   else
     fullmapView = false
     parent = minimapWindow:getChildById('contentsPanel')
+    minimapOpacityScrollbar:hide()
     minimapWidget:setParent(parent)
     minimapWidget:fill('parent')
     minimapWindow:show()
@@ -192,6 +213,7 @@ function toggleFullMap()
   minimapZoomInButton:setParent(parent)
   minimapZoomOutButton:setParent(parent)
   minimapResetButton:setParent(parent)
+  minimapOpacityScrollbar:setParent(parent)
 
   -- All other buttons anchoring to northwest
   minimapFloorUpButton:addAnchor(AnchorRight, 'parent', AnchorRight)
@@ -202,6 +224,8 @@ function toggleFullMap()
   minimapZoomInButton:addAnchor(AnchorBottom, 'parent', AnchorBottom)
   minimapZoomOutButton:addAnchor(AnchorRight, 'parent', AnchorRight)
   minimapZoomOutButton:addAnchor(AnchorBottom, 'parent', AnchorBottom)
+  minimapOpacityScrollbar:addAnchor(AnchorRight, 'parent', AnchorRight)
+  minimapOpacityScrollbar:addAnchor(AnchorBottom, 'parent', AnchorBottom)
 
   minimapResetButton:breakAnchors()
   if fullmapView then

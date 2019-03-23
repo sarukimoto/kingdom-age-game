@@ -24,9 +24,15 @@ end
 function UIConditionButton:setup(condition)
   self:setId(string.format('ConditionButton(%d,%d)', condition.id, condition.subId))
 
+  local conditionBarWidget = self:getChildById('conditionBar')
+  conditionBarWidget:setPhases(condition.turns or 0)
+  conditionBarWidget:setPhasesBorderWidth(1)
+  conditionBarWidget:setPhasesBorderColor('#00000077')
+
   if type(condition.remainingTime) == "number" and condition.remainingTime > 0 then
     local timer = {}
     self.clock = Timer.new(timer, condition.remainingTime)
+    self.clock.updateTicks = 0.1
     self.clock.onUpdate = function() self:updateConditionClock() end
   end
 

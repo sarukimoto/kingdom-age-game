@@ -793,6 +793,7 @@ function processMessageMenu(mousePos, mouseButton, creatureName, text, label, ta
 end
 
 function sendCurrentMessage()
+  if consoleToggleChat:isChecked() then return end
   local message = consoleTextEdit:getText()
   if #message == 0 then
     if not consoleToggleChat:isChecked() then
@@ -964,6 +965,7 @@ function setIgnoreNpcMessages(ignore)
 end
 
 function navigateMessageHistory(step)
+  if consoleToggleChat:isChecked() then return end
   local localPlayer = g_game.getLocalPlayer()
   local localPlayerName = localPlayer:getName()
 
