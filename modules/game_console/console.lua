@@ -177,7 +177,7 @@ end
 function onSplitterDoubleClick()
   local mod = modules.client_options
   if not mod then return end
-  mod.setOption('showChat', not mod.getOption('showChat'))
+  mod.setOption('showChat', true, true)
 end
 
 function enableChat()

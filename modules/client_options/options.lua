@@ -361,7 +361,7 @@ function setOption(key, value, force)
     local chatButton = mod.getChatButton()
 
     if value then
-      splitter:setMarginBottom(150)
+      splitter:setMarginBottom(162)
       chatButton:setOn(true)
     else
       splitter:setMarginBottom(-splitter:getHeight())
