@@ -607,9 +607,11 @@ function addTabText(text, speaktype, tab, creatureName)
   end
   label.onDragLeave = function(self, droppedWidget, mousePos)
     local text = {}
-    for selectionChild = consoleBuffer.selection.first, consoleBuffer.selection.last do
-      local label = self:getParent():getChildByIndex(selectionChild)
-      table.insert(text, label:getSelection())
+    if consoleBuffer.selection then
+      for selectionChild = consoleBuffer.selection.first, consoleBuffer.selection.last do
+        local label = self:getParent():getChildByIndex(selectionChild)
+        table.insert(text, label:getSelection())
+      end
     end
     consoleBuffer.selectionText = table.concat(text, '\n')
     return true

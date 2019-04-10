@@ -27,11 +27,10 @@ ConditionButton < UIConditionButton
   Label
     id: conditionClock
     anchors.top: parent.top
-    anchors.left: conditionIcon.right
     anchors.right: conditionType.left
     margin-left: 2
     margin-right: 2
-    text-align: right
+    text-auto-resize: true
     color: #888888
     phantom: true
 
@@ -42,4 +41,15 @@ ConditionButton < UIConditionButton
     anchors.left: conditionIcon.right
     anchors.right: parent.right
     margin-left: 2
+    phantom: true
+
+  Label
+    id: conditionAuxiliar
+    anchors.top: parent.top
+    anchors.left: conditionIcon.right
+    anchors.right: conditionClock.left
+    margin-left: 2
+    margin-right: 2
+    text-align: left
+    background-color: #2c374c77
     phantom: true

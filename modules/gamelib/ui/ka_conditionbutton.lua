@@ -49,7 +49,15 @@ function UIConditionButton:updateData(condition)
     conditionIconWidget:setIconOffset({ x = 2, y = 2})
     conditionIconWidget:setBackgroundColor(boostColors[condition.boost])
   else
-    conditionIconWidget:setText(string.format('%d,%d', condition.id, condition.subId))
+  -- For debug
+    -- conditionIconWidget:setText(string.format('%d,%d', condition.id, condition.subId))
+  -- Else, remove the icon
+    conditionIconWidget:setWidth(0) -- Comment this line if you want the debug above to work
+
+    if condition.name then
+      local conditionAuxiliarWidget = self:getChildById('conditionAuxiliar')
+      conditionAuxiliarWidget:setText(string.format('%s', condition.name))
+    end
   end
 
   -- Setup aggressive type
