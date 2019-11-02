@@ -3,8 +3,6 @@ local LogColors = { [LogDebug] = 'pink',
                     [LogInfo] = 'white',
                     [LogWarning] = 'yellow',
                     [LogError] = 'red' }
-local MaxLogLines = 128
-local MaxHistory = 1000
 
 local oldenv = getfenv(0)
 setfenv(0, _G)
@@ -17,8 +15,7 @@ local terminalWindow
 local logLocked = false
 local commandTextEdit
 local terminalBuffer
-local commandHistory = { }
-local currentHistoryIndex = 0
+local currentMessageIndex = 0
 local poped = false
 local oldPos
 local oldSize
@@ -28,17 +25,22 @@ local cachedLines = {}
 local disabled = false
 local allLines = {}
 
+local terminalLogFile = nil
+local terminalLog = {}
+local MAX_LOGLINES = 500
+local MAX_LINES = 128
+
 -- private functions
 local function navigateCommand(step)
   if commandTextEdit:isMultiline() then
     return
   end
 
-  local numCommands = #commandHistory
+  local numCommands = #terminalLog
   if numCommands > 0 then
-    currentHistoryIndex = math.min(math.max(currentHistoryIndex + step, 0), numCommands)
-    if currentHistoryIndex > 0 then
-      local command = commandHistory[numCommands - currentHistoryIndex + 1]
+    currentMessageIndex = math.min(math.max(currentMessageIndex + step, 0), numCommands)
+    if currentMessageIndex > 0 then
+      local command = terminalLog[numCommands - currentMessageIndex + 1]
       commandTextEdit:setText(command)
       commandTextEdit:setCursorPos(-1)
     else
@@ -143,8 +145,6 @@ function init()
   -- terminalButton = modules.client_topmenu.addLeftButton('terminalButton', tr('Terminal') .. ' (Ctrl+Shift+T)', '/images/topbuttons/terminal', toggle)
   g_keyboard.bindKeyDown('Ctrl+Shift+T', toggle)
 
-  commandHistory = g_settings.getList('terminal-history')
-
   commandTextEdit = terminalWindow:getChildById('commandTextEdit')
   commandTextEdit:setHeight(commandTextEdit.baseHeight)
   connect(commandTextEdit, {onTextChange = onCommandChange})
@@ -176,10 +176,21 @@ function init()
       addLine(line.text, line.color)
     end
   end
+
+  -- Create or load terminal log file
+  terminalLogFile = g_configs.create('/log.terminal.otml')
+
+  -- Load kept terminal log after login
+  terminalLog = terminalLogFile:getList('terminalLog') or {}
 end
 
 function terminate()
-  g_settings.setList('terminal-history', commandHistory)
+  -- Keep terminal log after logout
+  terminalLogFile:setList('terminalLog', terminalLog)
+  terminalLogFile:save()
+
+  -- Clear terminal log file
+  terminalLogFile = nil
 
   removeEvent(flushEvent)
 
@@ -282,7 +293,7 @@ function flushLines()
 
   for _,line in pairs(cachedLines) do
     -- delete old lines if needed
-    if numLines > MaxLogLines then
+    if numLines > MAX_LINES then
       local firstChild = terminalBuffer:getChildByIndex(1)
       if firstChild then
         local len = #firstChild:getText()
@@ -324,14 +335,12 @@ function executeCommand(command)
   -- add command line
   addLine("> " .. command, "#ffffff")
 
-  -- reset current history index
-  currentHistoryIndex = 0
-
-  -- add new command to history
-  if #commandHistory == 0 or commandHistory[#commandHistory] ~= command then
-    table.insert(commandHistory, command)
-    if #commandHistory > MaxHistory then
-      table.remove(commandHistory, 1)
+  -- Add new command to console log
+  currentMessageIndex = 0
+  if #terminalLog == 0 or terminalLog[#terminalLog] ~= command then
+    table.insert(terminalLog, command)
+    if #terminalLog > MAX_LOGLINES then
+      table.remove(terminalLog, 1)
     end
   end
 

@@ -1,0 +1,43 @@
+EmoteWindow < UIWidget
+  anchors.top: parent.top
+  anchors.right: parent.right
+  anchors.left: parent.left
+  background-color: #00000066
+  layout:
+    type: grid
+    cell-size: 32 32
+    auto-spacing:true
+    flow:true
+    fit-children:true
+    num-columns: 5
+
+EmoteWindowButton < TabButton
+  !tooltip: tr('Toggle emoticon panel')
+  icon: emotes
+  anchors.top: parent.top
+  anchors.right: next.left
+  margin-top: 6
+  margin-right: 5
+  @onClick: toggleWindow()
+
+EmoteButton < UIButton
+  $hover:
+    border: 1 white
+  $!hover:
+    border: 0 white
+  @onClick: useEmote(self.id)
+
+  UIWidget
+    anchors.fill: parent
+    phantom: true
+
+EmoteWindow
+  id: emoteWindow
+  margin-top: 30
+  margin-right: 30
+  margin-left: 30
+  margin-bottom: 30
+  image-source: /images/ui/panel_container
+  border: 2 #172027
+  image-repeated: true
+  focusable: false

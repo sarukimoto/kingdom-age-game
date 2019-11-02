@@ -1,12 +1,45 @@
 filename = 'Kingdom Age'
 loaded = false
 
+
+
+playerSettingsPath = ""
+
+function getPlayerSettings(fileName) -- ([fileName])
+  if g_game.isOnline() then
+    playerSettingsPath = string.format('/%s/%s', G.host:gsub("[%W]", "_"):lower(), g_game.getCharacterName():gsub("[%W]", "_"))
+  end
+  if not g_resources.makeDir(playerSettingsPath) then
+    g_logger.error(string.format('Failed to load path \'%s\'', playerSettingsPath))
+  end
+
+  local playerSettingsFilePath = string.format('%s/%s.otml', playerSettingsPath, fileName or 'config')
+
+  -- Create or load player settings file
+  local file = g_configs.create(playerSettingsFilePath)
+  if not file then
+    g_logger.error(string.format('Failed to load file at \'%s\'', playerSettingsFilePath))
+  end
+
+  return file
+end
+
+
+
 function init()
-  connect(g_game, { onClientVersionChange = load })
+  connect(g_game, {
+    onClientVersionChange = load,
+    onGameStart = online,
+    onGameEnd = offline
+  })
 end
 
 function terminate()
-  disconnect(g_game, { onClientVersionChange = load })
+  disconnect(g_game, {
+    onClientVersionChange = load,
+    onGameStart = online,
+    onGameEnd = offline
+  })
 end
 
 function setFileName(name)
@@ -56,4 +89,18 @@ function load()
     g_game.setProtocolVersion(0)
     connect(g_game, { onClientVersionChange = load })
   end
+end
+
+function online()
+  -- Ensure player settings file existence
+  getPlayerSettings()
+end
+
+function offline()
+  -- On last save of playerSettingsFile when player get offline
+  scheduleEvent(function()
+    local file = getPlayerSettings()
+    -- Keep player settings after terminate
+    file:save()
+  end)
 end

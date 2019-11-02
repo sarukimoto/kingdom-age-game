@@ -123,7 +123,7 @@ function destroyBugReportWindow()
 end
 
 local function clearBugReportWindow()
-  bugCategoryComboBox:setCurrentOption('Map')
+  bugCategoryComboBox:setOption('Map')
   bugCategoryComboBox:setEnabled(true)
   bugPositionX:setText(0)
   bugPositionY:setText(0)
@@ -360,8 +360,8 @@ function clearViewWindow()
   bugViewPage:setText('1')
   updateRowsPerPageLabel(getRowsPerPage())
 
-  bugViewStateComboBox:setCurrentOption(states[viewState])
-  bugViewCategoryComboBox:setCurrentOption(categories[viewCategory])
+  bugViewStateComboBox:setOption(states[viewState])
+  bugViewCategoryComboBox:setOption(categories[viewCategory])
 
   updatePage() -- Fill list
 end
@@ -405,7 +405,7 @@ function openRow(row)
     bugLabel:setText(string.format('%s\n- Time: %s\n- Player name: %s\n- Player pos: [ X: %d | Y: %d | Z: %d ]', row:getText(), os.date('%Y %b %d %H:%M:%S', row.time), row.playername, row.playerposx, row.playerposy, row.playerposz))
 
     if categories[row.category] then
-      bugCategoryComboBox:setCurrentOption(categories[row.category])
+      bugCategoryComboBox:setOption(categories[row.category])
     end
   end
 end
@@ -546,7 +546,7 @@ function bugViewRemoveRow()
   end
 
   if not removeConfirmWindowLock then
-    displayCustomBox('Warning', 'Are you sure that you want to remove the row id ' .. row.id .. '?', {{ text = 'Yes', buttonCallback = function() local mod = modules.game_bugreport if not mod then return end mod.removeRow(bugViewList, row) mod.setRemoveConfirmWindowLock(false) end }}, 1, 'No', function() local mod = modules.game_bugreport if not mod then return end mod.setRemoveConfirmWindowLock(false) end, nil)
+    displayCustomBox('Warning', 'Are you sure that you want to remove the row id ' .. row.id .. '?', {{ text = 'Yes', buttonCallback = function() if modules.game_bugreport then modules.game_bugreport.removeRow(bugViewList, row) modules.game_bugreport.setRemoveConfirmWindowLock(false) end end }}, 1, 'No', function() if modules.game_bugreport then modules.game_bugreport.setRemoveConfirmWindowLock(false) end end, nil)
     setRemoveConfirmWindowLock(true)
   end
 end

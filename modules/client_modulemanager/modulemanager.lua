@@ -138,10 +138,11 @@ function reloadCurrentModule()
     local module = g_modules.getModule(focusedChild:getText())
     if module then
       module:reload()
-      if modules.client_modulemanager == nil then return end
-      updateModuleInfo(module:getName())
-      refreshLoadedModules()
-      show()
+      if modules.client_modulemanager then
+        updateModuleInfo(module:getName())
+        refreshLoadedModules()
+        show()
+      end
     end
   end
 end
@@ -152,9 +153,10 @@ function unloadCurrentModule()
     local module = g_modules.getModule(focusedChild:getText())
     if module then
       module:unload()
-      if modules.client_modulemanager == nil then return end
-      updateModuleInfo(module:getName())
-      refreshLoadedModules()
+      if modules.client_modulemanager then
+        updateModuleInfo(module:getName())
+        refreshLoadedModules()
+      end
     end
   end
 end

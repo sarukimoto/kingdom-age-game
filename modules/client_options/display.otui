@@ -1,0 +1,107 @@
+Panel
+  OptionCheckBox
+    id: showText
+    !text: tr('Show text messages')
+    &tooltipAddons: { {{ icon = "/images/game/tutorial/client/options/showText", size = { width = 330, height = 200 }, align = AlignCenter }} }
+
+  OptionCheckBox
+    id: showNames
+    !text: tr('Show creature name')
+    &tooltipAddons: { {{ icon = "/images/game/tutorial/client/options/showNames", size = { width = 330, height = 200 }, align = AlignCenter }} }
+
+  OptionCheckBox
+    id: showLevel
+    !text: tr('Show creature level')
+    &tooltipAddons: { {{ icon = "/images/game/tutorial/client/options/showLevel", size = { width = 330, height = 200 }, align = AlignCenter }} }
+
+  OptionCheckBox
+    id: showIcons
+    !text: tr('Show creature icons')
+    &tooltipAddons: { {{ icon = "/images/game/tutorial/client/options/showIcons", size = { width = 330, height = 200 }, align = AlignCenter }} }
+
+  OptionCheckBox
+    id: showHealth
+    !text: tr('Show creature health bar')
+    &tooltipAddons: { {{ icon = "/images/game/tutorial/client/options/showHealth", size = { width = 330, height = 200 }, align = AlignCenter }} }
+
+  OptionCheckBox
+    id: showMana
+    !text: tr('Show player mana bar')
+    &tooltipAddons: { {{ icon = "/images/game/tutorial/client/options/showMana", size = { width = 330, height = 200 }, align = AlignCenter }} }
+
+  OptionCheckBox
+    id: showExpBar
+    !text: tr('Show player experience bar')
+    &tooltipAddons: { {{ icon = "/images/game/tutorial/client/options/showExpBar", size = { width = 450, height = 375 }, align = AlignCenter }} }
+
+  OptionCheckBox
+    id: showFps
+    !text: tr('Show FPS (Frames Per Second)')
+    &tooltipAddons: { {{ text = tr('Shows the FPS (Frames Per Second) of game.') .. '\n', align = AlignLeft }}, {{ icon = "/images/game/tutorial/client/options/showFps", size = { width = 400, height = 60 }, align = AlignCenter }} }
+
+  OptionCheckBox
+    id: showPing
+    !text: tr('Show Ping (connection ping)')
+    &tooltipAddons: { {{ text = tr('Shows the Ping (connection speed) to the server in milliseconds.') .. '\n', align = AlignLeft }}, {{ icon = "/images/game/tutorial/client/options/showPing", size = { width = 400, height = 60 }, align = AlignCenter }} }
+
+  OptionCheckBox
+    id: showHotkeybars
+    !text: tr('Show hotkeybars')
+    &tooltipAddons: { {{ text = tr('Shows 4 hotkeybars (at top, bottom, left and right)\nin which you can drag hotkeys and drop within\nthe bars.') .. '\n', align = AlignLeft }}, {{ icon = "/images/game/tutorial/client/options/showHotkeybars", size = { width = 210, height = 40 }, align = AlignCenter }} }
+
+  Label
+    !text: tr("Left Sticker")
+    anchors.top: showHotkeybars.bottom
+    anchors.left: parent.left
+    margin-top: 10
+  ComboBox
+    id: leftStickerComboBox
+    anchors.top: prev.bottom
+    anchors.left: parent.left
+    width: 120
+    margin-top: 3
+    &save: true
+  Label
+    id: leftSticketOpacityLabel
+    anchors.top: prev.bottom
+    anchors.left: parent.left
+    &baseText: tr('Opacity') .. ': %d%%'
+    !text: tr('Opacity') .. ': 100%'
+    margin-top: 5
+  OptionScrollbar
+    id: leftStickerOpacityScrollbar
+    anchors.top: prev.bottom
+    anchors.left: parent.left
+    width: 120
+    margin-top: 3
+    minimum: 0
+    maximum: 255
+
+  Label
+    !text: tr("Right Sticker")
+    anchors.top: showHotkeybars.bottom
+    anchors.left: prev.right
+    margin-top: 10
+    margin-left: 40
+  ComboBox
+    id: rightStickerComboBox
+    anchors.top: prev.bottom
+    anchors.left: prev.left
+    width: 120
+    margin-top: 3
+    &save: true
+  Label
+    id: rightSticketOpacityLabel
+    anchors.top: prev.bottom
+    anchors.left: prev.left
+    &baseText: tr('Opacity') .. ': %d%%'
+    !text: tr('Opacity') .. ': 100%'
+    margin-top: 5
+  OptionScrollbar
+    id: rightStickerOpacityScrollbar
+    anchors.top: prev.bottom
+    anchors.left: prev.left
+    width: 120
+    margin-top: 3
+    minimum: 0
+    maximum: 255

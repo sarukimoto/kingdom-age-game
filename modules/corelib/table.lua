@@ -190,8 +190,24 @@ function table.equals(t, comp)
 end
 
 function table.random(t)
-  if not t or table.empty(t) then return nil end
-  return t[math.random(#t)]
+  if table.empty(t) then
+    return nil
+  end
+
+  local key = math.random(#t)
+  return t[key], key
+end
+
+function table.shuffle(t)
+  if #t < 2 then
+    return t
+  end
+
+  for i = #t, 2, -1 do
+    local j = math.random(i)
+    t[i], t[j] = t[j], t[i]
+  end
+  return t
 end
 
 function table.serialize(_table, recursive) -- (table) -- Do not use the recursive param

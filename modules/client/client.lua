@@ -12,23 +12,23 @@ function reloadScripts()
 
   local message = tr('All modules and scripts were reloaded.')
 
-  local mod = modules.game_textmessage
-  if mod then
-    mod.displayGameMessage(message)
+  if modules.game_textmessage then
+    modules.game_textmessage.displayGameMessage(message)
   end
+
   print(message)
 end
 
 function onGameStart()
-  local mod = modules.ka_client_audio
-  if not mod then return end
-  mod.clearAudios()
+  if modules.ka_client_audio then
+    modules.ka_client_audio.clearAudios()
+  end
 end
 
 function onGameEnd()
-  local mod = modules.ka_client_audio
-  if not mod then return end
-  mod.clearAudios()
+  if modules.ka_client_audio then
+    modules.ka_client_audio.clearAudios()
+  end
   musicChannel:play(musicFilename, 1.0, -1, 7) -- Startup music
 end
 

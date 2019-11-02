@@ -6,35 +6,44 @@ local config =
   maxItems = 10,
   shrinkTime = 1800,
   shrinkInterval = 50,
-  showingTime = 5000
+  showingTime = 5000,
+  baseMargin = 8
 }
 
-function initLootWidget()
-  if lootWidget then
-    return
-  end
-
-  lootWidget = g_ui.createWidget('LootPanel', modules.game_interface.getMapPanel())
-  g_ui.createWidget('ItemBoxLeft', lootWidget)
-  g_ui.createWidget('ItemBoxRight', lootWidget)
-  lootWidget:setVisible(false)
-  lootWidget:setWidth(48)
-  adjustPosition(modules.game_interface.getMapPanel())
-end
-
 function adjustPosition(widget)
-  if not lootWidget then
+  if not modules.game_interface or not lootWidget then
     return
   end
 
+  local widget = modules.game_interface.getMapPanel()
   addEvent(function()
-    local mod = modules.ka_game_hotkeybars
-    if mod and modules.game_interface.getCurrentViewMode() == 2 and mod.getHotkeyBars()[AnchorTop] then
-      lootWidget:setMarginTop(modules.client_topmenu.getTopMenu():getHeight() + (mod.getHotkeyBars()[AnchorTop]:isVisible() and mod.getHotkeyBars()[AnchorTop]:getHeight() or 0) + math.floor((widget:getHeight() - widget:getMapHeight()) / 2) + 8)
+    if ViewModes[modules.game_interface.getCurrentViewMode()].isFull then
+      local topMenu          = modules.client_topmenu and modules.client_topmenu.getTopMenu() or nil
+      local topMenuMargin    = topMenu and (topMenu:getHeight() + topMenu:getMarginTop()) or 0
+      local hotkeyTopBar     = modules.ka_game_hotkeybars and modules.ka_game_hotkeybars.getHotkeyBars()[AnchorTop] or nil
+      local hotkeybarsMargin = hotkeyTopBar and hotkeyTopBar:isVisible() and hotkeyTopBar:getHeight() or 0
+
+      lootWidget:setMarginTop(config.baseMargin + math.floor((widget:getHeight() - widget:getMapHeight()) / 2) + topMenuMargin + hotkeybarsMargin)
     else
-      lootWidget:setMarginTop(8)
+      lootWidget:setMarginTop(config.baseMargin)
     end
   end)
+end
+
+function onGeometryChange(self)
+  adjustPosition()
+end
+
+function onViewModeChange(mapWidget, newMode, oldMode)
+  adjustPosition()
+end
+
+function onZoomChange(self, oldZoom, newZoom) -- Is this callback necessary?
+  if oldZoom == newZoom then
+    return
+  end
+
+  adjustPosition()
 end
 
 function updateLootWidget()
@@ -143,10 +152,19 @@ function init()
 
   ProtocolGame.registerExtendedOpcode(GameServerExtOpcodes.GameServerLootWindow, onLoot)
   connect(modules.game_interface.getMapPanel(), {
-    onGeometryChange = adjustPosition
+    onGeometryChange = onGeometryChange,
+    onViewModeChange = onViewModeChange,
+    onZoomChange = onZoomChange,
   })
 
-  initLootWidget()
+  if not lootWidget then
+    lootWidget = g_ui.createWidget('LootPanel', modules.game_interface.getMapPanel())
+    g_ui.createWidget('ItemBoxLeft', lootWidget)
+    g_ui.createWidget('ItemBoxRight', lootWidget)
+    lootWidget:setVisible(false)
+    lootWidget:setWidth(48)
+    adjustPosition()
+  end
 end
 
 function terminate()
@@ -156,6 +174,8 @@ function terminate()
 
   ProtocolGame.unregisterExtendedOpcode(GameServerExtOpcodes.GameServerLootWindow)
   disconnect(modules.game_interface.getMapPanel(), {
-    onGeometryChange = adjustPosition
+    onGeometryChange = onGeometryChange,
+    onViewModeChange = onViewModeChange,
+    onZoomChange = onZoomChange,
   })
 end

@@ -28,29 +28,11 @@ lastDirTime = g_clock.millis()
 function init()
   g_ui.importStyle('styles/countwindow')
 
-  connect(g_game, {
-    onGameStart = onGameStart,
-    onGameEnd = onGameEnd,
-    onLoginAdvice = onLoginAdvice,
-  }, true)
-
-  -- Call load AFTER game window has been created and
-  -- resized to a stable state, otherwise the saved
-  -- settings can get overridden by false onGeometryChange
-  -- events
-  connect(g_app, {
-    onRun = load,
-    onExit = save
-  })
-
   gameRootPanel = g_ui.displayUI('interface')
   gameRootPanel:hide()
   gameRootPanel:lower()
-  gameRootPanel.onGeometryChange = updateStretchShrink
-  gameRootPanel.onFocusChange = stopSmartWalk
 
   mouseGrabberWidget = gameRootPanel:getChildById('mouseGrabber')
-  mouseGrabberWidget.onMouseRelease = onMouseGrabberRelease
 
   bottomSplitter = gameRootPanel:getChildById('bottomSplitter')
   gameExpBar = gameRootPanel:getChildById('gameExpBar')
@@ -65,12 +47,34 @@ function init()
   gameLeftPanelBackground = gameRootPanel:getChildById('gameLeftPanelBackground')
   gameBottomPanel = gameRootPanel:getChildById('gameBottomPanel')
 
+  -- Call load AFTER game window has been created and
+  -- resized to a stable state, otherwise the saved
+  -- settings can get overridden by false onGeometryChange
+  -- events
+  connect(g_app, {
+    onRun = load,
+    onExit = save,
+  })
+
+  connect(g_game, {
+    onGameStart = onGameStart,
+    onGameEnd = onGameEnd,
+    onLoginAdvice = onLoginAdvice,
+  }, true)
+
+  connect(gameRootPanel, {
+    onGeometryChange = updateStretchShrink,
+    onFocusChange = stopSmartWalk,
+  })
+
+  connect(mouseGrabberWidget, {
+    onMouseRelease = onMouseGrabberRelease,
+  })
+
   -- connect(gameLeftPanel, { onVisibilityChange = onLeftPanelVisibilityChange })
 
   logoutButton = modules.client_topmenu.addLeftButton('logoutButton', tr('Exit'),
     '/images/topbuttons/logout', tryLogout, true)
-
-  setupViewMode(0)
 
   bindKeys()
 
@@ -107,7 +111,7 @@ function bindKeys()
   g_keyboard.bindKeyPress('Ctrl+=', function() gameMapPanel:zoomIn() modules.client_options.setOption('gameScreenSize', gameMapPanel:getZoom(), false) end, gameRootPanel)
   g_keyboard.bindKeyPress('Ctrl+-', function() gameMapPanel:zoomOut() modules.client_options.setOption('gameScreenSize', gameMapPanel:getZoom(), false) end, gameRootPanel)
   g_keyboard.bindKeyDown('Ctrl+L', function() tryLogout(false) end, gameRootPanel)
-  --g_keyboard.bindKeyDown('Ctrl+W', function() g_map.cleanTexts() local mod = modules.game_textmessage if not mod then return end mod.clearMessages() end, gameRootPanel)
+  -- g_keyboard.bindKeyDown('Ctrl+W', function() g_map.cleanTexts() if modules.game_textmessage then modules.game_textmessage.clearMessages() end end, gameRootPanel)
   g_keyboard.bindKeyDown('Ctrl+.', nextViewMode, gameRootPanel)
 end
 
@@ -141,13 +145,27 @@ function terminate()
 
   stopSmartWalk()
 
+  -- disconnect(gameLeftPanel, { onVisibilityChange = onLeftPanelVisibilityChange })
+
+  disconnect(mouseGrabberWidget, {
+    onMouseRelease = onMouseGrabberRelease,
+  })
+
+  disconnect(gameRootPanel, {
+    onGeometryChange = updateStretchShrink,
+    onFocusChange = stopSmartWalk,
+  })
+
   disconnect(g_game, {
     onGameStart = onGameStart,
     onGameEnd = onGameEnd,
     onLoginAdvice = onLoginAdvice
   })
 
-  -- disconnect(gameLeftPanel, { onVisibilityChange = onLeftPanelVisibilityChange })
+  disconnect(g_app, {
+    onRun = load,
+    onExit = save,
+  })
 
   logoutButton:destroy()
   gameRootPanel:destroy()
@@ -163,17 +181,16 @@ function onGameStart()
   modules.client_options.updateStickers()
 
   -- open tibia has delay in auto walking
-  if not g_game.isOfficialTibia() then
+  -- if not g_game.isOfficialTibia() then
     g_game.enableFeature(GameForceFirstAutoWalkStep)
-  else
-    g_game.disableFeature(GameForceFirstAutoWalkStep)
-  end
+  -- else
+    -- g_game.disableFeature(GameForceFirstAutoWalkStep)
+  -- end
 end
 
 function onGameEnd()
   g_window.setTitle(g_app.getName())
 
-  setupViewMode(0)
   hide()
 end
 
@@ -183,14 +200,14 @@ function show()
   gameRootPanel:show()
   gameRootPanel:focus()
   gameMapPanel:followCreature(g_game.getLocalPlayer())
-  setupViewMode(0)
+  updateViewMode()
   updateStretchShrink()
   logoutButton:setTooltip(tr('Logout'))
 
-  addEvent(function()
-    gameMapPanel:setMaxZoomOut(19) -- Default: 11
-    gameMapPanel:setLimitVisibleRange(true)
-  end)
+  -- addEvent(function()
+  --   gameMapPanel:setMaxZoomOut(19) -- Default: 11
+  --   gameMapPanel:setLimitVisibleRange(true)
+  -- end)
 end
 
 function hide()
@@ -369,12 +386,14 @@ function setWalkingRepeatDelay(value)
 end
 
 function updateStretchShrink()
-  if modules.client_options.getOption('dontStretchShrink') and not alternativeView then
-    gameMapPanel:setVisibleDimension({ width = 15, height = 11 })
-
-    -- Set gameMapPanel size to height = 11 * 32 + 2
-    bottomSplitter:setMarginBottom(bottomSplitter:getMarginBottom() + (gameMapPanel:getHeight() - 32 * 11) - 10)
+  if not modules.client_options.getOption('dontStretchShrink') or alternativeView then
+    return
   end
+
+  gameMapPanel:setVisibleDimension({ width = 15, height = 11 })
+
+  -- Set gameMapPanel size to height = 11 * 32 + 2
+  bottomSplitter:setMarginBottom(bottomSplitter:getMarginBottom() + (gameMapPanel:getHeight() - 32 * 11) - 10)
 end
 
 function addToPanels(uiWidget)
@@ -594,8 +613,8 @@ function createThingMenu(menuPosition, lookThing, useThing, creatureThing)
       if g_game.getAccountType() >= ACCOUNT_TYPE_GAMEMASTER then
         menu:addSeparator()
 
-        menu:addOption(tr('View rule violations'), function() local mod = modules.game_ruleviolation if not mod then return end mod.showViewWindow() end)
-        menu:addOption(tr('View bugs'), function() local mod = modules.game_bugreport if not mod then return end mod.showViewWindow() end)
+        menu:addOption(tr('View rule violations'), function() if modules.game_ruleviolation then modules.game_ruleviolation.showViewWindow() end end)
+        menu:addOption(tr('View bugs'), function() if modules.game_bugreport then modules.game_bugreport.showViewWindow() end end)
       end
 
     else
@@ -621,23 +640,18 @@ function createThingMenu(menuPosition, lookThing, useThing, creatureThing)
 
         menu:addOption(tr('Message to') .. ' ' .. creatureName, function() g_game.openPrivateChannel(creatureName) end)
 
-        local mod = modules.game_console
-        if mod then
-          if mod.getOwnPrivateTab() then
-            menu:addOption(tr('Invite to private chat'), function() g_game.inviteToOwnChannel(creatureName) end)
-            menu:addOption(tr('Exclude from private chat'), function() g_game.excludeFromOwnChannel(creatureName) end) -- [TODO] must be removed after message's popup labels been implemented
-          end
+        if modules.game_console and modules.game_console.getOwnPrivateTab() then
+          menu:addOption(tr('Invite to private chat'), function() g_game.inviteToOwnChannel(creatureName) end)
+          menu:addOption(tr('Exclude from private chat'), function() g_game.excludeFromOwnChannel(creatureName) end) -- [TODO] must be removed after message's popup labels been implemented
         end
         if not localPlayer:hasVip(creatureName) then
           menu:addOption(tr('Add to VIP list'), function() g_game.addVip(creatureName) end)
         end
 
-        if mod then
-          if mod.isIgnored(creatureName) then
-            menu:addOption(tr('Unignore') .. ' ' .. creatureName, function() mod.removeIgnoredPlayer(creatureName) end)
-          else
-            menu:addOption(tr('Ignore') .. ' ' .. creatureName, function() mod.addIgnoredPlayer(creatureName) end)
-          end
+        if modules.game_console.isIgnored(creatureName) then
+          menu:addOption(tr('Unignore') .. ' ' .. creatureName, function() if modules.game_console then modules.game_console.removeIgnoredPlayer(creatureName) end end)
+        else
+          menu:addOption(tr('Ignore') .. ' ' .. creatureName, function() if modules.game_console then modules.game_console.addIgnoredPlayer(creatureName) end end)
         end
 
         local localPlayerShield = localPlayer:getShield()
@@ -666,17 +680,14 @@ function createThingMenu(menuPosition, lookThing, useThing, creatureThing)
         if localPlayer ~= creatureThing then
           menu:addSeparator()
 
-          local mod = modules.game_ruleviolation
-          if mod then
-            if g_game.getAccountType() >= ACCOUNT_TYPE_GAMEMASTER then
-              menu:addOption(tr('Add rule violation'), function() mod.showViewWindow(creatureName) end)
-            end
-
-            local REPORT_TYPE_NAME      = 0
-            local REPORT_TYPE_VIOLATION = 2
-            menu:addOption(tr('Report name'), function() mod.showRuleViolationReportWindow(REPORT_TYPE_NAME, creatureName) end)
-            menu:addOption(tr('Report violation'), function() mod.showRuleViolationReportWindow(REPORT_TYPE_VIOLATION, creatureName) end)
+          if g_game.getAccountType() >= ACCOUNT_TYPE_GAMEMASTER then
+            menu:addOption(tr('Add rule violation'), function() if modules.game_ruleviolation then modules.game_ruleviolation.showViewWindow(creatureName) end end)
           end
+
+          local REPORT_TYPE_NAME      = 0
+          local REPORT_TYPE_VIOLATION = 2
+          menu:addOption(tr('Report name'), function() if modules.game_ruleviolation then modules.game_ruleviolation.showRuleViolationReportWindow(REPORT_TYPE_NAME, creatureName) end end)
+          menu:addOption(tr('Report violation'), function() if modules.game_ruleviolation then modules.game_ruleviolation.showRuleViolationReportWindow(REPORT_TYPE_VIOLATION, creatureName) end end)
         end
       end
     end
@@ -894,11 +905,11 @@ function getLeftPanel()
   return gameLeftPanel
 end
 
-function gameRightPanelBackground()
+function getGameRightPanelBackground()
   return gameRightPanelBackground
 end
 
-function gameLeftPanelBackground()
+function getGameLeftPanelBackground()
   return gameLeftPanelBackground
 end
 
@@ -939,70 +950,146 @@ end
 --   end
 -- end
 
-function nextViewMode()
-  setupViewMode((currentViewMode + 1) % 3)
+function getCurrentViewMode()
+  return currentViewMode
 end
 
-local visibleDimension = { width = 25, height = 19 }
+function nextViewMode()
+  setupViewMode((currentViewMode + 1) % table.size(ViewModes))
+end
+
+function updateViewMode()
+  local viewMode    = ViewModes[0]
+  local viewModeStr = modules.client_options.getOption('viewModeComboBox')
+  for k = 0, #ViewModes do
+    if viewModeStr == ViewModes[k].name then
+      viewMode = ViewModes[k]
+      break
+    end
+  end
+  setupViewMode(viewMode.id)
+end
+
 function setupViewMode(mode)
-  if mode == currentViewMode then return end
-
-  local topMenu = modules.client_topmenu.getTopMenu()
-
-  -- Previous mode as 2
-  if currentViewMode == 2 then
-    gameMapPanel:addAnchor(AnchorLeft, 'gameLeftPanel', AnchorRight)
-    gameMapPanel:addAnchor(AnchorRight, 'gameRightPanel', AnchorLeft)
-    gameMapPanel:addAnchor(AnchorBottom, 'gameBottomPanel', AnchorTop)
-    gameRootPanel:addAnchor(AnchorTop, 'topMenu', AnchorBottom)
-    gameLeftPanel:setOn(modules.client_options.getOption('showLeftPanel'))
-    gameRightPanelBackground:setImageColor('white')
-    gameLeftPanelBackground:setImageColor('white')
-    gameLeftPanel:setMarginTop(0)
-    gameRightPanel:setMarginTop(0)
-    topMenuButton:setMarginTop(10)
-    gameBottomPanel:setImageColor('white')
-    topMenu:setImageColor('white')
+  if mode == currentViewMode then
+    return
   end
 
   g_game.changeMapAwareRange(18, 14)
 
-  -- New mode
-  local gameScreenSize = modules.client_options.getOption('gameScreenSize')
+  local topMenu = modules.client_topmenu.getTopMenu()
+
+  -- Anchor
+  gameMapPanel:breakAnchors()
+  gameRootPanel:breakAnchors()
+
+
+
+  -- Normal
   if mode == 0 then
+    -- Anchor
+    gameMapPanel:addAnchor(AnchorTop, 'parent', AnchorTop)
+    gameMapPanel:addAnchor(AnchorLeft, 'gameLeftPanel', AnchorRight)
+    gameMapPanel:addAnchor(AnchorRight, 'gameRightPanel', AnchorLeft)
+    gameMapPanel:addAnchor(AnchorBottom, 'gameBottomPanel', AnchorTop)
+    gameRootPanel:addAnchor(AnchorTop, 'topMenu', AnchorBottom)
+    gameRootPanel:addAnchor(AnchorLeft, 'parent', AnchorLeft)
+    gameRootPanel:addAnchor(AnchorRight, 'parent', AnchorRight)
+    gameRootPanel:addAnchor(AnchorBottom, 'parent', AnchorBottom)
+
+    -- Margin
+    topMenuButton:setMarginTop(10)
+    gameLeftPanel:setMarginTop(0)
+    gameRightPanel:setMarginTop(0)
+
+    -- Range
     gameMapPanel:setKeepAspectRatio(true)
     gameMapPanel:setLimitVisibleRange(false)
-    gameMapPanel:setZoom(gameScreenSize)
-    gameMapPanel:setVisibleDimension(visibleDimension)
+
+    topMenu:setImageColor('white')
+    gameLeftPanelBackground:setImageColor('white')
+    gameRightPanelBackground:setImageColor('white')
+    gameBottomPanel:setImageColor('white')
+
+
+
+  -- Crop
   elseif mode == 1 then
+    -- Anchor
+    gameMapPanel:addAnchor(AnchorTop, 'parent', AnchorTop)
+    gameMapPanel:addAnchor(AnchorLeft, 'gameLeftPanel', AnchorRight)
+    gameMapPanel:addAnchor(AnchorRight, 'gameRightPanel', AnchorLeft)
+    gameMapPanel:addAnchor(AnchorBottom, 'gameBottomPanel', AnchorTop)
+    gameRootPanel:addAnchor(AnchorTop, 'topMenu', AnchorBottom)
+    gameRootPanel:addAnchor(AnchorLeft, 'parent', AnchorLeft)
+    gameRootPanel:addAnchor(AnchorRight, 'parent', AnchorRight)
+    gameRootPanel:addAnchor(AnchorBottom, 'parent', AnchorBottom)
+
+    -- Margin
+    topMenuButton:setMarginTop(10)
+    gameLeftPanel:setMarginTop(0)
+    gameRightPanel:setMarginTop(0)
+
+    -- Range
     gameMapPanel:setKeepAspectRatio(false)
     gameMapPanel:setLimitVisibleRange(true)
-    gameMapPanel:setZoom(gameScreenSize)
-    gameMapPanel:setVisibleDimension(visibleDimension)
+
+    topMenu:setImageColor('white')
+    gameLeftPanelBackground:setImageColor('white')
+    gameRightPanelBackground:setImageColor('white')
+    gameBottomPanel:setImageColor('white')
+
+
+
+  -- Crop Full
   elseif mode == 2 then
-    gameMapPanel:setLimitVisibleRange(true)
-    gameMapPanel:setZoom(gameScreenSize)
-    gameMapPanel:setVisibleDimension(visibleDimension)
+    -- Anchor
     gameMapPanel:fill('parent')
     gameRootPanel:fill('parent')
-    gameRightPanelBackground:setImageColor('#ffffff88')
-    gameLeftPanelBackground:setImageColor('#ffffff88')
 
+    -- Margin
     local isTopMenuVisible = topMenu and topMenu:getMarginTop() >= 0 or false
+    topMenuButton:setMarginTop((isTopMenuVisible and topMenu:getHeight() - gameRightPanel:getPaddingTop() or 0) + 10)
     gameLeftPanel:setMarginTop(isTopMenuVisible and topMenu:getHeight() - gameLeftPanel:getPaddingTop() or 0)
     gameRightPanel:setMarginTop(isTopMenuVisible and topMenu:getHeight() - gameRightPanel:getPaddingTop() or 0)
-    topMenuButton:setMarginTop((isTopMenuVisible and topMenu:getHeight() - gameRightPanel:getPaddingTop() or 0) + 10)
-    gameLeftPanel:setVisible(true)
-    -- gameMapPanel:setOn(true)
-    gameBottomPanel:setImageColor('#ffffff88')
+
+    -- Range
+    gameMapPanel:setKeepAspectRatio(false)
+    gameMapPanel:setLimitVisibleRange(true)
+
     topMenu:setImageColor('#ffffff66')
+    gameLeftPanelBackground:setImageColor('#ffffff66')
+    gameRightPanelBackground:setImageColor('#ffffff66')
+    gameBottomPanel:setImageColor('#ffffff66')
+
+
+
+  -- Full
+  elseif mode == 3 then
+    -- Anchor
+    gameMapPanel:fill('parent')
+    gameRootPanel:fill('parent')
+
+    -- Margin
+    local isTopMenuVisible = topMenu and topMenu:getMarginTop() >= 0 or false
+    topMenuButton:setMarginTop((isTopMenuVisible and topMenu:getHeight() - gameRightPanel:getPaddingTop() or 0) + 10)
+    gameLeftPanel:setMarginTop(isTopMenuVisible and topMenu:getHeight() - gameLeftPanel:getPaddingTop() or 0)
+    gameRightPanel:setMarginTop(isTopMenuVisible and topMenu:getHeight() - gameRightPanel:getPaddingTop() or 0)
+
+    -- Range
+    gameMapPanel:setKeepAspectRatio(true)
+    gameMapPanel:setLimitVisibleRange(false)
+
+    -- In some dimensions, panels can be above gamescreen, so the panels should be transparent
+    topMenu:setImageColor('#ffffff66')
+    gameLeftPanelBackground:setImageColor('#ffffff66')
+    gameRightPanelBackground:setImageColor('#ffffff66')
+    gameBottomPanel:setImageColor('#ffffff66')
   end
 
   gameMapPanel:changeViewMode(mode, currentViewMode)
 
-  currentViewMode = mode
-end
+  modules.client_options.setOption('viewModeComboBox', ViewModes[mode].name, false)
 
-function getCurrentViewMode()
-  return currentViewMode
+  currentViewMode = mode
 end

@@ -27,6 +27,7 @@ GameServerOpcodes =
     GameServerPowersList              = 57,
     GameServerConditionsList          = 58,
     GameServerCreatureJump            = 59,
+    GameServerEmote                   = 60,
 
     -- original tibia ONLY
     GameServerFullMap                 = 100,
@@ -243,6 +244,7 @@ ClientExtOpcodes =
     ClientBugReport         = 7,
     ClientRuleViolation     = 8,
     ClientConditionsList    = 9,
+    ClientEmote             = 10,
 }
 
 ClientActions =

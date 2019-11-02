@@ -1,0 +1,142 @@
+Panel
+  Label
+    !text: 'Graphic engine'
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: parent.top
+
+  ButtonBox
+    id: opengl1
+    anchors.left: parent.left
+    anchors.top: prev.bottom
+    text: OpenGL 1
+    size: 80 20
+    margin-top: 3
+
+  ButtonBox
+    id: opengl2
+    anchors.left: prev.right
+    anchors.verticalCenter: prev.verticalCenter
+    text: OpenGL 2
+    size: 80 20
+    margin-left: 4
+
+  ButtonBox
+    id: directx9
+    anchors.left: prev.right
+    anchors.verticalCenter: prev.verticalCenter
+    text: DirectX 9
+    size: 80 20
+    margin-left: 4
+
+
+
+  Label
+    !text: 'Shader filter'
+    anchors.left: parent.left
+    anchors.top: opengl1.bottom
+    margin-top: 10
+
+  ComboBox
+    id: shaderFilterComboBox
+    anchors.top: prev.bottom
+    anchors.left: parent.left
+    width: 150
+    margin-top: 3
+    &save: true
+
+  Label
+    !text: 'View mode'
+    anchors.left: prev.right
+    anchors.top: opengl1.bottom
+    margin-top: 10
+    margin-left: 40
+
+  ComboBox
+    id: viewModeComboBox
+    anchors.top: prev.bottom
+    anchors.left: prev.left
+    width: 150
+    margin-top: 3
+    &save: true
+
+
+
+  Label
+    id: gameScreenSizeLabel
+    !text: tr('Game screen viewport') .. ': max'
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: prev.bottom
+    margin-top: 10
+    @onSetup: |
+      local value = getOption('gameScreenSize')
+      self:setText(tr('Game screen viewport') .. ': ' .. (value > 10 and value < 18 and value or 'max') .. ' SQMs')
+
+  OptionScrollbar
+    id: gameScreenSize
+    step: 2
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: prev.bottom
+    margin-top: 3
+    minimum: 11
+    maximum: 19
+
+  OptionCheckBox
+    id: dontStretchShrink
+    !text: tr('Lock game screen area')
+    &tooltipAddons: { {{ text = tr('You will not be able to stretch or shrink\ngame screen.\nIf enabled, shader filters will make no difference.\nNote:\nThe game screen viewport should be on minimum\nand hotkeybars should be disabled for this to work.'), align = AlignLeft }} }
+    $!first:
+      margin-top: 10
+
+  OptionCheckBox
+    id: fullscreen
+    !text: tr('Enable fullscreen mode')
+    &tooltipAddons: { {{ text = '(Ctrl+Shift+F)', align = AlignLeft }} }
+
+  OptionCheckBox
+    id: vsync
+    !text: tr('Enable Vsync (Vertical Synchronization)')
+    &tooltipAddons: { {{ text = tr('Limits FPS (Frames Per Second) to 60.'), align = AlignLeft }} }
+
+
+
+  Label
+    id: backgroundFrameRateLabel
+    !text: tr('Game framerate limit') .. ': max'
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: prev.bottom
+    margin-top: 5
+    @onSetup: |
+      local value = getOption('backgroundFrameRate')
+      self:setText(tr('Game framerate limit') .. ': ' .. (value > 0 and value < 201 and value or 'max'))
+
+  OptionScrollbar
+    id: backgroundFrameRate
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: prev.bottom
+    margin-top: 3
+    minimum: 10
+    maximum: 201
+
+  Label
+    id: foregroundFrameRateLabel
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: prev.bottom
+    margin-top: 5
+    @onSetup: |
+      local value = getOption('foregroundFrameRate')
+      self:setText(tr('Interface framerate limit') .. ': ' .. (value > 0 and value < 61 and value or 'max'))
+
+  OptionScrollbar
+    id: foregroundFrameRate
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: prev.bottom
+    margin-top: 3
+    minimum: 1
+    maximum: 61

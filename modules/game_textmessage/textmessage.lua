@@ -71,7 +71,8 @@ function init()
   connect(g_game, 'onGameEnd', clearMessages)
   connect(modules.game_interface.getMapPanel(), {
     onGeometryChange = onGeometryChange,
-    onViewModeChange = onViewModeChange
+    onViewModeChange = onViewModeChange,
+    onZoomChange = onZoomChange,
   })
 
   messagesPanel = g_ui.loadUI('textmessage', modules.game_interface.getRootPanel())
@@ -85,7 +86,8 @@ function terminate()
 
   disconnect(modules.game_interface.getMapPanel(), {
     onGeometryChange = onGeometryChange,
-    onViewModeChange = onViewModeChange
+    onViewModeChange = onViewModeChange,
+    onZoomChange = onZoomChange,
   })
   disconnect(g_game, 'onGameEnd', clearMessages)
 
@@ -94,17 +96,15 @@ function terminate()
 end
 
 local function updateStatusLabelPosition(label)
-  local mod = modules.game_interface
-  if not mod then return end
+  if not modules.game_interface then return end
 
-  local gameExpBar = mod.getGameExpBar()
+  local gameExpBar = modules.game_interface.getGameExpBar()
 
   local margin
-  if mod.getCurrentViewMode() == 2 then
-    local _mod = modules.ka_game_hotkeybars
-    margin = mod.getSplitter():getMarginBottom() + (_mod and _mod.isHotkeybarsVisible() and 44 or gameExpBar:isOn() and gameExpBar:getHeight() or 0) + 4
+  if ViewModes[modules.game_interface.getCurrentViewMode()].isFull then
+    margin = modules.game_interface.getSplitter():getMarginBottom() + (modules.ka_game_hotkeybars and modules.ka_game_hotkeybars.isHotkeybarsVisible() and 44 or gameExpBar:isOn() and gameExpBar:getHeight() or 0) + 4
   else
-    local mapPanel = mod.getMapPanel()
+    local mapPanel = modules.game_interface.getMapPanel()
     margin = math.floor((mapPanel:getHeight() - mapPanel:getMapHeight()) / 2) + (gameExpBar:isOn() and gameExpBar:getHeight() or 0) + 4
   end
   label:setMarginBottom(margin)
@@ -116,6 +116,13 @@ end
 
 function onViewModeChange(mapWidget, viewMode, oldViewMode)
   updateStatusLabelPosition(statusLabel)
+end
+
+function onZoomChange(self, oldZoom, newZoom) -- Is this callback necessary?
+  if oldZoom == newZoom then
+    return
+  end
+  addEvent(function() updateStatusLabelPosition(statusLabel) end)
 end
 
 function calculateVisibleTime(text)
@@ -133,9 +140,8 @@ function displayMessage(mode, text)
   if msgtype == MessageSettings.none then return end
 
   if msgtype.consoleTab ~= nil and (msgtype.consoleOption == nil or modules.client_options.getOption(msgtype.consoleOption)) then
-    local mod = modules.game_console
-    if mod then
-      mod.addText(text, msgtype, tr(msgtype.consoleTab))
+    if modules.game_console then
+      modules.game_console.addText(text, msgtype, tr(msgtype.consoleTab))
     end
     --TODO move to game_console
   end
@@ -184,8 +190,7 @@ function clearMessages()
 end
 
 function LocalPlayer:onAutoWalkFail(player)
-  local mod = modules.game_textmessage
-  if mod then
-    mod.displayFailureMessage(tr('There is no way.'))
+  if modules.game_textmessage then
+    modules.game_textmessage.displayFailureMessage(tr('There is no way.'))
   end
 end

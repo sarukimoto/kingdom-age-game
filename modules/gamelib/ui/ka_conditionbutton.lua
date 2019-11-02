@@ -53,11 +53,11 @@ function UIConditionButton:updateData(condition)
     -- conditionIconWidget:setText(string.format('%d,%d', condition.id, condition.subId))
   -- Else, remove the icon
     conditionIconWidget:setWidth(0) -- Comment this line if you want the debug above to work
+  end
 
-    if condition.name then
-      local conditionAuxiliarWidget = self:getChildById('conditionAuxiliar')
-      conditionAuxiliarWidget:setText(string.format('%s', condition.name))
-    end
+  if condition.name then
+    local conditionAuxiliarWidget = self:getChildById('conditionAuxiliar')
+    conditionAuxiliarWidget:setText(string.format('%s', condition.name))
   end
 
   -- Setup aggressive type
@@ -100,9 +100,9 @@ function UIConditionButton:setTooltipText()
 
   local nameBlock = { { text = c.name }, backgroundColor = '#2C374C77' }
   local infoBlock = {
-    { text = "Combat: ", align = AlignLeft},
+    { text = "Combat: ", align = AlignLeft },
     { icon = string.format('/images/game/conditions/type_%s', c.isAggressive and 'aggressive' or 'nonaggressive'), size = { width = 11, height = 11 }, align = AlignLeft },
-    { text = string.format(' %s', c.isAggressive and "Aggressive" or "Non-Aggressive"), align = AlignLeft},
+    { text = string.format(' %s', c.isAggressive and "Aggressive" or "Non-Aggressive"), align = AlignLeft },
   }
   local attributeStr = ""
   if c.attribute then

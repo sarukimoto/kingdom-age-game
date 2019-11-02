@@ -840,7 +840,7 @@ local function initInterface()
     end
   end
   categoryList:addOption(getMarketCategoryName(255)) -- meta weapons
-  categoryList:setCurrentOption(getMarketCategoryName(MarketCategory.First))
+  categoryList:setOption(getMarketCategoryName(MarketCategory.First))
   subCategoryList:setEnabled(false)
 
   -- hook item filters
@@ -919,7 +919,7 @@ end
 
 function Market.reset()
   balanceLabel:setColor('#bbbbbb')
-  categoryList:setCurrentOption(getMarketCategoryName(MarketCategory.First))
+  categoryList:setOption(getMarketCategoryName(MarketCategory.First))
   searchEdit:setText('')
   clearFilters()
   clearMyOffers()

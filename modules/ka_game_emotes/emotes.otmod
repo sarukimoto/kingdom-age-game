@@ -1,0 +1,10 @@
+Module
+  name: ka_game_emotes
+  description: Emote System
+  author: Kamenuvol
+  sandboxed: true
+  autoload: true
+  scripts: [ const, emotes ]
+  dependencies: [ game_console ]
+  @onLoad: init()
+  @onUnload: terminate()

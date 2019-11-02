@@ -20,7 +20,7 @@ end
 
 function ProtocolGame.registerOpcode(opcode, callback)
   if opcodeCallbacks[opcode] then
-    error('opcode ' .. opcode .. ' already registered will be overriden')
+    g_logger.error('opcode ' .. opcode .. ' already registered will be overriden')
   end
 
   opcodeCallbacks[opcode] = callback

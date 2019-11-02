@@ -31,6 +31,7 @@ MainWindow
     anchors.top: parent.top
     anchors.left: parent.left
     anchors.bottom: parent.bottom
+    step: 10
 
   Panel
     id: optionsTabContent

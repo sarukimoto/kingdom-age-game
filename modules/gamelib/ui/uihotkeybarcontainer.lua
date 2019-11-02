@@ -48,37 +48,36 @@ function UIHotkeybarContainer:updateLook()
   -- Text
   self:setText('')
 
-  local mod = modules.game_hotkeys
-  if not mod then return end
+  if modules.game_hotkeys then
+    local view = modules.game_hotkeys.getHotkey(self.keyCombo)
+    if view then
 
-  local view = mod.getHotkey(self.keyCombo)
-  if not view then
-    return
-  end
+      if view.type == 'text' then
+        self:setText('TxT')
+        tooltipText = tooltipText .. (view.autoSend and ' (auto send)' or '') .. '\n' .. view.value
+      elseif view.type == 'power' and powerWidget then
+        powerWidget:setImageSource('/images/game/powers/' .. view.id .. '_off')
+        powerWidget:setVisible(true)
+        self.powerid = view.id
+        if view.name and view.level then
+          tooltipText = string.format("%s %s (level %d)", tooltipText, view.name, view.level)
+        else
+          tooltipText = string.format("%s You are not able to use this power.", tooltipText)
+        end
+      elseif view.type == 'item' and itemWidget then
+        itemWidget:setVisible(true)
+        itemWidget:setItemId(view.id)
 
-  if view.type == 'text' then
-    self:setText('TxT')
-    tooltipText = tooltipText .. (view.autoSend and ' (auto send)' or '') .. '\n' .. view.value
-  elseif view.type == 'power' and powerWidget then
-    powerWidget:setImageSource('/images/game/powers/' .. view.id .. '_off')
-    powerWidget:setVisible(true)
-    self.powerid = view.id
-    if view.name and view.level then
-      tooltipText = string.format("%s %s (level %d)", tooltipText, view.name, view.level)
-    else
-      tooltipText = string.format("%s You are not able to use this power.", tooltipText)
-    end
-  elseif view.type == 'item' and itemWidget then
-    itemWidget:setVisible(true)
-    itemWidget:setItemId(view.id)
-
-    if view.useType == mod.HOTKEY_MANAGER_USEONSELF then
-      tooltipText = tooltipText .. '\nUse on self'
-    elseif view.useType == mod.HOTKEY_MANAGER_USEONTARGET then
-      tooltipText = tooltipText .. '\nUse on target'
-    elseif view.useType == mod.HOTKEY_MANAGER_USEWITH then
-      tooltipText = tooltipText .. '\nUse with'
+        if view.useType == modules.game_hotkeys.HOTKEY_MANAGER_USEONSELF then
+          tooltipText = tooltipText .. '\nUse on self'
+        elseif view.useType == modules.game_hotkeys.HOTKEY_MANAGER_USEONTARGET then
+          tooltipText = tooltipText .. '\nUse on target'
+        elseif view.useType == modules.game_hotkeys.HOTKEY_MANAGER_USEWITH then
+          tooltipText = tooltipText .. '\nUse with'
+        end
+      end
     end
   end
+
   self:setTooltip(tooltipText)
 end

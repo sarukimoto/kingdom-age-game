@@ -35,10 +35,6 @@ function UIComboBox:getOptionIndex()
   return self:getOption(currentOption)
 end
 
-function UIComboBox:setOption(text, dontSignal)
-  self:setCurrentOption(text, dontSignal)
-end
-
 function UIComboBox:setCurrentOption(text, dontSignal)
   if not self.options then return end
   for i,v in ipairs(self.options) do
@@ -52,6 +48,7 @@ function UIComboBox:setCurrentOption(text, dontSignal)
     end
   end
 end
+UIComboBox.setOption = UIComboBox.setCurrentOption
 
 function UIComboBox:setCurrentOptionByData(data, dontSignal)
   if not self.options then return end
@@ -85,7 +82,7 @@ end
 function UIComboBox:addOption(text, data)
   table.insert(self.options, { text = text, data = data })
   local index = #self.options
-  if index == 1 then self:setCurrentOption(text) end
+  if index == 1 then self:setOption(text) end
   return index
 end
 
@@ -116,7 +113,7 @@ function UIComboBox:onMousePress(mousePos, mouseButton)
   end
   menu:setId(self:getId() .. 'PopupMenu')
   for i,v in ipairs(self.options) do
-    menu:addOption(v.text, function() self:setCurrentOption(v.text) end)
+    menu:addOption(v.text, function() self:setOption(v.text) end)
   end
   menu:setWidth(self:getWidth())
   menu:display({ x = self:getX(), y = self:getY() + self:getHeight() })

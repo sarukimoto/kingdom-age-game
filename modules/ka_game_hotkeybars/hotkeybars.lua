@@ -15,7 +15,8 @@ function init()
 
   connect(modules.game_interface.getMapPanel(), {
     onGeometryChange = onMapPanelGeometryChange,
-    onViewModeChange = onViewModeChange
+    onViewModeChange = onViewModeChange,
+    onZoomChange = onZoomChange,
   })
 
   if g_game.isOnline() then
@@ -37,13 +38,14 @@ function terminate()
 
   disconnect(modules.game_interface.getMapPanel(), {
     onGeometryChange = onMapPanelGeometryChange,
-    onViewModeChange = onViewModeChange
+    onViewModeChange = onViewModeChange,
+    onZoomChange = onZoomChange,
   })
 end
 
 function onGameStart()
   currentViewmode = 0
-  updateDisplay()
+  -- updateDisplay()
   updateHotkeybarPositions()
   loadHotkeybars()
   connect(modules.game_console.consolePanel, 'onGeometryChange', onConsoleGeometryChange)
@@ -58,8 +60,17 @@ end
 function onViewModeChange(mapWidget, viewMode, oldViewMode)
   currentViewmode = viewMode
 
-  updateHotkeybarPositions()
   updateDisplay()
+  updateHotkeybarPositions()
+end
+
+function onZoomChange(self, oldZoom, newZoom)
+  if oldZoom == newZoom then
+    return
+  end
+
+  -- updateDisplay()
+  updateHotkeybarPositions()
 end
 
 function updateLook()
@@ -79,7 +90,7 @@ function onMapPanelGeometryChange(mapWidget)
   updateHotkeybarPositions()
 end
 
--- console geometry has changes (viewmode == 2)
+-- console geometry has changes
 function onConsoleGeometryChange(widget)
   updateHotkeybarPositions()
 end
@@ -92,26 +103,27 @@ end
 function updateHotkeybarPositions()
   local mapWidget = modules.game_interface.getMapPanel()
   for alignment = 1, #hotkeybars do
-    local tmpHotkeybar = hotkeybars[alignment]
+    local tmpHotkeybar   = hotkeybars[alignment]
+    local isFullViewMode = ViewModes[modules.game_interface.getCurrentViewMode()].isFull
     if alignment == AnchorTop then
-      if currentViewmode == 2 then local topMenu = modules.client_topmenu.getTopMenu()
-                                   addEvent(function() tmpHotkeybar:setMarginTop(topMenu:getHeight() + topMenu:getMarginTop() + tmpHotkeybar.mapMargin) end)
-      else                         addEvent(function() tmpHotkeybar:setMarginTop(math.floor((mapWidget:getHeight() - mapWidget:getMapHeight()) / 2) - tmpHotkeybar.height - tmpHotkeybar.mapMargin) end)
+      if isFullViewMode then local topMenu = modules.client_topmenu.getTopMenu()
+                             addEvent(function() tmpHotkeybar:setMarginTop(topMenu:getHeight() + topMenu:getMarginTop() + tmpHotkeybar.mapMargin) end)
+      else                   addEvent(function() tmpHotkeybar:setMarginTop(math.floor((mapWidget:getHeight() - mapWidget:getMapHeight()) / 2) - tmpHotkeybar.height - tmpHotkeybar.mapMargin) end)
       end
 
     elseif alignment == AnchorLeft then
-      if currentViewmode == 2 then addEvent(function() local leftPanel = modules.game_interface.getLeftPanel() local marginLeft = leftPanel and leftPanel:getWidth() or 0 tmpHotkeybar:setMarginLeft(marginLeft + tmpHotkeybar.mapMargin) tmpHotkeybar:setMarginBottom(modules.game_console.consolePanel:getHeight() / 2) end)
-      else                         addEvent(function() tmpHotkeybar:setMarginLeft(mapWidget:getX() + math.floor((mapWidget:getWidth() - mapWidget:getMapWidth()) / 2) - tmpHotkeybar.height - tmpHotkeybar.mapMargin) tmpHotkeybar:setMarginBottom(0) end)
+      if isFullViewMode then addEvent(function() local leftPanel = modules.game_interface.getLeftPanel() local marginLeft = leftPanel and leftPanel:getWidth() or 0 tmpHotkeybar:setMarginLeft(marginLeft + tmpHotkeybar.mapMargin) tmpHotkeybar:setMarginBottom(modules.game_console.consolePanel:getHeight() / 2) end)
+      else                   addEvent(function() tmpHotkeybar:setMarginLeft(mapWidget:getX() + math.floor((mapWidget:getWidth() - mapWidget:getMapWidth()) / 2) - tmpHotkeybar.height - tmpHotkeybar.mapMargin) tmpHotkeybar:setMarginBottom(0) end)
       end
 
     elseif alignment == AnchorBottom then
-      if currentViewmode == 2 then addEvent(function() tmpHotkeybar:setMarginTop(mapWidget:getHeight() - modules.game_console.consolePanel:getHeight() - tmpHotkeybar.height - tmpHotkeybar.mapMargin) end)
-      else                         addEvent(function() tmpHotkeybar:setMarginTop(math.floor((mapWidget:getHeight() - mapWidget:getMapHeight()) / 2) + mapWidget:getMapHeight() + 2 --[[+ tmpHotkeybar.mapMargin]]) end)
+      if isFullViewMode then addEvent(function() tmpHotkeybar:setMarginTop(mapWidget:getHeight() - modules.game_console.consolePanel:getHeight() - tmpHotkeybar.height - tmpHotkeybar.mapMargin) end)
+      else                   addEvent(function() tmpHotkeybar:setMarginTop(math.floor((mapWidget:getHeight() - mapWidget:getMapHeight()) / 2) + mapWidget:getMapHeight() + 2 --[[+ tmpHotkeybar.mapMargin]]) end)
       end
 
     elseif alignment == AnchorRight then
-      if currentViewmode == 2 then addEvent(function() local rightPanel = modules.game_interface.getRightPanel() local marginRight = rightPanel and rightPanel:getWidth() or 0 tmpHotkeybar:setMarginLeft(mapWidget:getWidth() - marginRight - tmpHotkeybar.height - tmpHotkeybar.mapMargin) tmpHotkeybar:setMarginBottom(modules.game_console.consolePanel:getHeight() / 2) end)
-      else                         addEvent(function() tmpHotkeybar:setMarginLeft(mapWidget:getX() + math.floor((mapWidget:getWidth() - mapWidget:getMapWidth()) / 2) + mapWidget:getMapWidth() + 2 --[[+ tmpHotkeybar.mapMargin]]) tmpHotkeybar:setMarginBottom(0) end)
+      if isFullViewMode then addEvent(function() local rightPanel = modules.game_interface.getRightPanel() local marginRight = rightPanel and rightPanel:getWidth() or 0 tmpHotkeybar:setMarginLeft(mapWidget:getWidth() - marginRight - tmpHotkeybar.height - tmpHotkeybar.mapMargin) tmpHotkeybar:setMarginBottom(modules.game_console.consolePanel:getHeight() / 2) end)
+      else                   addEvent(function() tmpHotkeybar:setMarginLeft(mapWidget:getX() + math.floor((mapWidget:getWidth() - mapWidget:getMapWidth()) / 2) + mapWidget:getMapWidth() + 2 --[[+ tmpHotkeybar.mapMargin]]) tmpHotkeybar:setMarginBottom(0) end)
       end
     end
   end
@@ -164,16 +176,16 @@ function updateDraggable(bool)
 end
 
 function updateDisplay()
-  if currentViewmode == 0 or currentViewmode == 1 then
-    modules.game_interface.getMapPanel():setPadding(showHotkeybars and 46 or 4)
+  if ViewModes[currentViewmode].isFull then
+    modules.game_interface.getMapPanel():setPadding(0)
 
+  else
+    modules.game_interface.getMapPanel():setPadding(showHotkeybars and 46 or 4)
     -- [POG] Executes the splitter's callbacks
     local splitter = modules.game_interface.getSplitter()
     local margin   = splitter:getMarginBottom()
     splitter:setMarginBottom(margin + 1)
     addEvent(function() modules.game_interface.getSplitter():setMarginBottom(margin) end) -- Back to previous margin bottom value
-  elseif currentViewmode == 2 then
-    modules.game_interface.getMapPanel():setPadding(0)
   end
 end
 

@@ -1,7 +1,8 @@
 function init()
   connect(modules.game_interface.getMapPanel(), {
     onGeometryChange = onGeometryChange,
-    onViewModeChange = onViewModeChange
+    onViewModeChange = onViewModeChange,
+    onZoomChange = onZoomChange,
   })
 
   connect(LocalPlayer, {
@@ -17,7 +18,8 @@ end
 function terminate()
   disconnect(modules.game_interface.getMapPanel(), {
     onGeometryChange = onGeometryChange,
-    onViewModeChange = onViewModeChange
+    onViewModeChange = onViewModeChange,
+    onZoomChange = onZoomChange,
   })
 
   disconnect(LocalPlayer, {
@@ -26,9 +28,8 @@ function terminate()
 end
 
 function updateGameExpBarPercent(percent)
-  local mod = modules.game_interface
-  if not mod then return end
-  local gameExpBar = mod.getGameExpBar()
+  if not modules.game_interface then return end
+  local gameExpBar = modules.game_interface.getGameExpBar()
   if not gameExpBar:isOn() then return end
   local localPlayer = g_game.getLocalPlayer()
   if not percent and not localPlayer then return end
@@ -41,16 +42,15 @@ function updateGameExpBarPercent(percent)
 end
 
 function updateGameExpBarPos()
-  local mod = modules.game_interface
-  if not mod then return end
-  local gameExpBar = mod.getGameExpBar()
+  if not modules.game_interface then return end
+  local gameExpBar = modules.game_interface.getGameExpBar()
   if not gameExpBar:isOn() then return end
 
-  local gameMapPanel = mod.getMapPanel()
+  local gameMapPanel = modules.game_interface.getMapPanel()
   local bottomMargin = math.floor((gameMapPanel:getHeight() - gameMapPanel:getMapHeight()) / 2)
   local leftMargin   = math.floor((gameMapPanel:getWidth() - gameMapPanel:getMapWidth()) / 2)
   local rightMargin  = leftMargin
-  if mod.getCurrentViewMode() == 2 then
+  if ViewModes[modules.game_interface.getCurrentViewMode()].isFull then
     bottomMargin = 0
     leftMargin   = 0
     rightMargin  = 0
@@ -76,19 +76,24 @@ function onViewModeChange(mapWidget, newMode, oldMode)
   addEvent(function() updateExpBar() end)
 end
 
-function onLevelChange(localPlayer, value, percent)
-  local mod = modules.game_interface
-  if not mod then return end
+function onZoomChange(self, oldZoom, newZoom)
+  if oldZoom == newZoom then
+    return
+  end
+  addEvent(function() updateExpBar() end)
+end
 
-  mod.getGameExpBar():setTooltip(getExperienceTooltipText(localPlayer, value, percent))
+function onLevelChange(localPlayer, value, percent)
+  if not modules.game_interface then return end
+
+  modules.game_interface.getGameExpBar():setTooltip(getExperienceTooltipText(localPlayer, value, percent))
   updateGameExpBarPercent(percent)
 end
 
 function setExpBar(enable)
-  local mod = modules.game_interface
-  if not mod then return end
+  if not modules.game_interface then return end
 
-  local gameExpBar = mod.getGameExpBar()
+  local gameExpBar = modules.game_interface.getGameExpBar()
   local isOn       = gameExpBar:isOn()
 
   -- Enable bar

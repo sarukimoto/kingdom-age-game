@@ -2,12 +2,15 @@ Panel
   OptionCheckBox
     id: enableAudio
     !text: tr('Enable audio')
+    &tooltipAddons: { {{ text = tr('Allows music, ambient sounds and effect sounds\nto be enabled.'), align = AlignLeft }} }
 
 
 
   OptionCheckBox
     id: enableMusic
     !text: tr('Enable music')
+    $!first:
+      margin-top: 10
 
   Label
     id: musicVolumeLabel
@@ -15,7 +18,6 @@ Panel
     anchors.left: parent.left
     anchors.right: parent.right
     anchors.top: prev.bottom
-    margin-top: 6
     @onSetup: |
       local value = getOption('musicVolume')
       self:setText(tr('Music volume') .. ': ' .. (value < 100 and string.format('%d%%', value) or 'max'))
@@ -34,6 +36,8 @@ Panel
   OptionCheckBox
     id: enableSoundAmbient
     !text: tr('Enable ambient sounds')
+    $!first:
+      margin-top: 10
 
   Label
     id: soundAmbientVolumeLabel
@@ -41,7 +45,6 @@ Panel
     anchors.left: parent.left
     anchors.right: parent.right
     anchors.top: prev.bottom
-    margin-top: 6
     @onSetup: |
       local value = getOption('soundAmbientVolume')
       self:setText(tr('Ambient sounds volume') .. ': ' .. (value < 100 and string.format('%d%%', value) or 'max'))
@@ -60,6 +63,8 @@ Panel
   OptionCheckBox
     id: enableSoundEffect
     !text: tr('Enable effect sounds')
+    $!first:
+      margin-top: 10
 
   Label
     id: soundEffectVolumeLabel
@@ -67,7 +72,6 @@ Panel
     anchors.left: parent.left
     anchors.right: parent.right
     anchors.top: prev.bottom
-    margin-top: 6
     @onSetup: |
       local value = getOption('soundEffectVolume')
       self:setText(tr('Effect sounds volume') .. ': ' .. (value < 100 and string.format('%d%%', value) or 'max'))

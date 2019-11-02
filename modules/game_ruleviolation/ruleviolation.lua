@@ -466,17 +466,17 @@ function showViewWindow(_targetName, _comment)
     rvViewTypeActionComboBox:addOption(types[_type])
   end
   rvViewTypeActionComboBox.onOptionChange = onViewChangeActionType
-  rvViewTypeActionComboBox:setCurrentOption(types[viewActionType])
+  rvViewTypeActionComboBox:setOption(types[viewActionType])
   onViewChangeActionType(rvViewTypeActionComboBox) -- Actions ComboBox
   rvViewDetachRow() -- Target Name Text Edit
 
   -- Action ComboBox
   rvViewActionComboBox.onOptionChange = onViewChangeAction
-  rvViewActionComboBox:setCurrentOption(actions[viewActionType][viewAction].title)
+  rvViewActionComboBox:setOption(actions[viewActionType][viewAction].title)
 
   -- Action Reason ComboBox
   rvViewActionReasonComboBox.onOptionChange = onViewChangeActionReason
-  rvViewActionReasonComboBox:setCurrentOption(reasons[viewActionType][viewActionReason].title)
+  rvViewActionReasonComboBox:setOption(reasons[viewActionType][viewActionReason].title)
   onViewChangeActionReason(rvViewActionReasonComboBox)
 
   -- Action Target Name MultilineTextEdit
@@ -493,7 +493,7 @@ function showViewWindow(_targetName, _comment)
     rvViewStateComboBox:addOption(states[state])
   end
   rvViewStateComboBox.onOptionChange = onViewChangeState
-  rvViewStateComboBox:setCurrentOption(states[viewState])
+  rvViewStateComboBox:setOption(states[viewState])
 
   -- Type ComboBox
   rvViewTypeComboBox:addOption(types[REPORT_TYPE_ALL])
@@ -501,13 +501,13 @@ function showViewWindow(_targetName, _comment)
     rvViewTypeComboBox:addOption(types[_type])
   end
   rvViewTypeComboBox.onOptionChange = onViewChangeType
-  rvViewTypeComboBox:setCurrentOption(types[viewType])
+  rvViewTypeComboBox:setOption(types[viewType])
   onViewChangeType(rvViewTypeComboBox)
 
   -- Reason ComboBox
   rvViewReasonComboBox.onOptionChange = onViewChangeReason
   if viewType ~= REPORT_TYPE_ALL then
-    rvViewReasonComboBox:setCurrentOption(reasons[viewType][viewReason].title)
+    rvViewReasonComboBox:setOption(reasons[viewType][viewReason].title)
   end
 
   updatePage() -- Fill list
@@ -550,17 +550,17 @@ function clearViewWindow()
   rvViewPage:setText('1')
   updateRowsPerPageLabel(getRowsPerPage())
 
-  rvViewTypeActionComboBox:setCurrentOption(types[viewActionType])
-  rvViewActionComboBox:setCurrentOption(actions[viewActionType][viewAction].title)
-  rvViewActionReasonComboBox:setCurrentOption(reasons[viewActionType][viewActionReason].title)
+  rvViewTypeActionComboBox:setOption(types[viewActionType])
+  rvViewActionComboBox:setOption(actions[viewActionType][viewAction].title)
+  rvViewActionReasonComboBox:setOption(reasons[viewActionType][viewActionReason].title)
   if rvViewTargetNameTextEdit then
     rvViewTargetNameTextEdit:setText('')
   end
   rvViewCommentMultilineTextEdit:setText('')
-  rvViewStateComboBox:setCurrentOption(states[viewState])
-  rvViewTypeComboBox:setCurrentOption(types[viewType])
+  rvViewStateComboBox:setOption(states[viewState])
+  rvViewTypeComboBox:setOption(types[viewType])
   if viewType ~= REPORT_TYPE_ALL then
-    rvViewReasonComboBox:setCurrentOption(reasons[viewType][viewReason].title)
+    rvViewReasonComboBox:setOption(reasons[viewType][viewReason].title)
   end
 
   updatePage() -- Fill list
@@ -585,7 +585,7 @@ function openRow(row)
 
     rvLabel:setText(string.format('%s\n- Time: %s\n- Player name: %s', row:getText(), os.date('%Y %b %d %H:%M:%S', row.time), row.playerName))
 
-    typeComboBox:setCurrentOption(reasons[row.type][row.reasonId].title)
+    typeComboBox:setOption(reasons[row.type][row.reasonId].title)
     typeComboBox:setEnabled(false)
     if statementTextEdit then
       local rvStatementVerticalScrollBar = g_ui.createWidget('HorizontalScrollBar', rvWindow)
@@ -780,7 +780,7 @@ function rvViewRemoveRow()
   end
 
   if not confirmWindowLock then
-    displayCustomBox('Warning', 'Are you sure that you want to remove the row id ' .. row.id .. '?', {{ text = 'Yes', buttonCallback = function() local mod = modules.game_ruleviolation if not mod then return end mod.removeRow(rvViewList, row) mod.setConfirmWindowLock(false) end }}, 1, 'No', function() local mod = modules.game_ruleviolation if not mod then return end mod.setConfirmWindowLock(false) end, nil)
+    displayCustomBox('Warning', 'Are you sure that you want to remove the row id ' .. row.id .. '?', {{ text = 'Yes', buttonCallback = function() if modules.game_ruleviolation then modules.game_ruleviolation.removeRow(rvViewList, row) modules.game_ruleviolation.setConfirmWindowLock(false) end end }}, 1, 'No', function() if modules.game_ruleviolation then modules.game_ruleviolation.setConfirmWindowLock(false) end end, nil)
     setConfirmWindowLock(true)
   end
 end
@@ -942,7 +942,7 @@ function rvViewAction()
   end
 
   if not confirmWindowLock then
-    displayCustomBox('Warning', message, {{ text = 'Yes', buttonCallback = function() local mod = modules.game_ruleviolation if not mod then return end mod.action(row, targetName) mod.setConfirmWindowLock(false) end }}, 1, 'No', function() local mod = modules.game_ruleviolation if not mod then return end mod.setConfirmWindowLock(false) end, nil)
+    displayCustomBox('Warning', message, {{ text = 'Yes', buttonCallback = function() if modules.game_ruleviolation then modules.game_ruleviolation.action(row, targetName) modules.game_ruleviolation.setConfirmWindowLock(false) end end }}, 1, 'No', function() if modules.game_ruleviolation then modules.game_ruleviolation.setConfirmWindowLock(false) end end, nil)
     setConfirmWindowLock(true)
   end
 end

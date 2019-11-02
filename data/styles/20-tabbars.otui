@@ -110,6 +110,7 @@ TabBarVerticalButton < UIButton
   icon-color: #888888
   $first:
     anchors.top: parent.top
+    margin-top: 5
   $!first:
     anchors.top: prev.bottom
     margin-top: 10

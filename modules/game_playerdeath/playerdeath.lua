@@ -36,9 +36,8 @@ function displayDeadMessage()
   local advanceLabel = modules.game_interface.getRootPanel():recursiveGetChildById('middleCenterLabel')
   if advanceLabel:isVisible() then return end
 
-  local mod = modules.game_textmessage
-  if mod then
-    mod.displayGameMessage(tr('You are dead') .. '.')
+  if modules.game_textmessage then
+    modules.game_textmessage.displayGameMessage(tr('You are dead') .. '.')
   end
 end
 

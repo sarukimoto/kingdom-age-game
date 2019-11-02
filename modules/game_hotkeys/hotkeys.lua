@@ -32,8 +32,6 @@ clearObjectButton = nil
 --useOnTarget = nil
 useWith = nil
 defaultComboKeys = nil
-perServer = true
-perCharacter = true
 mouseGrabberWidget = nil
 useRadioGroup = nil
 currentHotkeys = nil
@@ -86,7 +84,6 @@ powerBoost_event_image = nil
 
 
 
--- public functions
 function init()
   g_ui.importStyle('hotkeylabel.otui')
 
@@ -129,8 +126,6 @@ function init()
     onGameEnd = offline
   })
 
-  load()
-
   removePowerBoostEffect()
 end
 
@@ -144,27 +139,13 @@ function terminate()
 
   g_keyboard.unbindKeyDown('Ctrl+K')
 
-  unload()
-
   hotkeysWindow:destroy()
   hotkeysButton:destroy()
   mouseGrabberWidget:destroy()
 end
 
-function configure(savePerServer, savePerCharacter)
-  perServer = savePerServer
-  perCharacter = savePerCharacter
-  reload()
-end
-
 function online()
-  scheduleEvent(function()
-    reload()
-    local mod = modules.ka_game_hotkeybars
-    if mod then
-      mod.onUpdateHotkeys()
-    end
-  end, 10)
+  reload()
   hide()
 end
 
@@ -177,9 +158,8 @@ function show()
   if not g_game.isOnline() then
     return
   end
-  local mod = modules.ka_game_hotkeybars
-  if mod then
-    mod.updateDraggable(true)
+  if modules.ka_game_hotkeybars then
+    modules.ka_game_hotkeybars.updateDraggable(true)
   end
   hotkeysWindow:show()
   hotkeysWindow:raise()
@@ -189,9 +169,8 @@ end
 
 function hide()
   hotkeysWindow:hide()
-  local mod = modules.ka_game_hotkeybars
-  if mod then
-    mod.updateDraggable(false)
+  if modules.ka_game_hotkeybars then
+    modules.ka_game_hotkeybars.updateDraggable(false)
   end
   hotkeysButton:setOn(false)
 end
@@ -206,9 +185,8 @@ end
 
 function ok()
   save()
-  local mod = modules.ka_game_hotkeybars
-  if mod then
-    mod.onUpdateHotkeys()
+  if modules.ka_game_hotkeybars then
+    modules.ka_game_hotkeybars.onUpdateHotkeys()
   end
   hide()
 end
@@ -221,12 +199,13 @@ end
 function load(forceDefaults)
   hotkeysManagerLoaded = false
 
-  local hotkeySettings = g_settings.getNode('game_hotkeys')
+  local settings = modules.game_things.getPlayerSettings()
+  local hotkeySettings = settings:getNode('hotkeys') or {}
   local hotkeys = {}
 
-  if not table.empty(hotkeySettings) then hotkeys = hotkeySettings end
-  if perServer and not table.empty(hotkeys) then hotkeys = hotkeys[G.host] end
-  if perCharacter and not table.empty(hotkeys) then hotkeys = hotkeys[g_game.getCharacterName()] end
+  if not table.empty(hotkeySettings) then
+    hotkeys = hotkeySettings
+  end
 
   hotkeyList = {}
   if not forceDefaults then
@@ -268,23 +247,9 @@ function reload()
 end
 
 function save()
-  local hotkeySettings = g_settings.getNode('game_hotkeys') or {}
+  local settings = modules.game_things.getPlayerSettings()
+  local hotkeySettings = settings:getNode('hotkeys') or {}
   local hotkeys = hotkeySettings
-
-  if perServer then
-    if not hotkeys[G.host] then
-      hotkeys[G.host] = {}
-    end
-    hotkeys = hotkeys[G.host]
-  end
-
-  if perCharacter then
-    local char = g_game.getCharacterName()
-    if not hotkeys[char] then
-      hotkeys[char] = {}
-    end
-    hotkeys = hotkeys[char]
-  end
 
   table.clear(hotkeys)
 
@@ -301,8 +266,8 @@ function save()
   end
 
   hotkeyList = hotkeys
-  g_settings.setNode('game_hotkeys', hotkeySettings)
-  g_settings.save()
+  settings:setNode('hotkeys', hotkeySettings)
+  settings:save()
 end
 
 function loadDefautComboKeys()
@@ -368,9 +333,8 @@ function onChooseItemMouseRelease(self, mousePosition, mouseButton)
     currentHotkeyLabel.autoSend = false
     updateHotkeyLabel(currentHotkeyLabel)
     updateHotkeyForm(true)
-    local mod = modules.ka_game_hotkeybars
-    if mod then
-      mod.onUpdateHotkeys()
+    if modules.ka_game_hotkeybars then
+      modules.ka_game_hotkeybars.onUpdateHotkeys()
     end
   end
 
@@ -396,9 +360,8 @@ function clearObject()
   currentHotkeyLabel.value = nil
   updateHotkeyLabel(currentHotkeyLabel)
   updateHotkeyForm(true)
-  local mod = modules.ka_game_hotkeybars
-  if mod then
-    mod.onUpdateHotkeys()
+  if modules.ka_game_hotkeybars then
+    modules.ka_game_hotkeybars.onUpdateHotkeys()
   end
 end
 
@@ -507,9 +470,8 @@ function doKeyCombo(keyCombo, clickedWidget)
           powerBoost_startAt = g_clock.millis()
 
           sendPowerBoostStart()
-          local mod = modules.ka_game_hotkeybars
-          if mod then
-            mod.setPowerIcon(powerBoost_keyCombo, true)
+          if modules.ka_game_hotkeybars then
+            modules.ka_game_hotkeybars.setPowerIcon(powerBoost_keyCombo, true)
           end
 
           -- By mouse click
@@ -527,9 +489,8 @@ function doKeyCombo(keyCombo, clickedWidget)
                 end
                 sendPower(nil, powerBoost_keyCombo)
                 disconnect(clickedWidget, 'onMouseRelease')
-                local mod = modules.ka_game_hotkeybars
-                if mod then
-                  mod.setPowerIcon(powerBoost_keyCombo, false)
+                if modules.ka_game_hotkeybars then
+                  modules.ka_game_hotkeybars.setPowerIcon(powerBoost_keyCombo, false)
                 end
                 scheduleEvent(function()
                   powerBoost_lastPower = 0
@@ -542,9 +503,8 @@ function doKeyCombo(keyCombo, clickedWidget)
             g_keyboard.bindKeyUp(keyCombo, function ()
               g_keyboard.unbindKeyUp(keyCombo)
               sendPower(nil, powerBoost_keyCombo)
-              local mod = modules.ka_game_hotkeybars
-              if mod then
-                mod.setPowerIcon(powerBoost_keyCombo, false)
+              if modules.ka_game_hotkeybars then
+                modules.ka_game_hotkeybars.setPowerIcon(powerBoost_keyCombo, false)
               end
               scheduleEvent(function()
                 powerBoost_lastPower = 0
@@ -629,9 +589,8 @@ function getHotkey(keyCombo)
       local powerId = getPowerIdByString(hotKey.value)
       if powerId then
         local ret = { type = 'power', id = powerId }
-        local mod = modules.ka_game_powers
-        if mod then
-          local power = mod.getPower(powerId)
+        if modules.ka_game_powers then
+          local power = modules.ka_game_powers.getPower(powerId)
           if power then
             ret.name  = power.name
             ret.level = power.level
@@ -665,8 +624,7 @@ function updateHotkeyLabel(hotkeyLabel)
     local powerId = getPowerIdByString(hotkeyLabel.value)
     if hotkeyLabel.value then
       if powerId then
-        local mod   = modules.ka_game_powers
-        local power = mod and mod.getPower(powerId) or nil
+        local power = modules.ka_game_powers and modules.ka_game_powers.getPower(powerId) or nil
         local name  = power and power.name or nil
         local level = power and power.level or nil
         text = string.format("%s[Power] %s", text, name and string.format('%s%s', name, level and string.format(' (level %d)', level) or '') or 'You are not able to use this power.')
@@ -872,11 +830,10 @@ function sendPower(flag, keyCombo) -- ([flag], [keyCombo]) -- (flag: powerFlags)
 
   removePowerBoostEffect()
   if keyCombo then
-    local mod = modules.ka_game_hotkeybars
-    if mod and lastHotkeyTime > 0 then
+    if modules.ka_game_hotkeybars and lastHotkeyTime > 0 then
       local boostTime  = g_clock.millis() - lastHotkeyTime
       local boostLevel = math.min(math.max(powerBoost_first, math.ceil(boostTime / powerBoost_time)), powerBoost_last)
-      mod.addPowerSendingHotkeyEffect(keyCombo, boostLevel)
+      modules.ka_game_hotkeybars.addPowerSendingHotkeyEffect(keyCombo, boostLevel)
     end
   end
 end
@@ -896,9 +853,8 @@ function cancelPower(forceStop)
   sendPower(power_flag_cancel)
   removePowerBoostEffect()
 
-  local mod = modules.ka_game_hotkeybars
-  if mod then
-    mod.setPowerIcon(powerBoost_keyCombo, false)
+  if modules.ka_game_hotkeybars then
+    modules.ka_game_hotkeybars.setPowerIcon(powerBoost_keyCombo, false)
   end
 
   if forceStop then
@@ -936,11 +892,10 @@ end
 
 function removePowerBoostImage()
   powerBoost_state_image = false
-  local mod = modules.ka_game_screenimage
-  if mod then
+  if modules.ka_game_screenimage then
     for boostLevel = powerBoost_first, powerBoost_last do
-      mod.removeImage(string.format("system/power_boost/normal_%d.png", boostLevel), powerBoost_fadeout, 0)
-      mod.removeImage(string.format("system/power_boost/extra_%d.png", boostLevel), powerBoost_fadeout, 0)
+      modules.ka_game_screenimage.removeImage(string.format("system/power_boost/normal_%d.png", boostLevel), powerBoost_fadeout, 0)
+      modules.ka_game_screenimage.removeImage(string.format("system/power_boost/extra_%d.png", boostLevel), powerBoost_fadeout, 0)
     end
   end
 
@@ -980,22 +935,21 @@ function setPowerBoostImage(boostTime) -- ([boostTime])
   boostTime  = boostTime and boostTime + powerBoost_time or 0
   boostLevel = math.min(math.max(powerBoost_first, math.ceil(boostTime / powerBoost_time)), powerBoost_last)
 
-  local mod = modules.ka_game_screenimage
   if boostLevel == 1 then
     removePowerBoostImage()
     powerBoost_state_image = true
   else
-    if mod then
-      mod.removeImage(string.format("system/power_boost/normal_%d.png", boostLevel - 1), powerBoost_fadeout, 0)
-      mod.removeImage(string.format("system/power_boost/extra_%d.png", boostLevel - 1), powerBoost_fadeout, 0)
+    if modules.ka_game_screenimage then
+      modules.ka_game_screenimage.removeImage(string.format("system/power_boost/normal_%d.png", boostLevel - 1), powerBoost_fadeout, 0)
+      modules.ka_game_screenimage.removeImage(string.format("system/power_boost/extra_%d.png", boostLevel - 1), powerBoost_fadeout, 0)
     end
   end
 
   local ret = false
   if powerBoost_state_image then
-    if boostTime ~= 0 and mod then
-      mod.addImage(string.format("system/power_boost/normal_%d.png", boostLevel), powerBoost_fadein, 1, powerBoost_resizex, powerBoost_resizey, 0)
-      mod.addImage(string.format("system/power_boost/extra_%d.png", boostLevel), powerBoost_fadein, 1, powerBoost_resizex, powerBoost_resizey, 0)
+    if modules.ka_game_screenimage and boostTime ~= 0 then
+      modules.ka_game_screenimage.addImage(string.format("system/power_boost/normal_%d.png", boostLevel), powerBoost_fadein, 1, powerBoost_resizex, powerBoost_resizey, 0)
+      modules.ka_game_screenimage.addImage(string.format("system/power_boost/extra_%d.png", boostLevel), powerBoost_fadein, 1, powerBoost_resizex, powerBoost_resizey, 0)
     end
 
     powerBoost_event_image = scheduleEvent(function() setPowerBoostImage(boostTime) end, boostTime ~= 0 and powerBoost_time or 0)

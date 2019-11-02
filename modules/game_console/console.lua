@@ -52,8 +52,6 @@ SayModes = {
   [3] = { speakTypeDesc = 'yell', icon = '/images/game/console/yell' }
 }
 
-MAX_HISTORY = 500
-MAX_LINES = 100
 HELP_CHANNEL = 9
 
 consolePanel = nil
@@ -64,7 +62,6 @@ channels = nil
 channelsWindow = nil
 communicationWindow = nil
 ownPrivateName = nil
-messageHistory = {}
 currentMessageIndex = 0
 ignoreNpcMessages = false
 defaultTab = nil
@@ -80,6 +77,10 @@ local communicationSettings = {
   ignoredPlayers = {},
   whitelistedPlayers = {}
 }
+
+local consoleLog = {}
+local MAX_LOGLINES = 500
+local MAX_LINES = 100
 
 function init()
   connect(g_game, {
@@ -113,8 +114,8 @@ function init()
     return true
   end
 
-  g_keyboard.bindKeyPress('Shift+Up', function() navigateMessageHistory(1) end, consolePanel)
-  g_keyboard.bindKeyPress('Shift+Down', function() navigateMessageHistory(-1) end, consolePanel)
+  g_keyboard.bindKeyPress('Shift+Up', function() navigateConsoleLog(1) end, consolePanel)
+  g_keyboard.bindKeyPress('Shift+Down', function() navigateConsoleLog(-1) end, consolePanel)
   g_keyboard.bindKeyPress('Tab', function() consoleTabBar:selectNextTab() end, consolePanel)
   g_keyboard.bindKeyPress('Shift+Tab', function() consoleTabBar:selectPrevTab() end, consolePanel)
   g_keyboard.bindKeyDown('Enter', sendCurrentMessage, consolePanel)
@@ -129,10 +130,10 @@ function init()
   g_keyboard.bindKeyDown('Ctrl+W', removeCurrentTab)
   -- g_keyboard.bindKeyDown('Ctrl+H', openHelp)
 
-  g_keyboard.bindKeyDown(toggleTopMenuShortcut, function() local mod = modules.client_options if not mod then return end mod.setOption('showTopMenu', not mod.getOption('showTopMenu')) end)
-  g_keyboard.bindKeyDown(toggleChatShortcut, function() local mod = modules.client_options if not mod then return end mod.setOption('showChat', not mod.getOption('showChat')) end)
-  g_keyboard.bindKeyDown(toggleLeftPanel, function() local mod = modules.client_options if not mod then return end mod.setOption('showLeftPanel', not mod.getOption('showLeftPanel')) end)
-  g_keyboard.bindKeyDown(toggleRightPanel, function() local mod = modules.client_options if not mod then return end mod.setOption('showRightPanel', not mod.getOption('showRightPanel')) end)
+  g_keyboard.bindKeyDown(toggleTopMenuShortcut, function() modules.client_options.setOption('showTopMenu', not modules.client_options.getOption('showTopMenu')) end)
+  g_keyboard.bindKeyDown(toggleChatShortcut, function() modules.client_options.setOption('showChat', not modules.client_options.getOption('showChat')) end)
+  g_keyboard.bindKeyDown(toggleLeftPanel, function() modules.client_options.setOption('showLeftPanel', not modules.client_options.getOption('showLeftPanel')) end)
+  g_keyboard.bindKeyDown(toggleRightPanel, function() modules.client_options.setOption('showRightPanel', not modules.client_options.getOption('showRightPanel')) end)
 
   consoleToggleChat = consolePanel:getChildById('toggleChat')
   local splitter = modules.game_interface.getSplitter()
@@ -175,9 +176,7 @@ function toggleConsoleChat()
 end
 
 function onSplitterDoubleClick()
-  local mod = modules.client_options
-  if not mod then return end
-  mod.setOption('showChat', true, true)
+  modules.client_options.setOption('showChat', true, true)
 end
 
 function enableChat()
@@ -258,8 +257,6 @@ function terminate()
     onGameEnd = offline
   })
 
-  if g_game.isOnline() then clear() end
-
   g_keyboard.unbindKeyDown('Ctrl+O')
   g_keyboard.unbindKeyDown('Ctrl+W')
   -- g_keyboard.unbindKeyDown('Ctrl+H')
@@ -291,40 +288,21 @@ function terminate()
   Console = nil
 end
 
-function save()
-  if g_game.getAccountType() >= ACCOUNT_TYPE_GAMEMASTER then
-    local localPlayer = g_game.getLocalPlayer()
-    local localPlayerName = localPlayer:getName()
-    local settings = {}
+function load()
+  local settings = modules.game_things.getPlayerSettings('log.console')
 
-    if not settings.messageHistory then
-      settings.messageHistory = {}
-    end
+  -- Load kept console log after login
+  consoleLog = settings:getList('consoleLog') or {}
 
-    settings.messageHistory[localPlayerName] = messageHistory[localPlayerName] or {}
-    g_settings.setNode('game_console', settings)
-
-    -- Exit app saving (keep history after close client)
-    g_settings.setList('console-history-' .. localPlayerName:gsub("%s", "_"), messageHistory[localPlayerName] or {})
-  end
+  loadCommunicationSettings()
 end
 
-function load()
-  local localPlayer = g_game.getLocalPlayer()
-  local localPlayerName = localPlayer:getName()
-  local settings = g_settings.getNode('game_console')
+function save()
+  local settings = modules.game_things.getPlayerSettings('log.console')
 
-  if not messageHistory[localPlayerName] then
-    messageHistory[localPlayerName] = {}
-  end
-
-  if settings then
-    messageHistory[localPlayerName] = settings.messageHistory and settings.messageHistory[localPlayerName] or {}
-  end
-  loadCommunicationSettings()
-
-  -- Exit app saving (keep history after close client)
-  messageHistory[localPlayerName] = g_settings.getList('console-history-' .. localPlayerName:gsub("%s", "_"))
+  -- Keep console log after logout
+  settings:setList('consoleLog', consoleLog)
+  settings:save()
 end
 
 function onTabChange(tabBar, tab)
@@ -336,9 +314,9 @@ function onTabChange(tabBar, tab)
 end
 
 function clear()
-  -- save last open channels
-  local lastChannelsOpen = g_settings.getNode('lastChannelsOpen') or {}
-  local char = g_game.getCharacterName()
+  -- Save last open channels
+  local settings = modules.game_things.getPlayerSettings()
+  local lastChannelsOpen = settings:getNode('lastChannelsOpen') or {}
   local savedChannels = {}
   local set = false
   for channelId, channelName in pairs(channels) do
@@ -348,13 +326,14 @@ function clear()
     end
   end
   if set then
-    lastChannelsOpen[char] = savedChannels
+    lastChannelsOpen = savedChannels
   else
-    lastChannelsOpen[char] = nil
+    lastChannelsOpen = {}
   end
-  g_settings.setNode('lastChannelsOpen', lastChannelsOpen)
+  settings:setNode('lastChannelsOpen', lastChannelsOpen)
+  settings:save()
 
-  -- close channels
+  -- Close channels
   for _, channelName in pairs(channels) do
     local tab = consoleTabBar:getTab(channelName)
     consoleTabBar:removeTab(tab)
@@ -736,9 +715,8 @@ function processChannelTabMenu(tab, mousePos, mouseButton)
       end
 
       g_resources.writeFileContents(filepath, table.concat(lines, '\n'))
-      local mod = modules.game_textmessage
-      if mod then
-        mod.displayStatusMessage(tr('Channel appended to %s', filename))
+      if modules.game_textmessage then
+        modules.game_textmessage.displayStatusMessage(tr('Channel appended to %s', filename))
       end
     end)
   end
@@ -770,11 +748,11 @@ function processMessageMenu(mousePos, mouseButton, creatureName, text, label, ta
         menu:addSeparator()
 
         if g_game.getAccountType() >= ACCOUNT_TYPE_GAMEMASTER then
-          menu:addOption(tr('Add rule violation'), function() local mod = modules.game_ruleviolation if not mod then return end mod.showViewWindow(creatureName, text:sub(0, 255)) end)
+          menu:addOption(tr('Add rule violation'), function() if modules.game_ruleviolation then modules.game_ruleviolation.showViewWindow(creatureName, text:sub(0, 255)) end end)
         end
 
         local REPORT_TYPE_STATEMENT = 1
-        menu:addOption(tr('Report statement'), function() local mod = modules.game_ruleviolation if not mod then return end mod.showRuleViolationReportWindow(REPORT_TYPE_STATEMENT, creatureName, text:match('.+%:%s(.+)')) end)
+        menu:addOption(tr('Report statement'), function() if modules.game_ruleviolation then modules.game_ruleviolation.showRuleViolationReportWindow(REPORT_TYPE_STATEMENT, creatureName, text:match('.+%:%s(.+)')) end end)
         menu:addSeparator()
       end
     end
@@ -898,16 +876,13 @@ function sendMessage(message, tab)
   message = message:gsub("^(%s*)(.*)","%2") -- remove space characters from message init
   if #message == 0 then return end
 
-  -- add new command to history
+  -- Add new command to console log
   currentMessageIndex = 0
-  local localPlayerName = localPlayer:getName()
-  if not messageHistory[localPlayerName] then
-    messageHistory[localPlayerName] = {}
-  end
-  if table.empty(messageHistory) or table.empty(messageHistory[localPlayerName]) or messageHistory[localPlayerName][#messageHistory[localPlayerName]] ~= originalMessage then
-    table.insert(messageHistory[localPlayerName], originalMessage)
-    if #messageHistory > MAX_HISTORY then
-      table.remove(messageHistory[localPlayerName], 1)
+  if table.empty(consoleLog) or consoleLog[#consoleLog] ~= originalMessage then -- Empty or last message is different to sent message
+    table.insert(consoleLog, originalMessage)
+    -- If is full, remove first
+    if #consoleLog > MAX_LOGLINES then
+      table.remove(consoleLog, 1)
     end
   end
 
@@ -966,20 +941,14 @@ function setIgnoreNpcMessages(ignore)
   ignoreNpcMessages = ignore
 end
 
-function navigateMessageHistory(step)
+function navigateConsoleLog(step)
   if consoleToggleChat:isChecked() then return end
-  local localPlayer = g_game.getLocalPlayer()
-  local localPlayerName = localPlayer:getName()
 
-  if not messageHistory[localPlayerName] then
-    messageHistory[localPlayerName] = {}
-  end
-
-  local numCommands = #messageHistory[localPlayerName]
+  local numCommands = #consoleLog
   if numCommands > 0 then
     currentMessageIndex = math.min(math.max(currentMessageIndex + step, 0), numCommands)
     if currentMessageIndex > 0 then
-      local command = messageHistory[localPlayerName][numCommands - currentMessageIndex + 1]
+      local command = consoleLog[numCommands - currentMessageIndex + 1]
       setTextEditText(command)
     else
       consoleTextEdit:clearText()
@@ -1000,9 +969,8 @@ end
 
 function onTalk(name, level, mode, message, channelId, creaturePos)
   if mode == MessageModes.GamemasterBroadcast then
-    local mod = modules.game_textmessage
-    if mod then
-      mod.displayBroadcastMessage(name .. ': ' .. message)
+    if modules.game_textmessage then
+      modules.game_textmessage.displayBroadcastMessage(name .. ': ' .. message)
     end
     return
   end
@@ -1064,9 +1032,8 @@ function onTalk(name, level, mode, message, channelId, creaturePos)
   if speaktype.private then
     addPrivateText(composedMessage, speaktype, name, false, name)
     if modules.client_options.getOption('showPrivateMessagesOnScreen') and speaktype ~= SpeakTypesSettings.privateNpcToPlayer then
-      local mod = modules.game_textmessage
-      if mod then
-        mod.displayPrivateMessage(name .. ':\n' .. message)
+      if modules.game_textmessage then
+        modules.game_textmessage.displayPrivateMessage(name .. ':\n' .. message)
       end
     end
   else
@@ -1120,9 +1087,8 @@ function doChannelListSubmit()
     if openPrivateChannelWith:lower() ~= g_game.getCharacterName():lower() then
       g_game.openPrivateChannel(openPrivateChannelWith)
     else
-      local mod = modules.game_textmessage
-      if mod then
-        mod.displayFailureMessage(tr('You cannot create a private chat channel with yourself.'))
+      if modules.game_textmessage then
+        modules.game_textmessage.displayFailureMessage(tr('You cannot create a private chat channel with yourself.'))
       end
     end
   else
@@ -1381,27 +1347,27 @@ function onClickIgnoreButton()
 end
 
 function online()
-  load()
+  clear()
 
   defaultTab = addTab(tr('Default'), true)
   serverTab = addTab(tr('Server'), false) -- Server Log
 
-  -- open last channels
-  local lastChannelsOpen = g_settings.getNode('lastChannelsOpen')
-  if lastChannelsOpen then
-    local savedChannels = lastChannelsOpen[g_game.getCharacterName()]
-    if savedChannels then
-      for channelName, channelId in pairs(savedChannels) do
-        channelId = tonumber(channelId)
-        if channelId ~= -1 and not table.find(channels, channelId) then
-          g_game.joinChannel(channelId)
-        end
-      end
+  -- Open last channels
+  local settings = modules.game_things.getPlayerSettings()
+  for channelName, channelId in pairs(settings:getNode('lastChannelsOpen') or {}) do
+    channelId = tonumber(channelId)
+    if channelId ~= -1 and not table.find(channels, channelId) then
+      g_game.joinChannel(channelId)
     end
   end
+
+  load()
 end
 
 function offline()
   save()
-  clear()
+end
+
+function getConsolePanel()
+  return consolePanel
 end

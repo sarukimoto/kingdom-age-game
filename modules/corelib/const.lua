@@ -323,3 +323,34 @@ AudioChannels =
   First = 1,
   Last = 3
 }
+
+ViewModes = {
+  [0] = { id = 0, isCropped = false, isFull = false, name = 'Normal' }, -- Default
+  [1] = { id = 1, isCropped = true,  isFull = false, name = 'Crop' },
+  [2] = { id = 2, isCropped = true,  isFull = true,  name = 'Crop Full' },
+  [3] = { id = 3, isCropped = false, isFull = true,  name = 'Full' },
+}
+
+local noneStickerDefaultPath = '/images/ui/stickers/sticker_0.png'
+PanelStickers = {
+  [1] = { opt = 'None',      path = noneStickerDefaultPath },
+  [2] = { opt = 'Sticker 1', path = '/images/ui/stickers/sticker_1.png' },
+  [3] = { opt = 'Sticker 2', path = '/images/ui/stickers/sticker_2.png' },
+  [4] = { opt = 'Sticker 3', path = '/images/ui/stickers/sticker_3.png' },
+  [5] = { opt = 'Sticker 4', path = '/images/ui/stickers/sticker_4.png' },
+  [6] = { opt = 'Sticker 5', path = '/images/ui/stickers/sticker_5.png' }
+}
+
+setmetatable(PanelStickers, {
+  __index =
+  function (self, index)
+    if type(index) == "string" then
+      for i, v in ipairs(self) do
+        if index == v.opt then
+          return v.path
+        end
+      end
+    end
+    return noneStickerDefaultPath
+  end
+})

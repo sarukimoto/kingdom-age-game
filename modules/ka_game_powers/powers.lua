@@ -97,6 +97,8 @@ function init()
     onGameEnd          = offline,
     onPlayerPowersList = onPlayerPowersList
   })
+
+  refreshList()
 end
 
 function terminate()
@@ -276,7 +278,9 @@ function clearList()
 end
 
 function refreshList()
-  if not g_game.isOnline() then return end
+  if not g_game.isOnline() then
+    return
+  end
 
   clearList()
 
@@ -284,14 +288,10 @@ function refreshList()
   g_game.sendPowerProtocolData(string.format("%d:%d:%d:%d", power_flag_updateList, ignoreMessage, 0, 0))
 end
 
-function add(power, updateList)
-  if update == nil then update = true end
+function add(power)
   local powerButton = powersList[power.id]
-
-  -- Update
   if powerButton then
-    powerButton:updateData(power)
-    return
+    return false -- Already added
   end
 
   -- Add
@@ -304,19 +304,32 @@ function add(power, updateList)
   table.insert(powerListByIndex, powersList[power.id])
 
   powersPanel:addChild(powerButton)
-  if updateList then
-    updatePowersList()
-  end
+
+  return true -- New added successfully
 end
 
-function remove(power)
-  local index = nil
-  if powersList[power.id] then
-    index = powersList[power.id].index
-    powersList[power.id]:destroy()
-    powersList[power.id] = nil
-    table.remove(powerListByIndex, index)
+function update(power)
+  local powerButton = powersList[power.id]
+  if not powerButton then
+    return false
   end
+
+  powerButton:updateData(power)
+
+  return true -- Updated successfully
+end
+
+function remove(powerId)
+  if not powersList[powerId] then
+    return false
+  end
+
+  powerListByIndex[powersList[powerId].index] = nil
+  local widget = powersList[powerId]
+  powersList[powerId] = nil
+  widget:destroy()
+
+  return true -- Removed successfully
 end
 
 function requestNonConstantPowerChanges(power)
@@ -325,30 +338,30 @@ function requestNonConstantPowerChanges(power)
   g_game.sendPowerProtocolData(string.format("%d:%d:%d:%d", power_flag_updateNonConstantPower, power.id or 0, 0, 0))
 end
 
-function onPlayerPowersList(powers, updateNonConstantPower)
-  if not updateNonConstantPower then
-    clearList()
-  end
+function onPlayerPowersList(powers, updateNonConstantPower, ignoreMessage)
+  local hasAdded   = false
+  local hasRemoved = false
 
-  for k, power in ipairs(powers) do
-    local powerObj = {}
+  -- For add and update
+  for _, powerData in ipairs(powers) do
+    local power = {}
 
-    powerObj.id                   = power[1]
-    powerObj.name                 = power[2]
-    powerObj.level                = power[3]
-    powerObj.class                = power[4]
-    powerObj.mana                 = power[5]
-    powerObj.exhaustTime          = power[6]
-    powerObj.vocations            = power[7]
-    powerObj.isPremium            = power[8]
-    powerObj.description          = power[9]
-    powerObj.descriptionBoostNone = power[10]
-    powerObj.descriptionBoostLow  = power[11]
-    powerObj.descriptionBoostHigh = power[12]
-    powerObj.isConstant           = power[13]
-    powerObj.isOffensive          = powerObj.class == POWER_CLASS_OFFENSIVE
+    power.id                   = powerData[1]
+    power.name                 = powerData[2]
+    power.level                = powerData[3]
+    power.class                = powerData[4]
+    power.mana                 = powerData[5]
+    power.exhaustTime          = powerData[6]
+    power.vocations            = powerData[7]
+    power.isPremium            = powerData[8]
+    power.description          = powerData[9]
+    power.descriptionBoostNone = powerData[10]
+    power.descriptionBoostLow  = powerData[11]
+    power.descriptionBoostHigh = powerData[12]
+    power.isConstant           = powerData[13]
+    power.isOffensive          = power.class == POWER_CLASS_OFFENSIVE
 
-    powerObj.onTooltipHoverChange =
+    power.onTooltipHoverChange =
     function(widget, hovered)
       if hovered then
         local power = widget.power
@@ -360,7 +373,46 @@ function onPlayerPowersList(powers, updateNonConstantPower)
       return true
     end
 
-    add(powerObj, false)
+    local powerButton = powersList[power.id]
+    if not powerButton then
+      if not updateNonConstantPower then
+        -- Add
+        local ret = add(power)
+        if not hasAdded then
+          hasAdded = ret
+        end
+      end
+    else
+      -- Update
+      update(power) -- No messages in this case, since is probably minor changes or nothing
+    end
+  end
+
+  -- For remove
+  -- for powerId, _ in pairs(powersList) do
+  if not updateNonConstantPower then
+    for i = #powersList, 1, -1 do
+      local powerFound = false
+
+      for _, powerData in ipairs(powers) do
+        if powerId == powerData[1] then
+          powerFound = true
+          break
+        end
+      end
+
+      if not powerFound then
+        -- Remove
+        local ret = remove(powerId)
+        if not hasRemoved then
+          hasRemoved = ret
+        end
+      end
+    end
+  end
+
+  if not ignoreMessage and (hasAdded or hasRemoved) and modules.game_textmessage then
+    modules.game_textmessage.displayGameMessage(tr('Your power list has been updated.'))
   end
 
   if not updateNonConstantPower then

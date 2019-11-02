@@ -34,18 +34,20 @@ local defaultOptions = {
   musicVolume = 100,
   soundAmbientVolume = 100,
   soundEffectVolume = 100,
-  displayNames = true,
-  displayLevel = true,
-  displayIcons = true,
-  displayHealth = true,
-  displayMana = true,
-  displayExpBar = true,
-  displayText = true,
-  displayHotkeybars = true,
+  showNames = true,
+  showLevel = true,
+  showIcons = true,
+  showHealth = true,
+  showMana = true,
+  showExpBar = true,
+  showText = true,
+  showHotkeybars = true,
   showNpcDialogWindows = true,
   dontStretchShrink = false,
-  leftSticker = tr("None"),
-  rightSticker = tr("None"),
+  shaderFilter = ShaderFilter,
+  viewMode = ViewModes[0].name,
+  leftSticker = 'None',
+  rightSticker = 'None',
   leftStickerOpacityScrollbar = 100,
   rightStickerOpacityScrollbar = 100,
   smoothWalk = true,
@@ -62,41 +64,18 @@ local defaultOptions = {
 -- Panels
 
 function setLeftPanel(value)
-  local mod = modules.game_interface
-  if not mod then return end
+  if not modules.game_interface then return end
 
-  mod.getLeftPanel():setOn(value)
+  modules.game_interface.getLeftPanel():setOn(value)
   updateStickers()
 end
 
 function setRightPanel(value)
-  local mod = modules.game_interface
-  if not mod then return end
+  if not modules.game_interface then return end
 
-  mod.getRightPanel():setOn(value)
+  modules.game_interface.getRightPanel():setOn(value)
   updateStickers()
 end
-
-local noneStickerDefaultPath = "/images/ui/stickers/sticker_0.png"
-local stickers = {
-  [1] = {opt = tr("None"),            path = noneStickerDefaultPath},
-  [2] = {opt = tr("Sticker") .. " 1", path = "/images/ui/stickers/sticker_1.png"},
-  [3] = {opt = tr("Sticker") .. " 2", path = "/images/ui/stickers/sticker_2.png"},
-  [4] = {opt = tr("Sticker") .. " 3", path = "/images/ui/stickers/sticker_3.png"},
-  [5] = {opt = tr("Sticker") .. " 4", path = "/images/ui/stickers/sticker_4.png"},
-  [6] = {opt = tr("Sticker") .. " 5", path = "/images/ui/stickers/sticker_5.png"}
-}
-
-local mt = {__index = function (self, index)
-  for i, v in ipairs(self) do
-    if v.opt == index then
-      return v.path
-    end
-  end
-  return noneStickerDefaultPath
-end
-}
-setmetatable(stickers, mt)
 
 
 
@@ -107,19 +86,22 @@ local optionsButton
 local optionsTabBar
 local options = {}
 local generalPanel
+local controlPanel
+local audioPanel
+local graphicPanel
+local displayPanel
 local consolePanel
-local graphicsPanel
-local soundPanel
 local audioButton
 local leftStickerComboBox
 local rightStickerComboBox
-local keyboardPanel
+local shaderFilterComboBox
+local viewModeComboBox
 
 local function setupGraphicsEngines()
   local enginesRadioGroup = UIRadioGroup.create()
-  local ogl1 = graphicsPanel:getChildById('opengl1')
-  local ogl2 = graphicsPanel:getChildById('opengl2')
-  local dx9 = graphicsPanel:getChildById('directx9')
+  local ogl1 = graphicPanel:getChildById('opengl1')
+  local ogl2 = graphicPanel:getChildById('opengl2')
+  local dx9 = graphicPanel:getChildById('directx9')
   enginesRadioGroup:addWidget(ogl1)
   enginesRadioGroup:addWidget(ogl2)
   enginesRadioGroup:addWidget(dx9)
@@ -153,8 +135,8 @@ local function setupGraphicsEngines()
   end
 
   if not g_graphics.canCacheBackbuffer() then
-    graphicsPanel:getChildById('foregroundFrameRate'):disable()
-    graphicsPanel:getChildById('foregroundFrameRateLabel'):disable()
+    graphicPanel:getChildById('foregroundFrameRate'):disable()
+    graphicPanel:getChildById('foregroundFrameRateLabel'):disable()
   end
 end
 
@@ -173,13 +155,51 @@ function init()
   g_keyboard.bindKeyDown('Ctrl+Shift+F', function() toggleOption('fullscreen') end)
 
   generalPanel = g_ui.loadUI('game')
+  controlPanel = g_ui.loadUI('control')
+  audioPanel = g_ui.loadUI('audio')
+  graphicPanel = g_ui.loadUI('graphic')
+  displayPanel = g_ui.loadUI('display')
+  consolePanel = g_ui.loadUI('console')
   optionsTabBar:addTab(tr('Game'), generalPanel, '/images/optionstab/game')
+  optionsTabBar:addTab(tr('Control'), controlPanel, '/images/optionstab/control')
+  optionsTabBar:addTab(tr('Audio'), audioPanel, '/images/optionstab/audio')
+  optionsTabBar:addTab(tr('Graphic'), graphicPanel, '/images/optionstab/graphic')
+  optionsTabBar:addTab(tr('Display'), displayPanel, '/images/optionstab/display')
+  optionsTabBar:addTab(tr('Console'), consolePanel, '/images/optionstab/console')
 
-  -- Panels Stickers
-  leftStickerComboBox = generalPanel:getChildById('leftStickerComboBox')
-  rightStickerComboBox = generalPanel:getChildById('rightStickerComboBox')
+  -- Shader filters
+  shaderFilterComboBox = graphicPanel:getChildById('shaderFilterComboBox')
+  if shaderFilterComboBox then
+    for _, shaderFilter in ipairs(MapShaders) do
+      if shaderFilter.isFilter then
+        shaderFilterComboBox:addOption(shaderFilter.name)
+      end
+    end
+    shaderFilterComboBox.onOptionChange = setShaderFilter
+
+    -- Select default shader
+    local shaderFilter = g_settings.get(shaderFilterComboBox:getId(), defaultOptions.shaderFilter)
+    shaderFilterComboBox:setOption(shaderFilter)
+  end
+
+  -- View mode combobox
+  viewModeComboBox = graphicPanel:getChildById('viewModeComboBox')
+  if viewModeComboBox then
+    for k = 0, #ViewModes do
+      viewModeComboBox:addOption(ViewModes[k].name)
+    end
+    viewModeComboBox.onOptionChange = setViewMode
+
+    -- Select default view mode
+    local viewMode = g_settings.get(viewModeComboBox:getId(), defaultOptions.viewMode)
+    viewModeComboBox:setOption(viewMode)
+  end
+
+  -- Sticker combobox
+  leftStickerComboBox = displayPanel:getChildById('leftStickerComboBox')
+  rightStickerComboBox = displayPanel:getChildById('rightStickerComboBox')
   if leftStickerComboBox and rightStickerComboBox then
-    for _, sticker in ipairs(stickers) do
+    for _, sticker in ipairs(PanelStickers) do
       leftStickerComboBox:addOption(sticker.opt)
       rightStickerComboBox:addOption(sticker.opt)
     end
@@ -188,18 +208,6 @@ function init()
 
     addEvent(updateStickers, 500)
   end
-
-  consolePanel = g_ui.loadUI('console')
-  optionsTabBar:addTab(tr('Console'), consolePanel, '/images/optionstab/console')
-
-  graphicsPanel = g_ui.loadUI('graphics')
-  optionsTabBar:addTab(tr('Graphics'), graphicsPanel, '/images/optionstab/graphics')
-
-  audioPanel = g_ui.loadUI('audio')
-  optionsTabBar:addTab(tr('Audio'), audioPanel, '/images/optionstab/audio')
-
-  keyboardPanel = g_ui.loadUI('keyboard')
-  optionsTabBar:addTab(tr('Keyboard'), keyboardPanel, '/images/optionstab/keyboard')
 
   optionsButton = modules.client_topmenu.addLeftButton('optionsButton', tr('Options') .. string.format(' (%s)', optionsShortcut), '/images/topbuttons/options', toggle)
   g_keyboard.bindKeyDown(optionsShortcut, toggle)
@@ -227,6 +235,8 @@ function setup()
       setOption(k, g_settings.getBoolean(k), true)
     elseif type(v) == 'number' then
       setOption(k, g_settings.getNumber(k), true)
+    elseif type(v) == 'string' then
+      setOption(k, g_settings.getString(k), true)
     elseif k == "rightStickerComboBox" or k == "leftStickerComboBox" then
       setOption(k, g_settings.get(k), true)
     end
@@ -259,11 +269,10 @@ end
 
 function setOption(key, value, force)
   if not force and options[key] == value then return end
-  local mod = modules.game_interface
-  if not mod then return end
+  if not modules.game_interface then return end
 
-  local gameMapPanel = mod.getMapPanel()
-  local rootPanel    = mod.getRootPanel()
+  local gameMapPanel = modules.game_interface.getMapPanel()
+  local rootPanel    = modules.game_interface.getRootPanel()
   if key == 'vsync' then
     g_window.setVerticalSync(value)
   elseif key == 'showFps' then
@@ -290,9 +299,8 @@ function setOption(key, value, force)
     g_sounds.getChannel(AudioChannels.Music):setEnabled(getOption('enableAudio') and value)
 
   elseif key == 'musicVolume' then
-    local mod = modules.ka_client_audio
-    if mod then
-      mod.setMusicVolume(value / 100)
+    if modules.ka_client_audio then
+      modules.ka_client_audio.setMusicVolume(value / 100)
       audioPanel:getChildById('musicVolumeLabel'):setText(tr('Music volume') .. ': ' .. (value < 100 and string.format('%d%%', value) or 'max'))
     end
 
@@ -300,9 +308,8 @@ function setOption(key, value, force)
     g_sounds.getChannel(AudioChannels.Ambient):setEnabled(getOption('enableAudio') and value)
 
   elseif key == 'soundAmbientVolume' then
-    local mod = modules.ka_client_audio
-    if mod then
-      mod.setAmbientVolume(value / 100)
+    if modules.ka_client_audio then
+      modules.ka_client_audio.setAmbientVolume(value / 100)
       audioPanel:getChildById('soundAmbientVolumeLabel'):setText(tr('Ambient sounds volume') .. ': ' .. (value < 100 and string.format('%d%%', value) or 'max'))
     end
 
@@ -310,25 +317,38 @@ function setOption(key, value, force)
     g_sounds.getChannel(AudioChannels.Effect):setEnabled(getOption('enableAudio') and value)
 
   elseif key == 'soundEffectVolume' then
-    local mod = modules.ka_client_audio
-    if mod then
-      mod.setEffectVolume(value / 100)
+    if modules.ka_client_audio then
+      modules.ka_client_audio.setEffectVolume(value / 100)
       audioPanel:getChildById('soundEffectVolumeLabel'):setText(tr('Effect sounds volume') .. ': ' .. (value < 100 and string.format('%d%%', value) or 'max'))
     end
 
   elseif key == 'showLeftPanel' then
     setLeftPanel(value)
-    mod.getLeftPanelButton():setOn(value)
+    modules.game_interface.getLeftPanelButton():setOn(value)
+
+    -- Force onGeometryChange calling
+    -- Without it, onGeometryChange is not executed on execute the button showLeftPanel
+    if ViewModes[modules.game_interface.getCurrentViewMode()].isFull then
+      signalcall(gameMapPanel.onGeometryChange, gameMapPanel)
+      signalcall(rootPanel.onGeometryChange, rootPanel)
+    end
 
   elseif key == 'showRightPanel' then
     setRightPanel(value)
-    mod.getRightPanelButton():setOn(value)
+    modules.game_interface.getRightPanelButton():setOn(value)
+
+    -- Force onGeometryChange calling
+    -- Without it, onGeometryChange is not executed on execute the button showRightPanel
+    if ViewModes[modules.game_interface.getCurrentViewMode()].isFull then
+      signalcall(gameMapPanel.onGeometryChange, gameMapPanel)
+      signalcall(rootPanel.onGeometryChange, rootPanel)
+    end
 
   elseif key == 'showTopMenu' then
     local topMenu       = modules.client_topmenu.getTopMenu()
-    local topMenuButton = mod.getTopMenuButton()
-    local leftPanel     = mod.getLeftPanel()
-    local rightPanel    = mod.getRightPanel()
+    local topMenuButton = modules.game_interface.getTopMenuButton()
+    local leftPanel     = modules.game_interface.getLeftPanel()
+    local rightPanel    = modules.game_interface.getRightPanel()
 
     local margin = 0
     if value then
@@ -341,24 +361,25 @@ function setOption(key, value, force)
       topMenuButton:setOn(true)
     end
 
-    local viewMode = mod.getCurrentViewMode()
-    if value or viewMode == 2 then
+    local isFullViewMode = ViewModes[modules.game_interface.getCurrentViewMode()].isFull
+
+    if value or isFullViewMode then
       -- See more of these margins at setupViewMode() on game_interface/interface.lua
       leftPanel:setMarginTop(margin)
       rightPanel:setMarginTop(margin)
       topMenuButton:setMarginTop(margin + 10)
     end
 
-    if viewMode == 2 then
-      mod = modules.ka_game_hotkeybars
-      if mod then
-        mod.updateHotkeybarPositions()
-      end
+    -- Force onGeometryChange calling
+    -- Without it, onGeometryChange is not executed on execute the button showTopMenu
+    if ViewModes[modules.game_interface.getCurrentViewMode()].isFull then
+      signalcall(gameMapPanel.onGeometryChange, gameMapPanel)
+      signalcall(rootPanel.onGeometryChange, rootPanel)
     end
 
   elseif key == 'showChat' then
-    local splitter   = mod.getSplitter()
-    local chatButton = mod.getChatButton()
+    local splitter   = modules.game_interface.getSplitter()
+    local chatButton = modules.game_interface.getChatButton()
 
     if value then
       splitter:setMarginBottom(162)
@@ -368,53 +389,59 @@ function setOption(key, value, force)
       chatButton:setOn(false)
     end
 
+    -- Force onGeometryChange calling
+    -- Without it, onGeometryChange is not executed on execute the button showChat
+    if ViewModes[modules.game_interface.getCurrentViewMode()].isFull then
+      signalcall(gameMapPanel.onGeometryChange, gameMapPanel)
+      signalcall(rootPanel.onGeometryChange, rootPanel)
+    end
+
   elseif key == 'gameScreenSize' then
     local zoom = value % 2 == 0 and value + 1 or value
     local text, v = zoom, value
     if value < 11 or value >= 18 then text = 'max' v = 0 end
-    graphicsPanel:getChildById('gameScreenSizeLabel'):setText(tr('Game screen size') .. ': ' .. text .. ' SQMs')
+    graphicPanel:getChildById('gameScreenSizeLabel'):setText(tr('Game screen size') .. ': ' .. text .. ' SQMs')
     gameMapPanel:setZoom(zoom)
   elseif key == 'backgroundFrameRate' then
     local text, v = value, value
     if value <= 0 or value >= 201 then text = 'max' v = 0 end
-    graphicsPanel:getChildById('backgroundFrameRateLabel'):setText(tr('Game framerate limit') .. ': ' .. text)
+    graphicPanel:getChildById('backgroundFrameRateLabel'):setText(tr('Game framerate limit') .. ': ' .. text)
     g_app.setBackgroundPaneMaxFps(v)
   elseif key == 'foregroundFrameRate' then
     local text, v = value, value
     if value <= 0 or value >= 61 then  text = 'max' v = 0 end
-    graphicsPanel:getChildById('foregroundFrameRateLabel'):setText(tr('Interface framerate limit') .. ': ' .. text)
+    graphicPanel:getChildById('foregroundFrameRateLabel'):setText(tr('Interface framerate limit') .. ': ' .. text)
     g_app.setForegroundPaneMaxFps(v)
   elseif key == 'painterEngine' then
     g_graphics.selectPainterEngine(value)
-  elseif key == 'displayNames' then
+  elseif key == 'showNames' then
     gameMapPanel:setDrawNames(value)
-  elseif key == 'displayLevel' then
+  elseif key == 'showLevel' then
     gameMapPanel:setDrawLevels(value)
-  elseif key == 'displayIcons' then
+  elseif key == 'showIcons' then
     gameMapPanel:setDrawIcons(value)
-  elseif key == 'displayHealth' then
+  elseif key == 'showHealth' then
     gameMapPanel:setDrawHealthBars(value)
-  elseif key == 'displayMana' then
+  elseif key == 'showMana' then
     gameMapPanel:setDrawManaBar(value)
-  elseif key == 'displayExpBar' then
+  elseif key == 'showExpBar' then
     if modules.ka_game_ui then
       modules.ka_game_ui.setExpBar(value)
     end
-  elseif key == 'displayText' then
+  elseif key == 'showText' then
     gameMapPanel:setDrawTexts(value)
-  elseif key == 'displayHotkeybars' then
-    local mod = modules.ka_game_hotkeybars
-    if mod then
-      mod.onDisplay(value)
+  elseif key == 'showHotkeybars' then
+    if modules.ka_game_hotkeybars then
+      modules.ka_game_hotkeybars.onDisplay(value)
     end
   elseif key == 'showNpcDialogWindows' then
     g_game.setNpcDialogWindows(value)
   elseif key == 'dontStretchShrink' then
     addEvent(function()
-      mod.updateStretchShrink()
+      modules.game_interface.updateStretchShrink()
     end)
   elseif key == 'leftStickerOpacityScrollbar' then
-    local op = generalPanel:getChildById('leftSticketOpacityLabel')
+    local op = displayPanel:getChildById('leftSticketOpacityLabel')
     op:setText(string.format(op.baseText, math.ceil(100 * value / 255)))
     local leftStickerWidget = rootPanel:getChildById('gameLeftPanelSticker')
     if leftStickerWidget then
@@ -422,37 +449,41 @@ function setOption(key, value, force)
       leftStickerWidget:setImageColor(tocolor("#FFFFFF" .. alpha))
     end
   elseif key == 'rightStickerOpacityScrollbar' then
-    local op = generalPanel:getChildById('rightSticketOpacityLabel')
+    local op = displayPanel:getChildById('rightSticketOpacityLabel')
     op:setText(string.format(op.baseText, math.ceil(100 * value / 255)))
     local rightStickerWidget = rootPanel:getChildById('gameRightPanelSticker')
     if rightStickerWidget then
       local alpha = string.format("%s%x", value < 16 and "0" or "", value)
       rightStickerWidget:setImageColor(tocolor("#FFFFFF" .. alpha))
     end
+  elseif key == "shaderFilterComboBox" then
+    shaderFilterComboBox:setOption(value)
+  elseif key == "viewModeComboBox" then
+    viewModeComboBox:setOption(value)
   elseif key == "leftStickerComboBox" then
-    leftStickerComboBox:setCurrentOption(value)
+    leftStickerComboBox:setOption(value)
   elseif key == "rightStickerComboBox" then
-    rightStickerComboBox:setCurrentOption(value)
+    rightStickerComboBox:setOption(value)
   elseif key == 'walkingSensitivityScrollBar' then
-    keyboardPanel:getChildById('walkingSensitivityLabel'):setText(tr('Walking keys sensitivity: %s', value < 100 and string.format('%d%%', value) or 'max'))
+    controlPanel:getChildById('walkingSensitivityLabel'):setText(tr('Walking keys sensitivity: %s', value < 100 and string.format('%d%%', value) or 'max'))
   elseif key == 'walkingRepeatDelayScrollBar' then
-    keyboardPanel:getChildById('walkingRepeatDelayLabel'):setText(tr('Walking keys auto-repeat delay: %s', value < 200 and string.format('%d ms', value) or 'max'))
-    local scrollBar = keyboardPanel:getChildById('walkingRepeatDelayScrollBar')
-    mod.setWalkingRepeatDelay(value)
+    controlPanel:getChildById('walkingRepeatDelayLabel'):setText(tr('Walking keys auto-repeat delay: %s', value < 200 and string.format('%d ms', value) or 'max'))
+    local scrollBar = controlPanel:getChildById('walkingRepeatDelayScrollBar')
+    modules.game_interface.setWalkingRepeatDelay(value)
   elseif key == 'bouncingKeysDelayScrollBar' then
-    keyboardPanel:getChildById('bouncingKeysDelayLabel'):setText(tr('Auto bouncing keys interval: %s', value < 1000 and string.format('%d ms', value) or 'max'))
+    controlPanel:getChildById('bouncingKeysDelayLabel'):setText(tr('Auto bouncing keys interval: %s', value < 1000 and string.format('%d ms', value) or 'max'))
   elseif key == 'smoothWalk' then
-    keyboardPanel:getChildById('walkingSensitivityScrollBar'):setEnabled(value)
-    keyboardPanel:getChildById('walkingSensitivityLabel'):setEnabled(value)
-    keyboardPanel:getChildById('walkingRepeatDelayLabel'):setEnabled(value)
-    keyboardPanel:getChildById('walkingRepeatDelayScrollBar'):setEnabled(value)
+    controlPanel:getChildById('walkingSensitivityScrollBar'):setEnabled(value)
+    controlPanel:getChildById('walkingSensitivityLabel'):setEnabled(value)
+    controlPanel:getChildById('walkingRepeatDelayLabel'):setEnabled(value)
+    controlPanel:getChildById('walkingRepeatDelayScrollBar'):setEnabled(value)
   elseif key == 'bouncingKeys' then
-    keyboardPanel:getChildById('bouncingKeysDelayScrollBar'):setEnabled(value)
-    keyboardPanel:getChildById('bouncingKeysDelayLabel'):setEnabled(value)
+    controlPanel:getChildById('bouncingKeysDelayScrollBar'):setEnabled(value)
+    controlPanel:getChildById('bouncingKeysDelayLabel'):setEnabled(value)
   elseif key == 'turnDelay' then
-    keyboardPanel:getChildById('turnDelayLabel'):setText(tr('Turn delay: %sms', value))
+    controlPanel:getChildById('turnDelayLabel'):setText(tr('Turn delay: %sms', value))
   elseif key == 'hotkeyDelay' then
-    keyboardPanel:getChildById('hotkeyDelayLabel'):setText(tr('Hotkey delay: %sms', value))
+    controlPanel:getChildById('hotkeyDelayLabel'):setText(tr('Hotkey delay: %sms', value))
   end
 
   -- change value for keybind updates
@@ -486,12 +517,12 @@ end
 
 
 
--- Panels Stickers
+-- Panel Stickers
 
 function updateStickers()
-  local mod = modules.game_interface
-  if not mod then return end
-  local rootPanel = mod.getRootPanel()
+  if not modules.game_interface then return end
+
+  local rootPanel = modules.game_interface.getRootPanel()
   if not rootPanel then return end
 
   -- Left panel
@@ -500,9 +531,13 @@ function updateStickers()
     local value = g_settings.get(leftStickerComboBox:getId())
     value = type(value) == "string" and value ~= "" and value or defaultOptions.leftSticker
 
-    leftStickerComboBox:setCurrentOption(value) -- Make sure combobox has same as value at g_settings
-    leftStickerWidget:setHeight(0) -- Will make able to get height when change the image source
-    leftStickerWidget:setImageSource(stickers[value])
+    leftStickerComboBox:setOption(value) -- Make sure combobox has same as value at g_settings
+    leftStickerComboBox.tooltipAddons = value ~= defaultOptions.leftSticker and { {{ image = PanelStickers[value], align = AlignCenter }} } or nil
+
+    -- Will make able to get height when change the image source
+    leftStickerWidget:setWidth(0)
+    leftStickerWidget:setHeight(0)
+    leftStickerWidget:setImageSource(PanelStickers[value])
   end
 
   -- Right panel
@@ -511,9 +546,13 @@ function updateStickers()
     local value = g_settings.get(rightStickerComboBox:getId())
     value = type(value) == "string" and value ~= "" and value or defaultOptions.rightSticker
 
-    rightStickerComboBox:setCurrentOption(value) -- Make sure combobox has same as value at g_settings
-    rightStickerWidget:setHeight(0) -- Will make able to get height when change the image source
-    rightStickerWidget:setImageSource(stickers[value])
+    rightStickerComboBox:setOption(value) -- Make sure combobox has same as value at g_settings
+    rightStickerComboBox.tooltipAddons = value ~= defaultOptions.leftSticker and { {{ image = PanelStickers[value], align = AlignCenter }} } or nil
+
+    -- Will make able to get height when change the image source
+    rightStickerWidget:setWidth(0)
+    rightStickerWidget:setHeight(0)
+    rightStickerWidget:setImageSource(PanelStickers[value])
   end
 end
 
@@ -521,4 +560,31 @@ function setSticker(comboBox, opt)
   g_settings.set(comboBox:getId(), opt)
   options[comboBox:getId()] = opt
   updateStickers()
+end
+
+
+
+-- Shader Filter
+
+function setShaderFilter(comboBox, opt)
+  g_settings.set(comboBox:getId(), opt)
+  options[comboBox:getId()] = opt
+  setMapShader(opt)
+end
+
+-- View Mode
+
+function setViewMode(comboBox, opt)
+  g_settings.set(comboBox:getId(), opt)
+  options[comboBox:getId()] = opt
+  if modules.game_interface then
+    local viewModeId = 1
+    for k = 0, #ViewModes do
+      if opt == ViewModes[k].name then
+        viewModeId = k
+        break
+      end
+    end
+    modules.game_interface.setupViewMode(viewModeId)
+  end
 end

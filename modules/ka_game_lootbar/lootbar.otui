@@ -2,8 +2,8 @@ LootPanel < UIWidget
   id: lootPanel
   size: 50 50
   color: red
-  anchors.horizontalCenter: parent.horizontalCenter
   anchors.top: parent.top
+  anchors.horizontalCenter: parent.horizontalCenter
 
 ItemBoxLeft < UIWidget
   size: 24 50

@@ -101,7 +101,7 @@ function updateLayout(window, questId, missionId, row)
 
     teleportButton.onClick = function()
       if not getTeleportLock() then
-        displayCustomBox('Quest Teleport', 'Are you sure that you want to teleport?', {{ text = 'Yes', buttonCallback = function() sendTeleportRequest(questId, missionId) local mod = modules.game_questlog if not mod then return end mod.setTeleportLock(false) end }}, 1, 'No', function() local mod = modules.game_questlog if not mod then return end mod.setTeleportLock(false) end, nil)
+        displayCustomBox('Quest Teleport', 'Are you sure that you want to teleport?', {{ text = 'Yes', buttonCallback = function() sendTeleportRequest(questId, missionId) if modules.game_questlog then modules.game_questlog.setTeleportLock(false) end end }}, 1, 'No', function() if modules.game_questlog then modules.game_questlog.setTeleportLock(false) end end, nil)
         setTeleportLock(true)
       end
     end

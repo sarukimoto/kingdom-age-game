@@ -138,7 +138,7 @@ function EnterGame.init()
   --for _, proto in pairs(g_game.getSupportedClients()) do
   --  clientBox:addOption(proto)
   --end
-  --clientBox:setCurrentOption(clientVersion)
+  --clientBox:setOption(clientVersion)
 
   --EnterGame.toggleAuthenticatorToken(clientVersion, true)
   --EnterGame.toggleStayLoggedBox(clientVersion, true)
@@ -398,7 +398,7 @@ function EnterGame.setDefaultServer(host, port, protocol)
   --if hostTextEdit:getText() ~= host then
     --hostTextEdit:setText(host)
     --portTextEdit:setText(port)
-    --clientBox:setCurrentOption(protocol)
+    --clientBox:setOption(protocol)
     accountTextEdit:setText('')
     passwordTextEdit:setText('')
     --authenticatorTokenTextEdit:setText('')
@@ -427,7 +427,7 @@ function EnterGame.setUniqueServer(host, port, protocol)
   stayLoggedBox:setChecked(false)
   stayLoggedBox:setOn(false)
 
-  clientBox:setCurrentOption(protocol)
+  clientBox:setOption(protocol)
   clientBox:setVisible(false)
   clientBox:setHeight(0)
 

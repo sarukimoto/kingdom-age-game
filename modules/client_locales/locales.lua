@@ -35,6 +35,7 @@ end
 
 function createWindow()
   localesWindow = g_ui.displayUI('locales')
+  localesWindow.onEscape = destroyWindow
   local localesPanel = localesWindow:getChildById('localesPanel')
   local layout = localesPanel:getLayout()
   local spacing = layout:getCellSpacing()
@@ -55,11 +56,15 @@ function createWindow()
   addEvent(function() addEvent(function() localesWindow:raise() localesWindow:focus() end) end)
 end
 
-function selectFirstLocale(name)
+function destroyWindow()
   if localesWindow then
     localesWindow:destroy()
     localesWindow = nil
   end
+end
+
+function selectFirstLocale(name)
+  destroyWindow()
   if setLocale(name) then
     g_modules.reloadModules()
   end

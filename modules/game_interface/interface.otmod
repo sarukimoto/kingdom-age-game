@@ -10,6 +10,7 @@ Module
   @onUnload: terminate()
 
   load-later:
+    - game_things
     - game_textmessage
     - game_console
     - game_outfit
@@ -31,6 +32,7 @@ Module
     - game_market
     - game_modaldialog
     - game_unjustifiedpoints
+    - game_shaders
     - ka_game_screenimage
     - ka_game_hotkeybars
     - ka_game_conditions

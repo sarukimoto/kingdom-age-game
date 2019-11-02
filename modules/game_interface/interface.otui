@@ -191,9 +191,7 @@ UIWidget
     !tooltip: tr('Hide top menu (%s)', 'Ctrl+Shift+Q')
     on: true
     @onClick: |
-      local mod = modules.client_options
-      if not mod then return end
-      mod.setOption('showTopMenu', not mod.getOption('showTopMenu'))
+      modules.client_options.setOption('showTopMenu', not modules.client_options.getOption('showTopMenu'))
 
     $!on:
       image-source: /images/game/interface/tabarrow_down
@@ -209,9 +207,7 @@ UIWidget
     !tooltip: tr('Hide left panel (%s)', 'Ctrl+Shift+A')
     on: true
     @onClick: |
-      local mod = modules.client_options
-      if not mod then return end
-      mod.setOption('showLeftPanel', not mod.getOption('showLeftPanel'))
+      modules.client_options.setOption('showLeftPanel', not modules.client_options.getOption('showLeftPanel'))
 
     $!on:
       image-source: /images/game/interface/tabarrow_right
@@ -226,9 +222,7 @@ UIWidget
     !tooltip: tr('Hide right panel (%s)', 'Ctrl+Shift+S')
     on: true
     @onClick: |
-      local mod = modules.client_options
-      if not mod then return end
-      mod.setOption('showRightPanel', not mod.getOption('showRightPanel'))
+      modules.client_options.setOption('showRightPanel', not modules.client_options.getOption('showRightPanel'))
 
     $!on:
       image-source: /images/game/interface/tabarrow_left
@@ -243,9 +237,7 @@ UIWidget
     !tooltip: tr('Hide chat (%s)', 'Ctrl+Shift+W')
     on: true
     @onClick: |
-      local mod = modules.client_options
-      if not mod then return end
-      mod.setOption('showChat', not mod.getOption('showChat'))
+      modules.client_options.setOption('showChat', not modules.client_options.getOption('showChat'))
 
     $!on:
       image-source: /images/game/interface/tabarrow_up

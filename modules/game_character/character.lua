@@ -313,9 +313,7 @@ function update()
 end
 
 function check()
-  local mod = modules.client_options
-  if not mod then return end
-  if mod.getOption('autoChaseOverride') then
+  if modules.client_options.getOption('autoChaseOverride') then
     if g_game.isAttacking() and g_game.getChaseMode() == ChaseOpponent then
       g_game.setChaseMode(false, DontChase)
     end
@@ -336,7 +334,7 @@ function onSetFightMode(self, selectedFightButton)
   g_game.setFightMode(false, fightMode)
 
   if g_game.isOnline() then
-    scheduleEvent(function() local mod = modules.game_battle if not mod then return end mod.updateBattleButtons() end, 1)
+    scheduleEvent(function() if modules.game_battle then modules.game_battle.updateBattleButtons() end end, 1)
   end
 end
 
@@ -526,20 +524,15 @@ function online()
   -- Combat controls
 
   if player then
-    local char = g_game.getCharacterName()
+    local settings = modules.game_things.getPlayerSettings()
+    local lastCombatControls = settings:getNode('lastCombatControls') or {}
 
-    local lastCombatControls = g_settings.getNode('LastCombatControls')
+    g_game.setChaseMode(true, lastCombatControls.chaseMode)
+    g_game.setSafeFight(true, lastCombatControls.safeFight)
+    g_game.setFightMode(true, lastCombatControls.fightMode)
 
-    if not table.empty(lastCombatControls) then
-      if lastCombatControls[char] then
-        g_game.setChaseMode(true, lastCombatControls[char].chaseMode)
-        g_game.setSafeFight(true, lastCombatControls[char].safeFight)
-        g_game.setFightMode(true, lastCombatControls[char].fightMode)
-
-        if lastCombatControls[char].pvpMode then
-          g_game.setPVPMode(true, lastCombatControls[char].pvpMode)
-        end
-      end
+    if lastCombatControls.pvpMode then
+      g_game.setPVPMode(true, lastCombatControls.pvpMode)
     end
 
     if g_game.getFeature(GamePlayerMounts) then
@@ -563,26 +556,24 @@ end
 function offline()
   -- Combat controls
 
-  local lastCombatControls = g_settings.getNode('LastCombatControls')
-  if not lastCombatControls then
-    lastCombatControls = {}
-  end
+  local settings = modules.game_things.getPlayerSettings()
+  local lastCombatControls = settings:getNode('lastCombatControls') or {}
 
   local player = g_game.getLocalPlayer()
   if player then
-    local char = g_game.getCharacterName()
-    lastCombatControls[char] = {
+    lastCombatControls = {
       chaseMode = g_game.getChaseMode(),
       safeFight = g_game.isSafeFight(),
       fightMode = g_game.getFightMode()
     }
 
     if g_game.getFeature(GamePVPMode) then
-      lastCombatControls[char].pvpMode = g_game.getPVPMode()
+      lastCombatControls.pvpMode = g_game.getPVPMode()
     end
 
-    -- save last combat control settings
-    g_settings.setNode('LastCombatControls', lastCombatControls)
+    -- Save last combat control settings
+    settings:setNode('lastCombatControls', lastCombatControls)
+    settings:save()
   end
 end
 

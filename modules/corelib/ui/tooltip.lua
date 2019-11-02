@@ -136,8 +136,8 @@ function g_tooltip.display(widget)
   if not widget.tooltip or widget.tooltip:len() == 0 then
     toolTipLabel:setHeight(0) -- For fix the heightTotalSum
   end
-  toolTipLabel:show()
   toolTipLabel:raise()
+  toolTipLabel:show()
   toolTipLabel:enable()
   g_effects.fadeIn(toolTipLabel, fadeInTime)
 
@@ -155,34 +155,48 @@ function g_tooltip.display(widget)
     local higherWidth    = 0
     local heightTotalSum = 0
 
+    toolTipAddonsBackgroundLabel:raise()
+
     -- Group
     --[[
       Options:
       - backgroundColor
     ]]
     for i = 1, #widget.tooltipAddons do
-      toolTipAddonGroupLabels[i] = g_ui.createWidget('Label', toolTipAddonsBackgroundLabel)
-      toolTipAddonGroupLabels[i]:setId(string.format('toolTipAddonGroupLabels_%d', i))
-      toolTipAddonGroupLabels[i]:addAnchor(AnchorTop, i < 2 and 'parent' or string.format('toolTipAddonGroupLabels_%d', i - 1), i < 2 and AnchorTop or AnchorBottom)
+      local toolTipAddonGroupLabelId = string.format('toolTipAddonGroupLabels_%d', i)
+      toolTipAddonGroupLabels[i] = g_ui.createWidget('UILabel', rootWidget)
+      toolTipAddonGroupLabels[i]:setId(toolTipAddonGroupLabelId)
+      toolTipAddonGroupLabels[i]:addAnchor(AnchorTop, i < 2 and 'toolTipAddonsBackground' or string.format('toolTipAddonGroupLabels_%d', i - 1), i < 2 and AnchorTop or AnchorBottom)
       if i == 1 then
         toolTipAddonGroupLabels[i]:setMarginTop(4)
       end
-      toolTipAddonGroupLabels[i]:addAnchor(AnchorLeft, 'parent', AnchorLeft)
+      toolTipAddonGroupLabels[i]:addAnchor(AnchorLeft, 'toolTipAddonsBackground', AnchorLeft)
       toolTipAddonGroupLabels[i]:setMarginLeft(4)
-      toolTipAddonGroupLabels[i]:addAnchor(AnchorRight, 'parent', AnchorRight)
+      toolTipAddonGroupLabels[i]:addAnchor(AnchorRight, 'toolTipAddonsBackground', AnchorRight)
       toolTipAddonGroupLabels[i]:setMarginRight(4)
       if i == #widget.tooltipAddons then
-        toolTipAddonGroupLabels[i]:addAnchor(AnchorBottom, 'parent', AnchorBottom)
+        toolTipAddonGroupLabels[i]:addAnchor(AnchorBottom, 'toolTipAddonsBackground', AnchorBottom)
         toolTipAddonGroupLabels[i]:setMarginBottom(4)
       end
       if widget.tooltipAddons[i].backgroundColor then
         toolTipAddonGroupLabels[i]:setBackgroundColor(widget.tooltipAddons[i].backgroundColor)
       end
       if widget.tooltipAddons[i].backgroundIcon then
-        toolTipAddonGroupLabels[i]:setIcon(widget.tooltipAddons[i].backgroundIcon)
+        toolTipAddonGroupLabels[i]:setIcon(resolvepath(widget.tooltipAddons[i].backgroundIcon))
         if widget.tooltipAddons[i].backgroundIconSize then
           toolTipAddonGroupLabels[i]:setSize(widget.tooltipAddons[i].backgroundIconSize)
           toolTipAddonGroupLabels[i]:setIconSize(widget.tooltipAddons[i].backgroundIconSize)
+        end
+      elseif widget.tooltipAddons[i].backgroundImage then
+        if not widget.tooltipAddons[i].backgroundImageSize then
+          -- Make able to get height when change the image source
+          toolTipAddonGroupLabels[i]:setWidth(0)
+          toolTipAddonGroupLabels[i]:setHeight(0)
+        end
+        toolTipAddonGroupLabels[i]:setImageSource(resolvepath(widget.tooltipAddons[i].backgroundImage))
+        if widget.tooltipAddons[i].backgroundImageSize then
+          toolTipAddonGroupLabels[i]:setSize(widget.tooltipAddons[i].backgroundImageSize)
+          toolTipAddonGroupLabels[i]:setImageSize(widget.tooltipAddons[i].backgroundImageSize)
         end
       end
       if widget.tooltipAddons[i].onGroupBackground then
@@ -204,14 +218,14 @@ function g_tooltip.display(widget)
       local higherHeight   = 0
       toolTipAddonLabels[i] = {}
       for j = 1, #widget.tooltipAddons[i] do
-        toolTipAddonLabels[i][j] = g_ui.createWidget('Label', toolTipAddonGroupLabels[i])
+        toolTipAddonLabels[i][j] = g_ui.createWidget('UILabel', rootWidget)
         local addon = toolTipAddonLabels[i][j]
         addon:setId(string.format('toolTipAddon_%d_%d', i, j))
-        addon:addAnchor(AnchorTop, 'parent', AnchorTop)
-        addon:addAnchor(AnchorBottom, 'parent', AnchorBottom)
 
-        addon:addAnchor(AnchorLeft, j < 2 and 'parent' or string.format('toolTipAddon_%d_%d', i, j - 1), j < 2 and AnchorLeft or AnchorRight)
-        if j == #widget.tooltipAddons[i] then addon:addAnchor(AnchorRight, 'parent', AnchorRight) end
+        addon:addAnchor(AnchorTop, toolTipAddonGroupLabelId, AnchorTop)
+        addon:addAnchor(AnchorBottom, toolTipAddonGroupLabelId, AnchorBottom)
+        addon:addAnchor(AnchorLeft, j < 2 and toolTipAddonGroupLabelId or string.format('toolTipAddon_%d_%d', i, j - 1), j < 2 and AnchorLeft or AnchorRight)
+        if j == #widget.tooltipAddons[i] then addon:addAnchor(AnchorRight, toolTipAddonGroupLabelId, AnchorRight) end
 
         if widget.tooltipAddons[i][j].backgroundColor then
           addon:setBackgroundColor(widget.tooltipAddons[i][j].backgroundColor)
@@ -222,7 +236,7 @@ function g_tooltip.display(widget)
           addon:resizeToText()
           addon:setTextAlign(widget.tooltipAddons[i][j].align or AlignCenter)
         elseif widget.tooltipAddons[i][j].icon then
-          addon:setIcon(widget.tooltipAddons[i][j].icon)
+          addon:setIcon(resolvepath(widget.tooltipAddons[i][j].icon))
           if widget.tooltipAddons[i][j].size then
             addon:setSize(widget.tooltipAddons[i][j].size)
             addon:setIconSize(widget.tooltipAddons[i][j].size)
@@ -233,12 +247,23 @@ function g_tooltip.display(widget)
             addon:removeAnchor(AnchorLeft)
             addon:removeAnchor(AnchorRight)
             local align = alignToAnchor[widget.tooltipAddons[i][j].align or AlignCenter]
-            addon:addAnchor(align, 'parent', align)
+            addon:addAnchor(align, toolTipAddonGroupLabelId, align)
+          end
+        elseif widget.tooltipAddons[i][j].image then
+          if not widget.tooltipAddons[i][j].size then
+            -- Make able to get height when change the image source
+            addon:setWidth(0)
+            addon:setHeight(0)
+          end
+          addon:setImageSource(resolvepath(widget.tooltipAddons[i][j].image))
+          if widget.tooltipAddons[i][j].size then
+            addon:setSize(widget.tooltipAddons[i][j].size)
+            addon:setImageSize(widget.tooltipAddons[i][j].size)
           end
         end
 
-        addon:show()
         addon:raise()
+        addon:show()
         addon:enable()
         g_effects.fadeIn(addon, fadeInTime)
 
@@ -247,8 +272,8 @@ function g_tooltip.display(widget)
         higherHeight   = higherHeight > height and higherHeight or height
       end
 
-      toolTipAddonGroupLabels[i]:setWidth(addonsWidthSum)
-      toolTipAddonGroupLabels[i]:setHeight(higherHeight)
+      toolTipAddonGroupLabels[i]:resize(addonsWidthSum, higherHeight)
+      toolTipAddonGroupLabels[i]:raise()
       toolTipAddonGroupLabels[i]:show()
       toolTipAddonGroupLabels[i]:enable()
 

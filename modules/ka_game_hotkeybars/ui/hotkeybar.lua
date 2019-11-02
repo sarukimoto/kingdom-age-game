@@ -155,18 +155,20 @@ function UIHotkeybar:updateDraggable(bool)
 end
 
 function UIHotkeybar:load()
-  local settings = g_settings.getNode('Hotkeybars')
-  if table.empty(settings) or not settings[g_game.getCharacterName()] then
+  local settings = modules.game_things.getPlayerSettings()
+  local hotkeyBars = settings:getNode('hotkeybars') or {}
+
+  if table.empty(hotkeyBars) then
     return
   end
 
-  settings = settings[g_game.getCharacterName()]['Hotkeybar' .. self.id]
-  if not settings or table.empty(settings) then
+  hotkeyBars = hotkeyBars['Hotkeybar' .. self.id]
+  if not hotkeyBars or table.empty(hotkeyBars) then
     return
   end
 
   local tmp = {}
-  for k, keyCombo in pairs(settings) do
+  for k, keyCombo in pairs(hotkeyBars) do
     table.insert(tmp, {k, keyCombo})
   end
 
@@ -177,27 +179,23 @@ function UIHotkeybar:load()
 end
 
 function UIHotkeybar:save()
-  local settings = g_settings.getNode('Hotkeybars') or {}
+  local settings = modules.game_things.getPlayerSettings()
+  local hotkeyBars = settings:getNode('hotkeybars') or {}
 
-  local char = g_game.getCharacterName()
-  if not settings[char] then
-    settings[char] = {}
+  for k, v in pairs(hotkeyBars) do
+    hotkeyBars[k] = v
   end
 
-  for k, v in pairs(settings[char]) do
-    settings[char][k] = v
-  end
-
-  settings[char]['Hotkeybar' .. self.id] = {}
+  hotkeyBars['Hotkeybar' .. self.id] = {}
 
   for k, v in ipairs(self.hotkeys) do
-    table.insert(settings[char]['Hotkeybar' .. self.id], v)
+    table.insert(hotkeyBars['Hotkeybar' .. self.id], v)
   end
 
   self:unload()
 
-  g_settings.setNode('Hotkeybars', settings)
-  g_settings.save()
+  settings:setNode('hotkeybars', hotkeyBars)
+  settings:save()
 end
 
 function UIHotkeybar:updateSize()
