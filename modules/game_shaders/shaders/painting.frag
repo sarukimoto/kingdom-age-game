@@ -28,7 +28,7 @@ uniform sampler2D Texture;
 COMPAT_VARYING vec2 v_TexCoord;
 
 #define InputSize vec2(800.0, 608.0) // Width and height in pixels of game screen
-#define OutputSize 2 * InputSize // Width and height in pixels of game screen
+#define OutputSize 2.0 * InputSize // Width and height in pixels of game screen
 #define SourceSize vec4(InputSize, 1.0 / InputSize) //either TextureSize or InputSize
 // #define outsize vec4(OutputSize, 1.0 / OutputSize) // Not in use
 
@@ -36,7 +36,7 @@ COMPAT_VARYING vec2 v_TexCoord;
 #define BLEND_NORMAL 1
 #define BLEND_DOMINANT 2
 #define LUMINANCE_WEIGHT 1.0
-#define EQUAL_COLOR_TOLERANCE 1
+#define EQUAL_COLOR_TOLERANCE 1.0
 #define STEEP_DIRECTION_THRESHOLD 2.2
 #define DOMINANT_DIRECTION_THRESHOLD 3.6
 

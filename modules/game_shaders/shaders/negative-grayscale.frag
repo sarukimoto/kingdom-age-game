@@ -11,6 +11,6 @@ vec4 grayscale(vec4 color)
 void main()
 {
     vec4 color = grayscale(texture2D(u_Tex0, v_TexCoord));
-    color = 1 - color; // negative
+    color = 1.0 - color; // negative
     gl_FragColor = color;
 }
