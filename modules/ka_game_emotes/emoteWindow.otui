@@ -13,7 +13,6 @@ EmoteWindow < UIWidget
 
 EmoteWindowButton < TabButton
   !tooltip: tr('Toggle emoticon panel')
-  icon: emotes
   anchors.top: parent.top
   anchors.right: next.left
   margin-top: 6

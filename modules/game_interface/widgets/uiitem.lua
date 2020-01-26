@@ -7,12 +7,14 @@ function UIItem:onDragEnter(mousePos)
   self:setBorderWidth(1)
   self.currentDragThing = item
   g_mouse.pushCursor('target')
+  g_mouseicon.displayItem(item)
   return true
 end
 
 function UIItem:onDragLeave(droppedWidget, mousePos)
   if self:isVirtual() then return false end
   self.currentDragThing = nil
+  g_mouseicon.hide()
   g_mouse.popCursor('target')
   self:setBorderWidth(0)
   self.hoveredWho = nil

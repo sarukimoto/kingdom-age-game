@@ -257,7 +257,27 @@ end
 function UIHotkeybar:onDrop(widget, mousePos)
   local isHotkeyLabel = widget:getClassName() == 'UIHotkeyLabel'
   local isHotkeybarContainer = widget:getClassName() == 'UIHotkeybarContainer'
-  if not self:canAcceptDrop(widget, mousePos) or (not(isHotkeyLabel) and not(isHotkeybarContainer)) then return false end
+  local isPowerButton = widget:getClassName() == 'UIPowerButton'
+  local isItemButton = widget:getClassName() == 'UIItem'
+  local isGameItem = widget:getClassName() == 'UIGameMap'
+  if not self:canAcceptDrop(widget, mousePos) or (not(isHotkeyLabel) and not(isHotkeybarContainer) and not(isPowerButton) and not(isItemButton) and not(isGameItem)) then return false end
+
+  if isPowerButton then
+    modules.game_hotkeys.addHotkey({hotkeyBar = self, powerId = widget.power.id, mousePos = mousePos})
+    return true
+  end
+
+  if isItemButton then
+    modules.game_hotkeys.addHotkey({hotkeyBar = self, item = widget:getItem(), mousePos = mousePos})
+    return true
+  end
+
+  if isGameItem then
+    local item = widget.currentDragThing
+    if not item:isItem() or not item:isPickupable() then return false end
+    modules.game_hotkeys.addHotkey({hotkeyBar = self, item = widget.currentDragThing, mousePos = mousePos})
+    return true
+  end
 
   local keyCombo = widget.keyCombo
   if isHotkeybarContainer then

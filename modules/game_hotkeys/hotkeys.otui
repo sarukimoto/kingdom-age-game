@@ -1,7 +1,52 @@
+HotkeyAssignWindow < MainWindow
+  id: assignWindow
+  !text: tr('Button Assign')
+  size: 360 150
+  @onEscape: self:destroy()
+
+  Label
+    !text: tr('Press the key you wish to add onto your hotkeys manager')
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: parent.top
+    text-auto-resize: true
+    text-align: left
+
+  Label
+    id: comboPreview
+    !text: tr('Current hotkey to add') .. ': ' .. tr('None')
+    anchors.horizontalCenter: parent.horizontalCenter
+    anchors.top: prev.bottom
+    margin-top: 10
+    text-auto-resize: true
+
+  HorizontalSeparator
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.bottom: next.top
+    margin-bottom: 10
+
+  Button
+    id: addButton
+    !text: tr('Add')
+    width: 64
+    anchors.right: next.left
+    anchors.bottom: parent.bottom
+    margin-right: 10
+
+  Button
+    id: cancelButton
+    !text: tr('Cancel')
+    width: 64
+    anchors.right: parent.right
+    anchors.bottom: parent.bottom
+
+
+
 MainWindow
   id: hotkeysWindow
   !text: tr('Hotkeys')
-  size: 340 420
+  size: 350 525
 
   @onEnter: ok()
   @onEscape: cancel()
@@ -15,7 +60,7 @@ MainWindow
 
   VerticalScrollBar
     id: currentHotkeysScrollBar
-    height: 150
+    height: 265
     anchors.top: parent.top
     anchors.right: parent.right
     step: 14
@@ -30,99 +75,126 @@ MainWindow
     anchors.bottom: prev.bottom
     focusable: false
 
+
+
   Button
     id: resetButton
     width: 96
     !text: tr('Reset All')
+    anchors.top: prev.bottom
     anchors.left: parent.left
-    anchors.top: next.top
+    margin-top: 8
     @onClick: reset()
-    margin-right: 10
-
-  Button
-    id: addHotkeyButton
-    !text: tr('Add')
-    width: 64
-    anchors.right: next.left
-    anchors.top: next.top
-    margin-right: 5
-    @onClick: addHotkey()
 
   Button
     id: removeHotkeyButton
     !text: tr('Remove')
     width: 64
-    enabled: false
+    anchors.top: prev.top
     anchors.right: parent.right
-    anchors.top: currentHotkeys.bottom
-    margin-top: 8
+    enabled: false
     @onClick: removeHotkey()
+
+  Button
+    id: addHotkeyButton
+    !text: tr('Add')
+    width: 64
+    anchors.top: prev.top
+    anchors.right: prev.left
+    margin-right: 5
+    @onClick: addHotkey()
+
+  HorizontalSeparator
+    anchors.top: prev.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-top: 10
+
+
+
+  Label
+    id: hotKeyItemLabel
+    !text: tr('Item or Power') .. ":"
+    anchors.top: prev.bottom
+    anchors.left: parent.left
+    margin-top: 10
+    text-auto-resize: true
+
+  Item
+    id: itemPreview
+    anchors.top: prev.bottom
+    anchors.horizontalCenter: parent.horizontalCenter
+    margin-top: 3
+    virtual: true
+    draggable: true
+
+  HorizontalSeparator
+    anchors.top: prev.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-top: 10
+
+
 
   Label
     id: hotKeyTextLabel
-    !text: tr('Edit hotkey text') .. ":"
-    anchors.left: parent.left
-    anchors.right: parent.right
+    !text: tr('Text') .. ":"
     anchors.top: prev.bottom
+    anchors.left: parent.left
     margin-top: 10
-
-  TextEdit
-    id: hotkeyText
-    enabled: false
-    anchors.left: parent.left
-    anchors.right: parent.right
-    anchors.top: prev.bottom
-    margin-top: 3
-    @onTextChange: onHotkeyTextChange(self:getText())
+    text-auto-resize: true
 
   CheckBox
     id: sendAutomatically
     !text: tr('Send automatically')
-    anchors.left: parent.left
+    anchors.top: prev.top
     anchors.right: parent.right
-    anchors.top: prev.bottom
+    text-auto-resize: true
     enabled:false
-    margin-top: 5
     @onCheckChange: onSendAutomaticallyChange(self:isChecked())
 
-  Item
-    id: itemPreview
+  TextEdit
+    id: hotkeyText
+    enabled: false
+    anchors.top: hotKeyTextLabel.bottom
     anchors.left: parent.left
-    anchors.top: prev.bottom
-    margin-top: 10
-    virtual: true
-
-  Button
-    id: selectObjectButton
-    !text: tr('Select object')
-    width: 128
-    enabled: false
-    anchors.left: prev.right
-    anchors.top: prev.top
-    margin-left: 10
-    @onClick: startChooseItem()
-
-  Button
-    id: clearObjectButton
-    !text: tr('Clear object')
-    width: 128
-    enabled: false
-    anchors.left: prev.left
-    anchors.right: prev.right
-    anchors.top: prev.bottom
-    margin-top: 2
-    @onClick: clearObject()
-
-  ButtonBox
-    id: useWith
-    !text: tr('With crosshair')
-    width: 128
-    enabled: false
-    anchors.left: selectObjectButton.right
     anchors.right: parent.right
-    anchors.top: selectObjectButton.top
-    checked: false
-    margin-left: 10
+    margin-top: 3
+    @onTextChange: onHotkeyTextChange(self:getText())
+
+
+
+  //Button
+  //  id: selectObjectButton
+  //  !text: tr('Select object')
+  //  width: 128
+  //  enabled: false
+  //  anchors.left: prev.right
+  //  anchors.top: prev.top
+  //  margin-left: 10
+  //  @onClick: startChooseItem()
+
+  //Button
+  //  id: clearObjectButton
+  //  !text: tr('Clear object')
+  //  width: 128
+  //  enabled: false
+  //  anchors.left: prev.left
+  //  anchors.right: prev.right
+  //  anchors.top: prev.bottom
+  //  margin-top: 2
+  //  @onClick: clearObject()
+
+  //ButtonBox
+  //  id: useWith
+  //  !text: tr('With crosshair')
+  //  width: 128
+  //  enabled: false
+  //  anchors.left: selectObjectButton.right
+  //  anchors.right: parent.right
+  //  anchors.top: selectObjectButton.top
+  //  checked: false
+  //  margin-left: 10
 
   //ButtonBox
   //  id: useOnSelf
@@ -158,19 +230,10 @@ MainWindow
   //  margin-top: 2
 
   HorizontalSeparator
-    id: separator
     anchors.left: parent.left
     anchors.right: parent.right
     anchors.bottom: next.top
     margin-bottom: 10
-
-  Button
-    !text: 'Help'
-    !tooltip: '1. Activate the hotkeybars on options, then drag\nand drop a hotkey row on hotkeybars.\n2. To remove from bars, drop the hotkey container\noutside it\'s bar keeping this window opened.\n3. To set a power into a hotkey, press\n\'Select object\' and then on the power row.'
-    width: 36
-    color: yellow
-    anchors.left: parent.left
-    anchors.bottom: parent.bottom
 
   Button
     id: okButton
@@ -188,47 +251,3 @@ MainWindow
     anchors.right: parent.right
     anchors.bottom: parent.bottom
     @onClick: cancel()
-
-HotkeyAssignWindow < MainWindow
-  id: assignWindow
-  !text: tr('Button Assign')
-  size: 360 150
-  @onEscape: self:destroy()
-
-  Label
-    !text: tr('Press the key you wish to add onto your hotkeys manager')
-    anchors.left: parent.left
-    anchors.right: parent.right
-    anchors.top: parent.top
-    text-auto-resize: true
-    text-align: left
-
-  Label
-    id: comboPreview
-    !text: tr('Current hotkey to add') .. ': ' .. tr('None')
-    anchors.horizontalCenter: parent.horizontalCenter
-    anchors.top: prev.bottom
-    margin-top: 10
-    text-auto-resize: true
-
-  HorizontalSeparator
-    id: separator
-    anchors.left: parent.left
-    anchors.right: parent.right
-    anchors.bottom: next.top
-    margin-bottom: 10
-
-  Button
-    id: addButton
-    !text: tr('Add')
-    width: 64
-    anchors.right: next.left
-    anchors.bottom: parent.bottom
-    margin-right: 10
-
-  Button
-    id: cancelButton
-    !text: tr('Cancel')
-    width: 64
-    anchors.right: parent.right
-    anchors.bottom: parent.bottom

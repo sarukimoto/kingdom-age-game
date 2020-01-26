@@ -17,6 +17,9 @@ function UIGameMap:onDragEnter(mousePos)
 
   self.currentDragThing = thing
 
+  if thing:isItem() and thing:isPickupable() then
+    g_mouseicon.displayItem(thing)
+  end
   g_mouse.pushCursor('target')
   self.allowNextRelease = false
   return true
@@ -25,6 +28,7 @@ end
 function UIGameMap:onDragLeave(droppedWidget, mousePos)
   self.currentDragThing = nil
   self.hoveredWho = nil
+  g_mouseicon.hide()
   g_mouse.popCursor('target')
   return true
 end

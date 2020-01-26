@@ -69,20 +69,18 @@ local function moveToolTip(firstDisplay)
   toolTipLabel:setPosition(pos)
 end
 
-local function onWidgetHoverChange(widget, hovered)
-  if widget.onTooltipHoverChange then
-    if not widget.onTooltipHoverChange(widget, hovered) then
-      return
-    end
-  end
-
-  g_tooltip.widgetHoverChange(widget, hovered)
-end
-
 local function onWidgetStyleApply(widget, styleName, styleNode)
   if styleNode.tooltip then
     widget.tooltip = styleNode.tooltip
   end
+end
+
+local function onWidgetHoverChange(widget, hovered)
+  if widget.onTooltipHoverChange and not widget.onTooltipHoverChange(widget, hovered) then
+    return
+  end
+
+  g_tooltip.widgetHoverChange(widget, hovered)
 end
 
 -- public functions

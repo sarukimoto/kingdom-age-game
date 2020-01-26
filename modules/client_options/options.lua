@@ -43,9 +43,11 @@ local defaultOptions = {
   showText = true,
   showHotkeybars = true,
   showNpcDialogWindows = true,
+  showMouseItemIcon = true,
+  mouseItemIconOpacity = 30,
   dontStretchShrink = false,
   shaderFilter = ShaderFilter,
-  viewMode = ViewModes[0].name,
+  viewMode = ViewModes[3].name,
   leftSticker = 'None',
   rightSticker = 'None',
   leftStickerOpacityScrollbar = 100,
@@ -194,6 +196,18 @@ function init()
     local viewMode = g_settings.get(viewModeComboBox:getId(), defaultOptions.viewMode)
     viewModeComboBox:setOption(viewMode)
   end
+
+  -- Mouse item icon example
+  local showMouseItemIcon = displayPanel:getChildById('showMouseItemIcon')
+  showMouseItemIcon.onHoverChange = function (self, hovered)
+    if hovered then
+      g_mouseicon.display(3585, getOption('mouseItemIconOpacity') / 100, nil, 7)
+    else
+      g_mouseicon.hide()
+    end
+  end
+  local mouseItemIconOpacity = displayPanel:getChildById('mouseItemIconOpacity')
+  mouseItemIconOpacity.onHoverChange = showMouseItemIcon.onHoverChange
 
   -- Sticker combobox
   leftStickerComboBox = displayPanel:getChildById('leftStickerComboBox')
@@ -436,6 +450,9 @@ function setOption(key, value, force)
     end
   elseif key == 'showNpcDialogWindows' then
     g_game.setNpcDialogWindows(value)
+  elseif key == 'mouseItemIconOpacity' then
+    local op = displayPanel:getChildById('mouseItemIconOpacityLabel')
+    op:setText(string.format(op.baseText, value))
   elseif key == 'dontStretchShrink' then
     addEvent(function()
       modules.game_interface.updateStretchShrink()
@@ -578,7 +595,7 @@ function setViewMode(comboBox, opt)
   g_settings.set(comboBox:getId(), opt)
   options[comboBox:getId()] = opt
   if modules.game_interface then
-    local viewModeId = 1
+    local viewModeId = 0
     for k = 0, #ViewModes do
       if opt == ViewModes[k].name then
         viewModeId = k

@@ -325,10 +325,10 @@ AudioChannels =
 }
 
 ViewModes = {
-  [0] = { id = 0, isCropped = false, isFull = false, name = 'Normal' }, -- Default
+  [0] = { id = 0, isCropped = false, isFull = false, name = 'Normal' },
   [1] = { id = 1, isCropped = true,  isFull = false, name = 'Crop' },
   [2] = { id = 2, isCropped = true,  isFull = true,  name = 'Crop Full' },
-  [3] = { id = 3, isCropped = false, isFull = true,  name = 'Full' },
+  [3] = { id = 3, isCropped = false, isFull = true,  name = 'Full' }, -- Default
 }
 
 local noneStickerDefaultPath = '/images/ui/stickers/sticker_0.png'

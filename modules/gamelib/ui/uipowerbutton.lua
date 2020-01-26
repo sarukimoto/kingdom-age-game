@@ -69,6 +69,22 @@ function UIPowerButton:setup(power)
   self:updateData(power)
 end
 
+function UIPowerButton:onDragEnter(mousePos)
+  g_mouse.pushCursor('target')
+  return true
+end
+
+function UIPowerButton:onDragMove(mouseMove, mouseMoved)
+  g_mouseicon.display(string.format('/images/game/powers/%d_off', self.power.id))
+  return true
+end
+
+function UIPowerButton:onDragLeave(droppedWidget, mousePos)
+  g_mouseicon.hide()
+  g_mouse.popCursor('target')
+  return true
+end
+
 function UIPowerButton:updateData(power)
   if power then
     self.power = power

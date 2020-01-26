@@ -269,6 +269,12 @@ function updatePowersList()
     powerListByIndex[i].index = i
   end
   filterPowersButtons()
+  if modules.game_hotkeys then
+    modules.game_hotkeys.updateHotkeyList()
+  end
+  if modules.ka_game_hotkeybars then
+    modules.ka_game_hotkeybars.onUpdateHotkeys()
+  end
 end
 
 function clearList()

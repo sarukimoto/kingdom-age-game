@@ -27,7 +27,7 @@ uniform sampler2D Texture;
 
 COMPAT_VARYING vec2 v_TexCoord;
 
-#define InputSize vec2(800.0, 608.0) // Width and height in pixels of game screen
+#define InputSize textureSize(Source, 0) // Width and height in pixels of game screen
 #define OutputSize 2.0 * InputSize // Width and height in pixels of game screen
 #define SourceSize vec4(InputSize, 1.0 / InputSize) //either TextureSize or InputSize
 // #define outsize vec4(OutputSize, 1.0 / OutputSize) // Not in use

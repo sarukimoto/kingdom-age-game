@@ -47,11 +47,31 @@ Panel
   OptionCheckBox
     id: showHotkeybars
     !text: tr('Show hotkeybars')
-    &tooltipAddons: { {{ text = tr('Shows 4 hotkeybars (at top, bottom, left and right)\nin which you can drag hotkeys and drop within\nthe bars.') .. '\n', align = AlignLeft }}, {{ icon = "/images/game/tutorial/client/options/showHotkeybars", size = { width = 210, height = 40 }, align = AlignCenter }} }
+    &tooltipAddons: { {{ text = tr('Shows 4 hotkeybars (at top, bottom, left and right)\nin which you can drag items / powers / hotkey row,\nand drop on the bars.') .. '\n', align = AlignLeft }}, {{ icon = "/images/game/tutorial/client/options/showHotkeybars", size = { width = 210, height = 40 }, align = AlignCenter }} }
+
+  OptionCheckBox
+    id: showMouseItemIcon
+    !text: tr('Show mouse item icon')
+    !tooltip: tr('Shows the dragged item when drag and drop items.')
+
+  OptionScrollbar
+    id: mouseItemIconOpacity
+    anchors.verticalCenter: prev.verticalCenter
+    anchors.right: parent.right
+    minimum: 0
+    maximum: 100
+    width: 50
+  Label
+    id: mouseItemIconOpacityLabel
+    &baseText: tr('Opacity') .. ': %d%%'
+    anchors.verticalCenter: prev.verticalCenter
+    anchors.right: prev.left
+    margin-right: 3
 
   Label
-    !text: tr("Left Sticker")
-    anchors.top: showHotkeybars.bottom
+    id: leftStickerLabel
+    !text: tr('Left Sticker')
+    anchors.top: prev.bottom
     anchors.left: parent.left
     margin-top: 10
   ComboBox
@@ -66,7 +86,6 @@ Panel
     anchors.top: prev.bottom
     anchors.left: parent.left
     &baseText: tr('Opacity') .. ': %d%%'
-    !text: tr('Opacity') .. ': 100%'
     margin-top: 5
   OptionScrollbar
     id: leftStickerOpacityScrollbar
@@ -78,10 +97,10 @@ Panel
     maximum: 255
 
   Label
-    !text: tr("Right Sticker")
-    anchors.top: showHotkeybars.bottom
+    id: rightStickerLabel
+    !text: tr('Right Sticker')
+    anchors.top: leftStickerLabel.top
     anchors.left: prev.right
-    margin-top: 10
     margin-left: 40
   ComboBox
     id: rightStickerComboBox
@@ -95,7 +114,6 @@ Panel
     anchors.top: prev.bottom
     anchors.left: prev.left
     &baseText: tr('Opacity') .. ': %d%%'
-    !text: tr('Opacity') .. ': 100%'
     margin-top: 5
   OptionScrollbar
     id: rightStickerOpacityScrollbar

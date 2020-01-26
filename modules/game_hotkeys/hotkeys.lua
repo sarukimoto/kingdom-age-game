@@ -1,16 +1,16 @@
 dofiles('ui')
 
 HOTKEY_MANAGER_USE = nil
---HOTKEY_MANAGER_USEONSELF = 1
---HOTKEY_MANAGER_USEONTARGET = 2
+-- HOTKEY_MANAGER_USEONSELF = 1
+-- HOTKEY_MANAGER_USEONTARGET = 2
 HOTKEY_MANAGER_USEWITH = 3
 
 HotkeyColors = {
   text = '#333B43',
   textAutoSend = '#FFFFFF',
   itemUse = '#AEF2FF',
-  itemUseSelf = '#0042FF',
-  itemUseTarget = '#EC1414',
+  -- itemUseSelf = '#0042FF',
+  -- itemUseTarget = '#EC1414',
   itemUseWith = '#F8E127',
   powerColor = '#CD4EFF'
 }
@@ -19,21 +19,22 @@ hotkeysManagerLoaded = false
 hotkeysWindow = nil
 hotkeysButton = nil
 currentHotkeyLabel = nil
+hotKeyItemLabel = nil
 currentItemPreview = nil
 itemWidget = nil
 addHotkeyButton = nil
 removeHotkeyButton = nil
-hotkeyText = nil
 hotKeyTextLabel = nil
+hotkeyText = nil
 sendAutomatically = nil
-selectObjectButton = nil
-clearObjectButton = nil
---useOnSelf = nil
---useOnTarget = nil
-useWith = nil
+-- selectObjectButton = nil
+-- clearObjectButton = nil
+-- useOnSelf = nil
+-- useOnTarget = nil
+-- useWith = nil
 defaultComboKeys = nil
-mouseGrabberWidget = nil
-useRadioGroup = nil
+-- mouseGrabberWidget = nil
+-- useRadioGroup = nil
 currentHotkeys = nil
 boundCombosCallback = {}
 hotkeysList = {}
@@ -93,28 +94,32 @@ function init()
   hotkeysWindow:setVisible(false)
 
   currentHotkeys = hotkeysWindow:getChildById('currentHotkeys')
+  hotKeyItemLabel = hotkeysWindow:getChildById('hotKeyItemLabel')
   currentItemPreview = hotkeysWindow:getChildById('itemPreview')
+  currentItemPreview.onDrop = dropOnItemPreview
+  currentItemPreview.onDragEnter = dragEnterItemPreview
+  currentItemPreview.onDragLeave = dragLeaveItemPreview
   addHotkeyButton = hotkeysWindow:getChildById('addHotkeyButton')
   removeHotkeyButton = hotkeysWindow:getChildById('removeHotkeyButton')
-  hotkeyText = hotkeysWindow:getChildById('hotkeyText')
   hotKeyTextLabel = hotkeysWindow:getChildById('hotKeyTextLabel')
+  hotkeyText = hotkeysWindow:getChildById('hotkeyText')
   sendAutomatically = hotkeysWindow:getChildById('sendAutomatically')
-  selectObjectButton = hotkeysWindow:getChildById('selectObjectButton')
-  clearObjectButton = hotkeysWindow:getChildById('clearObjectButton')
-  --useOnSelf = hotkeysWindow:getChildById('useOnSelf')
-  --useOnTarget = hotkeysWindow:getChildById('useOnTarget')
-  useWith = hotkeysWindow:getChildById('useWith')
+  -- selectObjectButton = hotkeysWindow:getChildById('selectObjectButton')
+  -- clearObjectButton = hotkeysWindow:getChildById('clearObjectButton')
+  -- useOnSelf = hotkeysWindow:getChildById('useOnSelf')
+  -- useOnTarget = hotkeysWindow:getChildById('useOnTarget')
+  -- useWith = hotkeysWindow:getChildById('useWith')
 
-  useRadioGroup = UIRadioGroup.create()
-  --useRadioGroup:addWidget(useOnSelf)
-  --useRadioGroup:addWidget(useOnTarget)
-  useRadioGroup:addWidget(useWith)
-  useRadioGroup.onSelectionChange = function(self, selected) onChangeUseType(selected) end
+  -- useRadioGroup = UIRadioGroup.create()
+  -- useRadioGroup:addWidget(useOnSelf)
+  -- useRadioGroup:addWidget(useOnTarget)
+  -- useRadioGroup:addWidget(useWith)
+  -- useRadioGroup.onSelectionChange = function(self, selected) onChangeUseType(selected) end
 
-  mouseGrabberWidget = g_ui.createWidget('UIWidget')
-  mouseGrabberWidget:setVisible(false)
-  mouseGrabberWidget:setFocusable(false)
-  mouseGrabberWidget.onMouseRelease = onChooseItemMouseRelease
+  -- mouseGrabberWidget = g_ui.createWidget('UIWidget')
+  -- mouseGrabberWidget:setVisible(false)
+  -- mouseGrabberWidget:setFocusable(false)
+  -- mouseGrabberWidget.onMouseRelease = onChooseItemMouseRelease
 
   currentHotkeys.onChildFocusChange = function(self, hotkeyLabel) onSelectHotkeyLabel(hotkeyLabel) end
   g_keyboard.bindKeyPress('Down', function() currentHotkeys:focusNextChild(KeyboardFocusReason) end, hotkeysWindow)
@@ -141,7 +146,7 @@ function terminate()
 
   hotkeysWindow:destroy()
   hotkeysButton:destroy()
-  mouseGrabberWidget:destroy()
+  -- mouseGrabberWidget:destroy()
 end
 
 function online()
@@ -199,6 +204,8 @@ end
 function load(forceDefaults)
   hotkeysManagerLoaded = false
 
+  loadDefaultComboKeys()
+
   local settings = modules.game_things.getPlayerSettings()
   local hotkeySettings = settings:getNode('hotkeys') or {}
   local hotkeys = {}
@@ -217,11 +224,6 @@ function load(forceDefaults)
       end
     end
   end
-
-  if currentHotkeys:getChildCount() == 0 then
-    loadDefautComboKeys()
-  end
-
   hotkeysManagerLoaded = true
 end
 
@@ -270,13 +272,16 @@ function save()
   settings:save()
 end
 
-function loadDefautComboKeys()
+function loadDefaultComboKeys()
   if not defaultComboKeys then
     for i=1,12 do
       addKeyCombo('F' .. i)
     end
-    for i=1,4 do
+    for i=1,12 do
       addKeyCombo('Shift+F' .. i)
+    end
+    for i=1,12 do
+      addKeyCombo('Ctrl+F' .. i)
     end
   else
     for keyCombo, keySettings in pairs(defaultComboKeys) do
@@ -345,12 +350,14 @@ function onChooseItemMouseRelease(self, mousePosition, mouseButton)
   return true
 end
 
+--[[
 function startChooseItem()
   if g_ui.isMouseGrabbed() then return end
   mouseGrabberWidget:grabMouse()
   g_mouse.pushCursor('target')
   hide()
 end
+]]
 
 function clearObject()
   currentHotkeyLabel.itemId = nil
@@ -365,7 +372,7 @@ function clearObject()
   end
 end
 
-function addHotkey()
+function addHotkey(keySettings)
   local assignWindow = g_ui.createWidget('HotkeyAssignWindow', rootWidget)
   assignWindow:grabKeyboard()
 
@@ -376,7 +383,7 @@ function addHotkey()
   local addButtonWidget = assignWindow:getChildById('addButton')
   addButtonWidget.onClick = function(widget)
     local keyCombo = assignWindow:getChildById('comboPreview').keyCombo
-    addKeyCombo(keyCombo, nil, true)
+    addKeyCombo(keyCombo, keySettings, true)
     assignWindow:destroy()
   end
 
@@ -411,32 +418,53 @@ function addKeyCombo(keyCombo, keySettings, focus)
         break
       end
     end
+  end
 
-    if keySettings then
+  if keySettings then
+    if keySettings.hotkeyBar then
+      keySettings.hotkeyBar:addHotkey(keyCombo, keySettings.mousePos)
+    end
+    currentHotkeyLabel = hotkeyLabel
+    hotkeyLabel.keyCombo = keyCombo
+    if keySettings.item then
+      hotkeyLabel.autoSend = true
+      hotkeyLabel.itemId = keySettings.item:getId()
+      if keySettings.item:isFluidContainer() then
+          currentHotkeyLabel.subType = keySettings.item:getSubType()
+      end
+      if keySettings.item:isMultiUse() then
+        currentHotkeyLabel.useType = HOTKEY_MANAGER_USEWITH
+      else
+        currentHotkeyLabel.useType = HOTKEY_MANAGER_USE
+      end
+    elseif keySettings.powerId then
+      hotkeyLabel.value = '/power ' .. keySettings.powerId
+      hotkeyLabel.autoSend = true
+      hotkeyLabel.itemId = nil
+      hotkeyLabel.subType = nil
+      hotkeyLabel.useType = nil
+    else
       local powerId = getPowerIdByString(keySettings.value or '')
-      currentHotkeyLabel = hotkeyLabel
-      hotkeyLabel.keyCombo = keyCombo
       keySettings.autoSend = powerId and true or keySettings.autoSend
       hotkeyLabel.autoSend = toboolean(keySettings.autoSend)
       hotkeyLabel.itemId = tonumber(keySettings.itemId)
       hotkeyLabel.subType = tonumber(keySettings.subType)
       hotkeyLabel.useType = tonumber(keySettings.useType)
       if keySettings.value then hotkeyLabel.value = tostring(keySettings.value) end
-    else
-      hotkeyLabel.keyCombo = keyCombo
-      hotkeyLabel.autoSend = false
-      hotkeyLabel.itemId = nil
-      hotkeyLabel.subType = nil
-      hotkeyLabel.useType = nil
-      hotkeyLabel.value = ''
     end
-
-    updateHotkeyLabel(hotkeyLabel)
 
     boundCombosCallback[keyCombo] = function() doKeyCombo(keyCombo) end
     g_keyboard.bindKeyPress(keyCombo, boundCombosCallback[keyCombo])
+    ok()
+  else
+    hotkeyLabel.keyCombo = keyCombo
+    hotkeyLabel.autoSend = false
+    hotkeyLabel.itemId = nil
+    hotkeyLabel.subType = nil
+    hotkeyLabel.useType = nil
+    hotkeyLabel.value = ''
   end
-
+  updateHotkeyLabel(hotkeyLabel)
   if focus then
     currentHotkeys:focusChild(hotkeyLabel)
     currentHotkeys:ensureChildVisible(hotkeyLabel)
@@ -643,97 +671,111 @@ function updateHotkeyLabel(hotkeyLabel)
   end
 end
 
+function updateHotkeyList()
+  local hotkeys = currentHotkeys:getChildren()
+  for _, hotkey in pairs(hotkeys) do
+    updateHotkeyLabel(hotkey)
+  end
+end
+
 function updateHotkeyForm(reset)
   if currentHotkeyLabel then
     local powerId = getPowerIdByString(currentHotkeyLabel.value)
     removeHotkeyButton:enable()
+    hotKeyItemLabel:enable()
+    currentItemPreview:setVisible(true)
     if currentHotkeyLabel.itemId ~= nil then
+      hotKeyTextLabel:disable()
       hotkeyText:clearText()
       hotkeyText:disable()
-      hotKeyTextLabel:disable()
       sendAutomatically:setChecked(false)
       sendAutomatically:disable()
-      selectObjectButton:disable()
-      clearObjectButton:enable()
+      -- selectObjectButton:disable()
+      -- clearObjectButton:enable()
       currentItemPreview:setIcon('')
       currentItemPreview:setItemId(currentHotkeyLabel.itemId)
       if currentHotkeyLabel.subType then
         currentItemPreview:setItemSubType(currentHotkeyLabel.subType)
       end
+      --[[
       if currentItemPreview:getItem():isMultiUse() then
-        --useOnSelf:enable()
-        --useOnTarget:enable()
+        useOnSelf:enable()
+        useOnTarget:enable()
         useWith:enable()
-        --[[if currentHotkeyLabel.useType == HOTKEY_MANAGER_USEONSELF then
+        if currentHotkeyLabel.useType == HOTKEY_MANAGER_USEONSELF then
           useRadioGroup:selectWidget(useOnSelf)
         elseif currentHotkeyLabel.useType == HOTKEY_MANAGER_USEONTARGET then
-          useRadioGroup:selectWidget(useOnTarget)]]
+          useRadioGroup:selectWidget(useOnTarget)
         if currentHotkeyLabel.useType == HOTKEY_MANAGER_USEWITH then
           useRadioGroup:selectWidget(useWith)
         end
       else
-        --useOnSelf:disable()
-        --useOnTarget:disable()
+        useOnSelf:disable()
+        useOnTarget:disable()
         useWith:disable()
         useRadioGroup:clearSelected()
       end
+      ]]
 
     elseif powerId then
-      --useOnSelf:disable()
-      --useOnTarget:disable()
+      -- useOnSelf:disable()
+      -- useOnTarget:disable()
       local oldValue = currentHotkeyLabel.value
+      hotKeyTextLabel:disable()
       hotkeyText:clearText()
       hotkeyText:disable()
-      hotKeyTextLabel:disable()
       sendAutomatically:setChecked(true)
       sendAutomatically:disable()
-      selectObjectButton:disable()
-      clearObjectButton:enable()
+      -- selectObjectButton:disable()
+      -- clearObjectButton:enable()
       currentItemPreview:setIcon('/images/game/powers/' .. powerId .. '_off')
-      useWith:disable()
-      useRadioGroup:clearSelected()
+      -- useWith:disable()
+      -- useRadioGroup:clearSelected()
       -- Keeps hotkeyText invisible
       currentHotkeyLabel.value = oldValue
       updateHotkeyLabel(currentHotkeyLabel)
 
     else
-      --useOnSelf:disable()
-      --useOnTarget:disable()
-      useWith:disable()
-      useRadioGroup:clearSelected()
+      -- useOnSelf:disable()
+      -- useOnTarget:disable()
+      -- useWith:disable()
+      -- useRadioGroup:clearSelected()
+      hotKeyTextLabel:enable()
       hotkeyText:enable()
       hotkeyText:focus()
-      hotKeyTextLabel:enable()
       if reset then
         hotkeyText:setCursorPos(-1)
       end
       hotkeyText:setText(currentHotkeyLabel.value)
       sendAutomatically:setChecked(currentHotkeyLabel.autoSend)
       sendAutomatically:setEnabled(currentHotkeyLabel.value and #currentHotkeyLabel.value > 0)
-      selectObjectButton:enable()
-      clearObjectButton:disable()
+      -- selectObjectButton:enable()
+      -- clearObjectButton:disable()
       currentItemPreview:setIcon('')
       currentItemPreview:clearItem()
     end
   else
     removeHotkeyButton:disable()
+    hotKeyTextLabel:disable()
     hotkeyText:disable()
-    sendAutomatically:disable()
-    selectObjectButton:disable()
-    clearObjectButton:disable()
-    --useOnSelf:disable()
-    --useOnTarget:disable()
-    useWith:disable()
     hotkeyText:clearText()
-    useRadioGroup:clearSelected()
+    sendAutomatically:disable()
+    -- selectObjectButton:disable()
+    -- clearObjectButton:disable()
+    -- useOnSelf:disable()
+    -- useOnTarget:disable()
+    -- useWith:disable()
+    -- useRadioGroup:clearSelected()
     sendAutomatically:setChecked(false)
+    hotKeyItemLabel:disable()
     currentItemPreview:setIcon('')
     currentItemPreview:clearItem()
+    currentItemPreview:setVisible(false)
   end
 end
 
 function removeHotkey()
-  if currentHotkeyLabel == nil then return end
+  if not currentHotkeyLabel then return end
   g_keyboard.unbindKeyPress(currentHotkeyLabel.keyCombo, boundCombosCallback[currentHotkeyLabel.keyCombo])
   boundCombosCallback[currentHotkeyLabel.keyCombo] = nil
   currentHotkeyLabel:destroy()
@@ -742,7 +784,7 @@ end
 
 function onHotkeyTextChange(value)
   if not hotkeysManagerLoaded then return end
-  if currentHotkeyLabel == nil then return end
+  if not currentHotkeyLabel then return end
   currentHotkeyLabel.value = value
   local powerId = getPowerIdByString(currentHotkeyLabel.value)
   if value == '' then
@@ -756,7 +798,7 @@ end
 
 function onSendAutomaticallyChange(autoSend)
   if not hotkeysManagerLoaded then return end
-  if currentHotkeyLabel == nil then return end
+  if not currentHotkeyLabel then return end
   if not currentHotkeyLabel.value or #currentHotkeyLabel.value == 0 then return end
   currentHotkeyLabel.autoSend = autoSend
   updateHotkeyLabel(currentHotkeyLabel)
@@ -765,7 +807,7 @@ end
 
 function onChangeUseType(useTypeWidget)
   if not hotkeysManagerLoaded then return end
-  if currentHotkeyLabel == nil then return end
+  if not currentHotkeyLabel then return end
   --[[
   if useTypeWidget == useOnSelf then
     currentHotkeyLabel.useType = HOTKEY_MANAGER_USEONSELF
@@ -966,4 +1008,64 @@ end
 function addPowerBoostEffect()
   setPowerBoostColor()
   setPowerBoostImage()
+end
+
+function dropOnItemPreview(self, widget, mousePos)
+  if not currentHotkeyLabel then return false end
+  local item = nil
+  local widgetClass = widget:getClassName()
+  if widgetClass == 'UIPowerButton' then
+    local powerId = widget.power.id
+    currentHotkeyLabel.itemId = nil
+    currentHotkeyLabel.value = '/power ' .. powerId
+    currentHotkeyLabel.autoSend = true
+    currentHotkeyLabel.useType = nil
+  elseif widgetClass == 'UIItem' then
+    item = widget:getItem()
+  elseif widgetClass == 'UIGameMap' then
+    item = widget.currentDragThing
+  end
+
+  if item then
+    currentHotkeyLabel.itemId = item:getId()
+    if item:isFluidContainer() then
+        currentHotkeyLabel.subType = item:getSubType()
+    end
+    if item:isMultiUse() then
+      currentHotkeyLabel.useType = HOTKEY_MANAGER_USEWITH
+    else
+      currentHotkeyLabel.useType = HOTKEY_MANAGER_USE
+    end
+    currentHotkeyLabel.value = nil
+    currentHotkeyLabel.autoSend = false
+  end
+  updateHotkeyLabel(currentHotkeyLabel)
+  updateHotkeyForm(true)
+  if modules.ka_game_hotkeybars then
+    modules.ka_game_hotkeybars.onUpdateHotkeys()
+  end
+  return true
+end
+
+function dragEnterItemPreview(self, mousePos)
+  self:setBorderWidth(1)
+  g_mouse.pushCursor('target')
+
+  local powerId = getPowerIdByString(currentHotkeyLabel.value)
+  local item    = self:getItem()
+  if powerId then
+    g_mouseicon.display(string.format('/images/game/powers/%d_off', powerId))
+  elseif item and item:isPickupable() then
+    g_mouseicon.displayItem(item)
+  end
+
+  return true
+end
+
+function dragLeaveItemPreview(self, droppedWidget, mousePos)
+  g_mouseicon.hide()
+  g_mouse.popCursor('target')
+  self:setBorderWidth(0)
+  clearObject()
+  return true
 end

@@ -1,6 +1,7 @@
 PowersListButton < UIPowerButton
   margin-bottom: 5
   &isPowerButton: true
+  draggable: true
 
   $on:
   height: 34

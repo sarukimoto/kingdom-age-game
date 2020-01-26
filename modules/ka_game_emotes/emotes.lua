@@ -16,12 +16,14 @@ function init()
   setupEmotes()
   onResizeConsole(consolePanel)
 
-  if g_game.isOnline() then online() end
-
   local prevButton = consolePanel:getChildById('channelsButton')
   local prevButtonIndex = consolePanel:getChildIndex(prevButton)
   consoleEmoteButton = g_ui.createWidget('EmoteWindowButton', consolePanel)
   consolePanel:moveChildToIndex(consoleEmoteButton, prevButtonIndex)
+
+  if g_game.isOnline() then
+    online()
+  end
 
   connect(g_game, {
     onGameStart = online,
@@ -30,12 +32,17 @@ function init()
   connect(consolePanel, {
     onGeometryChange = onResizeConsole,
   })
+  connect(consoleEmoteButton, {
+    onHoverChange = onConsoleEmoteButtonHoverChange,
+  })
   ProtocolGame.registerOpcode(GameServerOpcodes.GameServerEmote, parseEmote)
+  g_keyboard.bindKeyDown('Escape', function() emoteWindow:hide() end, rootWidget)
 end
 
 function online()
   loadSettings()
   sortEmoteList()
+  updateConsoleEmoteButtonIcon()
 end
 
 function offline()
@@ -45,8 +52,23 @@ end
 
 function terminate()
   saveSettings()
+
+  g_keyboard.unbindKeyDown('Escape')
+  ProtocolGame.unregisterOpcode(GameServerOpcodes.GameServerEmote)
+  disconnect(consoleEmoteButton, {
+    onHoverChange = onConsoleEmoteButtonHoverChange,
+  })
+  disconnect(consolePanel, {
+    onGeometryChange = onResizeConsole,
+  })
+  disconnect(g_game, {
+    onGameStart = online,
+    onGameEnd = offline,
+  })
+
   emoteList = {}
   emoteListByIndex = {}
+
   if emoteWindow then
     emoteWindow:destroy()
     emoteWindow = nil
@@ -55,15 +77,19 @@ function terminate()
     consoleEmoteButton:destroy()
     consoleEmoteButton = nil
   end
+end
 
-  ProtocolGame.unregisterOpcode(GameServerOpcodes.GameServerEmote)
-  disconnect(consolePanel, {
-    onGeometryChange = onResizeConsole,
-  })
-  disconnect(g_game, {
-    onGameStart = online,
-    onGameEnd = offline,
-  })
+function updateConsoleEmoteButtonIcon()
+  consoleEmoteButton:setIcon(string.format('/images/game/emotes/%d', math.random(FirstEmote, LastEmote)))
+  consoleEmoteButton:setIconSize({ width = 16, height = 16 })
+  consoleEmoteButton:setIconOffset({ x = 3, y = 4 })
+end
+
+function onConsoleEmoteButtonHoverChange(self, hovered)
+  if not hovered then
+    return
+  end
+  updateConsoleEmoteButtonIcon()
 end
 
 function onResizeConsole(console)
@@ -101,6 +127,7 @@ function setupEmotes()
     emote.id = id
     emote.timesUsed = 0
     emote.lastUsed = 0
+    emote.locked = true
     emoteList[id] = emote
     table.insert(emoteListByIndex, emote)
   end
@@ -110,6 +137,7 @@ function unlockEmote(id)
   local emote = emoteList[id]
   local lock = emote:getChildren()[1]
   lock:setIcon(nil)
+  emote.locked = false
   emote.onClick = function() useEmote(id) end
 end
 
@@ -117,7 +145,20 @@ function lockEmote(id)
   local emote = emoteList[id]
   local lock = emote:getChildren()[1]
   lock:setIcon('/images/game/emotes/locked')
+  emote.timesUsed = 0
+  emote.lastUsed = 0
+  emote.locked = true
   emote.onClick = nil
+end
+
+function isLocked(id)
+  local emote = emoteList[id]
+  return emote.locked
+end
+
+function getTimesUsed(id)
+  local emote = emoteList[id]
+  return not isLocked(id) and emote.timesUsed or -1
 end
 
 -- Settings
@@ -129,6 +170,7 @@ function loadSettings()
     if emoteList[emoteId] then
       emoteList[emoteId].timesUsed = emoteSettings[id].timesUsed
       emoteList[emoteId].lastUsed = emoteSettings[id].lastUsed
+      emoteList[emoteId].locked = emoteSettings[id].locked
     end
   end
 end
@@ -140,6 +182,7 @@ function saveSettings()
     emoteSettings[id] = {}
     emoteSettings[id].timesUsed = emote.timesUsed
     emoteSettings[id].lastUsed  = emote.lastUsed
+    emoteSettings[id].locked  = emote.locked
   end
   settings:setNode('emotes', emoteSettings)
   settings:save()
@@ -158,7 +201,7 @@ function useEmote(id)
 end
 
 function sortEmoteList()
-  table.sort(emoteListByIndex, (function(a,b) return a.timesUsed > b.timesUsed or (a.timesUsed == b.timesUsed and a.lastUsed > b.lastUsed) or (a.timesUsed == b.timesUsed and a.lastUsed == b.lastUsed and a.id < b.id) end))
+  table.sort(emoteListByIndex, (function(a,b) return getTimesUsed(a.id) > getTimesUsed(b.id) or (getTimesUsed(a.id) == getTimesUsed(b.id) and a.lastUsed > b.lastUsed) or (getTimesUsed(a.id) == getTimesUsed(b.id) and a.lastUsed == b.lastUsed and a.id < b.id) end))
   for i = 1, #emoteListByIndex do
     emoteWindow:moveChildToIndex(emoteListByIndex[i], i)
   end
@@ -174,5 +217,8 @@ function parseEmote(protocol, msg)
     elseif action == EmoteDisable then
       lockEmote(emoteId)
     end
+  end
+  if total == 1 then
+    sortEmoteList()
   end
 end

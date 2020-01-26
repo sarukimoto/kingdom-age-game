@@ -7,6 +7,9 @@
 -- Version x.x.* : Revision Release - Bug/Issue Fixes
 CLIENT_VERSION = "1.0.1" -- [CLIENT VERSION] Here is just the Version Name
 
+-- Sets a seed for the pseudo-random generator
+math.randomseed(os.time())
+
 -- setup logger
 g_logger.setLogFile(g_resources.getWorkDir() .. g_app.getCompactName() .. ".log")
 g_logger.info(os.date("== application started at %b %d %Y %X"))
