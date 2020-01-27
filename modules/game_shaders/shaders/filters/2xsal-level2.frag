@@ -1,5 +1,21 @@
 // https://github.com/libretro/glsl-shaders/blob/master/xsal/shaders/2xsal-level2-pass2.glsl
 
+/*
+    Default Uniforms:
+
+    u_TransformMatrix
+    u_ProjectionMatrix
+    u_TextureMatrix
+    u_Color
+    u_Opacity
+    u_Time
+    u_Tex0
+    u_Tex1
+    u_Tex2
+    u_Tex3
+    u_Resolution
+*/
+
 #define COMPAT_VARYING varying
 #define FragColor gl_FragColor
 #define COMPAT_TEXTURE texture2D
@@ -30,7 +46,9 @@ uniform sampler2D Texture;
 
 COMPAT_VARYING vec2 v_TexCoord;
 
-#define InputSize textureSize(Source, 0) // Width and height in pixels of game screen
+float intensity = 1.5;
+uniform vec2 u_Resolution;
+#define InputSize u_Resolution * intensity // Width and height in pixels of game screen // textureSize(Source, 0)
 #define SourceSize vec4(InputSize, 1.0 / InputSize) //either TextureSize or InputSize
 // #define outsize vec4(OutputSize, 1.0 / OutputSize) // Not in use
 

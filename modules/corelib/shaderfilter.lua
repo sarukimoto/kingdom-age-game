@@ -17,24 +17,26 @@ MapShaders = {
   { isFilter = true, name = '2xSal', frag ='shaders/filters/2xsal.frag', ignoreAntiAliasing = true }, -- 2xsal
   { isFilter = true, name = '2xSal Level 2', frag ='shaders/filters/2xsal-level2.frag', ignoreAntiAliasing = true }, -- 2xsal-level2
 
-  -- Shaders
-  { name = 'Bloom', frag = 'shaders/bloom.frag' },
-  { name = 'Sepia', frag ='shaders/sepia.frag' },
-  { name = 'Grayscale', frag ='shaders/grayscale.frag' },
-  { name = 'Negative Grayscale', frag ='shaders/negative-grayscale.frag' },
-  { name = 'Old TV', frag = 'shaders/old-tv.frag' },
-  { name = 'Party', frag = 'shaders/party.frag' },
-  { name = 'Radial Blur', frag ='shaders/radial-blur.frag' },
-  { name = 'Zomg', frag ='shaders/zomg.frag' },
-  { name = 'Heat', frag ='shaders/heat.frag' },
-  { name = 'Noise', frag ='shaders/noise.frag' },
-  { name = 'PAL', frag ='shaders/pal.frag' }, -- pal-singlepass (Phase Alternating Line)
-  { name = 'Night', frag ='shaders/night.frag' }, -- linearize
-  { name = 'Water', frag ='shaders/water.frag' },
-  { name = 'Negative', frag ='shaders/negative.frag' },
-  { name = 'Painting', frag ='shaders/painting.frag', ignoreAntiAliasing = true },
-  -- { name = 'Pulse', frag = 'shaders/pulse.frag' }, -- Not that cool on local player walking
+
+  -- Shaders (isFilter = false) -- Now isFilter is true just for players have fun for a while
+  { isFilter = true, name = 'Heat', frag ='shaders/heat.frag' },
+  { isFilter = true, name = 'Noise', frag ='shaders/noise.frag' },
+  { isFilter = true, name = 'Night', frag ='shaders/night.frag' }, -- linearize
+  { isFilter = true, name = 'Water', frag ='shaders/water.frag' },
+  { isFilter = true, name = 'Painting', frag ='shaders/painting.frag', ignoreAntiAliasing = true },
+  { isFilter = true, name = 'Sepia', frag ='shaders/sepia.frag' },
+  { isFilter = true, name = 'Grayscale', frag ='shaders/grayscale.frag' },
+  { isFilter = true, name = 'Negative Grayscale', frag ='shaders/negative-grayscale.frag' },
+  { isFilter = true, name = 'Negative', frag ='shaders/negative.frag' },
+  { isFilter = true, name = 'PAL', frag ='shaders/pal.frag' }, -- pal-singlepass (Phase Alternating Line)
+  { isFilter = true, name = 'Old TV', frag = 'shaders/old-tv.frag' },
+  { isFilter = true, name = 'Party', frag = 'shaders/party.frag' },
+  { isFilter = true, name = 'Bloom', frag = 'shaders/bloom.frag' },
+  { isFilter = true, name = 'Radial Blur', frag ='shaders/radial-blur.frag' },
+  { isFilter = true, name = 'Zomg', frag ='shaders/zomg.frag' },
+
   -- { name = 'Fog', frag = 'shaders/fog.frag', tex1 = 'images/clouds.png' }, -- Not that cool on local player walking
+  -- { name = 'Pulse', frag = 'shaders/pulse.frag' }, -- Not that cool on local player walking
 }
 setmetatable(MapShaders, shadersMetatable)
 ShaderFilter = '2xSal Level 2'
