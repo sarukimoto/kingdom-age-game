@@ -45,6 +45,7 @@ function g_mouseicon.init()
 
   addEvent(function()
     mouseIcon = g_ui.createWidget('UIItem', rootWidget)
+    mouseIcon:setFocusable(false)
     mouseIcon:setId('mouseIcon')
     mouseIcon:setPhantom(true)
     mouseIcon:hide()

@@ -5,8 +5,8 @@ local rightPanelShortcut = 'Ctrl+Shift+S'
 
 local defaultOptions = {
   vsync = false,
-  showFps = false,
-  showPing = false,
+  showFps = true,
+  showPing = true,
   fullscreen = false,
   classicControl = false,
   smartWalk = false,
@@ -19,11 +19,11 @@ local defaultOptions = {
   showLevelsInConsole = true,
   showPrivateMessagesInConsole = true,
   showPrivateMessagesOnScreen = true,
-  showLeftPanel = false,
+  showLeftPanel = true,
   showRightPanel = true,
   showTopMenu = true,
   showChat = true,
-  gameScreenSize = 11,
+  gameScreenSize = 19,
   foregroundFrameRate = 61,
   backgroundFrameRate = 201,
   painterEngine = 0,
@@ -48,8 +48,8 @@ local defaultOptions = {
   dontStretchShrink = false,
   shaderFilter = ShaderFilter,
   viewMode = ViewModes[3].name,
-  leftSticker = 'None',
-  rightSticker = 'None',
+  leftSticker = 'Sticker 1',
+  rightSticker = 'Sticker 1',
   leftStickerOpacityScrollbar = 100,
   rightStickerOpacityScrollbar = 100,
   smoothWalk = true,
@@ -366,13 +366,13 @@ function setOption(key, value, force)
 
     local margin = 0
     if value then
-      margin = 0
-      topMenu:setMarginTop(-topMenu:getHeight())
-      topMenuButton:setOn(false)
-    else
       margin = topMenu:getHeight() - leftPanel:getPaddingTop()
       topMenu:setMarginTop(0)
       topMenuButton:setOn(true)
+    else
+      margin = 0
+      topMenu:setMarginTop(-topMenu:getHeight())
+      topMenuButton:setOn(false)
     end
 
     local isFullViewMode = ViewModes[modules.game_interface.getCurrentViewMode()].isFull
