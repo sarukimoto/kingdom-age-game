@@ -452,9 +452,6 @@ function addKeyCombo(keyCombo, keySettings, focus)
       hotkeyLabel.useType = tonumber(keySettings.useType)
       if keySettings.value then hotkeyLabel.value = tostring(keySettings.value) end
     end
-
-    boundCombosCallback[keyCombo] = function() doKeyCombo(keyCombo) end
-    g_keyboard.bindKeyPress(keyCombo, boundCombosCallback[keyCombo])
     ok()
   else
     hotkeyLabel.keyCombo = keyCombo
@@ -464,6 +461,8 @@ function addKeyCombo(keyCombo, keySettings, focus)
     hotkeyLabel.useType = nil
     hotkeyLabel.value = ''
   end
+  boundCombosCallback[keyCombo] = function() doKeyCombo(keyCombo) end
+  g_keyboard.bindKeyPress(keyCombo, boundCombosCallback[keyCombo])
   updateHotkeyLabel(hotkeyLabel)
   if focus then
     currentHotkeys:focusChild(hotkeyLabel)
