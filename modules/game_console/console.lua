@@ -52,6 +52,13 @@ SayModes = {
   [3] = { speakTypeDesc = 'yell', icon = '/images/game/console/yell' }
 }
 
+ChannelEventFormats = {
+  [ChannelEvent.Join] = '%s joined the channel.',
+  [ChannelEvent.Leave] = '%s left the channel.',
+  [ChannelEvent.Invite] = '%s has been invited to the channel.',
+  [ChannelEvent.Exclude] = '%s has been removed from the channel.',
+}
+
 HELP_CHANNEL = 9
 
 consolePanel = nil
@@ -82,6 +89,11 @@ local consoleLog = {}
 local MAX_LOGLINES = 500
 local MAX_LINES = 100
 
+clonedContentPanel = nil
+clonedTabBar = nil
+clonedTab = nil
+cloneTab = nil
+
 function init()
   connect(g_game, {
     onTalk = onTalk,
@@ -91,7 +103,8 @@ function init()
     onOpenOwnPrivateChannel = onOpenOwnPrivateChannel,
     onCloseChannel = onCloseChannel,
     onGameStart = online,
-    onGameEnd = offline
+    onGameEnd = offline,
+    onChannelEvent = onChannelEvent,
   })
 
   consolePanel = g_ui.loadUI('console', modules.game_interface.getBottomPanel())
@@ -99,6 +112,11 @@ function init()
   consoleContentPanel = consolePanel:getChildById('consoleContentPanel')
   consoleTabBar = consolePanel:getChildById('consoleTabBar')
   consoleTabBar:setContentWidget(consoleContentPanel)
+
+  clonedContentPanel = consolePanel:getChildById('clonedContentPanel')
+  clonedTabBar = consolePanel:getChildById('clonedTabBar')
+  clonedTabBar:setContentWidget(clonedContentPanel)
+
   channels = {}
 
   consolePanel.onKeyPress = function(self, keyCode, keyboardModifiers)
@@ -254,7 +272,8 @@ function terminate()
     onOpenOwnPrivateChannel = onOpenPrivateChannel,
     onCloseChannel = onCloseChannel,
     onGameStart = online,
-    onGameEnd = offline
+    onGameEnd = offline,
+    onChannelEvent = onChannelEvent,
   })
 
   g_keyboard.unbindKeyDown('Ctrl+O')
@@ -280,6 +299,11 @@ function terminate()
   consoleContentPanel = nil
   consoleToggleChat = nil
   consoleTextEdit = nil
+
+  clonedTabBar = nil
+  clonedContentPanel = nil
+  clonedTab = nil
+  cloneTab = nil
 
   consolePanel:destroy()
   consolePanel = nil
@@ -398,6 +422,10 @@ function removeTab(tab)
     return
   end
 
+  if tab == clonedTab then
+    closeClonedTab(clonedTab)
+  end
+
   if tab.channelId then
     -- notificate the server that we are leaving the channel
     for k, v in pairs(channels) do
@@ -504,14 +532,15 @@ function getHighlightedText(text)
   return tmpData
 end
 
-function addTabText(text, speaktype, tab, creatureName)
+function addTabText(text, speaktype, tab, creatureName, clone)
+  if tab == clonedTab then addTabText(text, speaktype, cloneTab, creatureName, true) end
   if not tab or tab.locked or not text or #text == 0 then return end
 
   if modules.client_options.getOption('showTimestampsInConsole') then
     text = os.date('%H:%M') .. ' ' .. text
   end
 
-  local panel = consoleTabBar:getTabPanel(tab)
+  local panel = clone and clonedTabBar:getTabPanel(tab) or consoleTabBar:getTabPanel(tab)
   local consoleBuffer = panel:getChildById('consoleBuffer')
   local label = g_ui.createWidget('ConsoleLabel', consoleBuffer)
   label:setId('consoleLabel' .. consoleBuffer:getChildCount())
@@ -682,6 +711,48 @@ function removeTabLabelByName(tab, name)
   end
 end
 
+function openClonedTab(tab)
+  if clonedTab then
+    if clonedTab == tab then
+      return false
+    else --keep only one open
+      closeClonedTab()
+    end
+  end
+
+  clonedTab = tab
+  cloneTab = clonedTabBar:addTab(tr(tab:getText()))
+  clonedTabBar:setWidth(cloneTab:getWidth())
+  consoleContentPanel:addAnchor(AnchorRight, 'parent', AnchorHorizontalCenter)
+  cloneMessages(tab, cloneTab)
+  return true
+end
+
+function closeClonedTab()
+  clonedTabBar:removeTab(cloneTab)
+  clonedTabBar:setWidth(0)
+  consoleContentPanel:addAnchor(AnchorRight, 'parent', AnchorRight) 
+  cloneTab = nil
+  clonedTab = nil
+end
+
+function cloneMessages(fromTab, toTab)
+  local fromBuffer = consoleTabBar:getTabPanel(fromTab):getChildById('consoleBuffer')
+  local toBuffer = clonedTabBar:getTabPanel(toTab):getChildById('consoleBuffer')
+  for _, label in ipairs(fromBuffer:getChildren()) do
+    local cloneLabel = g_ui.createWidget('ConsoleLabel', toBuffer)
+    cloneLabel:setId('consoleLabel' .. toBuffer:getChildCount())
+    cloneLabel:setText(label:getText())
+    cloneLabel:setColor(label:getColor())
+    cloneLabel.name = label.name
+    cloneLabel.onMouseRelease = label.onMouseRelease
+    cloneLabel.onMousePress = label.onMousePress
+    cloneLabel.onDragEnter = label.onDragEnter
+    cloneLabel.onDragLeave = label.onDragLeave
+    cloneLabel.onDragMove = label.onDragMove
+  end
+end
+
 function processChannelTabMenu(tab, mousePos, mouseButton)
   local menu = g_ui.createWidget('PopupMenu')
   menu:setGameMenu(true)
@@ -719,6 +790,11 @@ function processChannelTabMenu(tab, mousePos, mouseButton)
         modules.game_textmessage.displayStatusMessage(tr('Channel appended to %s', filename))
       end
     end)
+    if clonedTab == tab then
+      menu:addOption(tr('Close clone'), function() closeClonedTab() end)
+    else
+      menu:addOption(tr('Clone tab'), function() openClonedTab(consoleTabBar:getCurrentTab()) end)
+    end    
   end
 
   menu:display(mousePos)
@@ -957,7 +1033,7 @@ function navigateConsoleLog(step)
 end
 
 function applyMessagePrefixies(name, level, message)
-  if name then
+  if name and #name > 0 then
     if modules.client_options.getOption('showLevelsInConsole') and level > 0 then
       message = '[' .. level .. '] ' .. name .. ': ' .. message
     else
@@ -1134,15 +1210,15 @@ function loadCommunicationSettings()
 
   local ignoreNode = g_settings.getNode('IgnorePlayers')
   if ignoreNode then
-    for i = 1, #ignoreNode do
-      table.insert(communicationSettings.ignoredPlayers, ignoreNode[i])
+    for _, player in pairs(ignoreNode) do
+      table.insert(communicationSettings.ignoredPlayers, player)
     end
   end
 
   local whitelistNode = g_settings.getNode('WhitelistedPlayers')
   if whitelistNode then
-    for i = 1, #whitelistNode do
-      table.insert(communicationSettings.whitelistedPlayers, whitelistNode[i])
+    for _, player in pairs(whitelistNode) do
+      table.insert(communicationSettings.whitelistedPlayers, player)
     end
   end
 
@@ -1365,7 +1441,24 @@ function online()
 end
 
 function offline()
+  closeClonedTab()
   save()
+end
+
+function onChannelEvent(channelId, name, type)
+  local fmt = ChannelEventFormats[type]
+  if not fmt then
+    print(('Unknown channel event type (%d).'):format(type))
+    return
+  end
+
+  local channel = channels[channelId]
+  if channel then
+    local tab = getTab(channel)
+    if tab then
+      addTabText(fmt:format(name), SpeakTypesSettings.channelOrange, tab)
+    end
+  end
 end
 
 function getConsolePanel()

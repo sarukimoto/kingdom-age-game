@@ -19,20 +19,14 @@ function UIComboBox:clearOptions()
   self:clearText()
 end
 
-function UIComboBox:getOption(text)
-  if not self.options then return nil end
+function UIComboBox:isOption(text)
+  if not self.options then return false end
   for i,v in ipairs(self.options) do
     if v.text == text then
-      return i
+      return true
     end
   end
-  return nil
-end
-
-function UIComboBox:getOptionIndex()
-  local currentOption = self:getCurrentOption()
-  if not currentOption then return nil end
-  return self:getOption(currentOption)
+  return false
 end
 
 function UIComboBox:setCurrentOption(text, dontSignal)

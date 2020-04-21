@@ -40,31 +40,49 @@ local function removeTooltip()
 end
 
 local function moveToolTip(firstDisplay)
-  local widget = g_game.getWidgetByPos()
-  if not firstDisplay then
-    if not toolTipLabel:isVisible() or toolTipLabel:getOpacity() < 0.1 then
-      return
-    end
+  if not firstDisplay and (not toolTipLabel:isVisible() or toolTipLabel:getOpacity() < 0.1) then
+    return
+  end
 
-    if not widget then -- No widget found (e.g., client background area)
-      g_tooltip.hide()
-      return
+  local pos        = g_window.getMousePosition()
+  local windowSize = g_window.getSize()
+  local labelSize  = toolTipLabel:getSize()
+  local hasAddons  = widget and widget.tooltipAddons or false
+
+  if hasAddons then
+    labelSize = toolTipAddonsBackgroundLabel:getSize()
+  end
+
+  pos.x = pos.x + 1
+  pos.y = pos.y + 1
+
+  if windowSize.width - (pos.x + labelSize.width) < 10 then
+    if hasAddons then
+      pos.x = pos.x - labelSize.width + 1
+    else
+      pos.x = pos.x - labelSize.width - 3
+    end
+  else
+    if hasAddons then
+      pos.x = pos.x + 14
+    else
+      pos.x = pos.x + 10
     end
   end
 
-  local pos    = g_window.getMousePosition()
-  local width  = toolTipLabel:getWidth()
-  local height = toolTipLabel:getHeight()
-  if widget and widget.tooltipAddons then
-    width  = toolTipAddonsBackgroundLabel:getWidth()
-    height = toolTipAddonsBackgroundLabel:getHeight()
+  if windowSize.height - (pos.y + labelSize.height) < 10 then
+    if hasAddons then
+      pos.y = pos.y - labelSize.height + 3
+    else
+      pos.y = pos.y - labelSize.height - 3
+    end
+  else
+    if hasAddons then
+      pos.y = pos.y + 16
+    else
+      pos.y = pos.y + 10
+    end
   end
-
-  local ydif = g_window.getSize().height - (pos.y + height)
-  pos.y = ydif <= 10 and pos.y - height - (widget and widget.tooltipAddons and -6 or 0) or pos.y + (widget and widget.tooltipAddons and 6 or 0)
-
-  local xdif = g_window.getSize().width - (pos.x + width)
-  pos.x = xdif <= 10 and pos.x - width - (widget and widget.tooltipAddons and 6 or 10) or pos.x + (widget and widget.tooltipAddons and 15 or 11)
 
   toolTipLabel:setPosition(pos)
 end
@@ -98,7 +116,6 @@ function g_tooltip.init()
     toolTipLabel:setId('toolTip')
     toolTipLabel:setTextAlign(AlignCenter)
     toolTipLabel:hide()
-    toolTipLabel.onMouseMove = function() moveToolTip() end
   end)
 end
 
@@ -309,6 +326,10 @@ function g_tooltip.display(widget)
   end
 
   moveToolTip(true)
+
+  connect(rootWidget, {
+    onMouseMove = moveToolTip,
+  })
 end
 
 function g_tooltip.hide(widget)
@@ -323,6 +344,10 @@ function g_tooltip.hide(widget)
     end
     g_effects.fadeOut(toolTipAddonGroupLabels[i], fadeOutTime)
   end
+
+  disconnect(rootWidget, {
+    onMouseMove = moveToolTip,
+  })
 end
 
 function g_tooltip.widgetHoverChange(widget, hovered)

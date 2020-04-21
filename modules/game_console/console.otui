@@ -133,11 +133,21 @@ Panel
     id: ignoreButton
     !tooltip: tr('Ignore players')
     icon: /images/game/console/ignore
-    anchors.right: parent.right
+    anchors.right: next.left
     anchors.top: parent.top
     margin-right: 5
     margin-top: 6
     @onClick: onClickIgnoreButton()
+
+  ConsoleTabBar
+    id: clonedTabBar
+    anchors.right: parent.right
+    anchors.top: parent.top
+    width: 0
+    margin-top: 3
+    margin-right: 5
+    tab-spacing: 2
+    movable: true    
 
   Panel
     id: consoleContentPanel
@@ -149,6 +159,18 @@ Panel
     margin-right: 6
     margin-bottom: 4
     margin-top: 4
+    padding: 1
+    focusable: false
+
+  Panel
+    id: clonedContentPanel
+    anchors.top: consoleContentPanel.top
+    anchors.left: parent.horizontalCenter
+    anchors.right: parent.right 
+    anchors.bottom: consoleTextEdit.top
+    margin-left: 6
+    margin-right: 6
+    margin-bottom: 4
     padding: 1
     focusable: false
 

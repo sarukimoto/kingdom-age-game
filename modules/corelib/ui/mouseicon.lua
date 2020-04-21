@@ -9,27 +9,29 @@ local mouseIcon
 
 -- private functions
 local function moveIcon(firstDisplay)
-  local widget = g_game.getWidgetByPos()
-  if not firstDisplay then
-    if not mouseIcon:isVisible() then
-      return
-    end
-
-    if not widget then -- No widget found (e.g., client background area)
-      g_mouseicon.hide()
-      return
-    end
+  if not firstDisplay and not mouseIcon:isVisible() then
+    return
   end
 
   local pos        = g_window.getMousePosition()
   local windowSize = g_window.getSize()
+  local labelSize  = mouseIcon:getSize()
 
-  local width  = mouseIcon:getWidth()
-  local xdif   = windowSize.width - (pos.x + width)
-  local height = mouseIcon:getHeight()
-  local ydif   = windowSize.height - (pos.y + height)
-  pos.x        = xdif <= 10 and pos.x - width - 10 or pos.x + 11
-  pos.y        = ydif <= 10 and pos.y - height or pos.y
+  pos.x = pos.x + 1
+  pos.y = pos.y + 1
+
+  if windowSize.width - (pos.x + labelSize.width) < 10 then
+    pos.x = pos.x - labelSize.width - 10
+  else
+    pos.x = pos.x + 10
+  end
+
+  if windowSize.height - (pos.y + labelSize.height) < 10 then
+    pos.y = pos.y - labelSize.height
+  -- else
+    -- pos.y = pos.y
+  end
+
   mouseIcon:setPosition(pos)
 end
 
@@ -49,7 +51,6 @@ function g_mouseicon.init()
     mouseIcon:setId('mouseIcon')
     mouseIcon:setPhantom(true)
     mouseIcon:hide()
-    mouseIcon.onMouseMove = function() moveIcon() end
 
     -- For item only
     mouseIcon:setVirtual(true)
@@ -88,6 +89,10 @@ function g_mouseicon.display(filePath, opacity, size, subType) -- (filePath[, op
   mouseIcon:enable()
 
   moveIcon(true)
+
+  connect(rootWidget, {
+    onMouseMove = moveIcon,
+  })
 end
 
 function g_mouseicon.displayItem(item, opacity, size, subType) -- (item[, opacity = option or defaultItemIconOpacity[, size = defaultSize[, subType = 1]]])
@@ -100,6 +105,10 @@ end
 function g_mouseicon.hide()
   g_effects.cancelFade(mouseIcon) -- Because g_mouseicon.hide() can be called multiple times in a row
   g_effects.fadeOut(mouseIcon, fadeOutTime)
+
+  disconnect(rootWidget, {
+    onMouseMove = moveIcon,
+  })
 end
 
 g_mouseicon.init()
