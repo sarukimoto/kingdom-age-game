@@ -3,7 +3,7 @@ DevModeWindow < MainWindow
 DevModeWindow
   id: devModeWindow
   !text: tr('DEV Mode')
-  size: 125 85
+  size: 170 110
   focusable: false
 
   CheckBox
@@ -12,16 +12,35 @@ DevModeWindow
     !tooltip: tr('Server running from 127.0.0.1')
     anchors.left: parent.left
     anchors.top: parent.top
-    width: 100
+    width: 140
+
+    $!on:
+      color: white
+    $on:
+      color: red
+
+  CheckBox
+    id: devServerCheckBox
+    !text: tr('Dev Server (ports)')
+    !tooltip: tr('Update ports to log on dev server')
+    anchors.left: parent.left
+    anchors.top: prev.bottom
+    margin-top: 5
+    width: 140
+
+    $!on:
+      color: white
+    $on:
+      color: red
 
   CheckBox
     id: drawBoxes
     !text: tr('Draw Boxes')
     !tooltip: tr('Draw debug boxes')
     anchors.left: localServerCheckBox.left
-    anchors.top: localServerCheckBox.bottom
-    margin-top: 8
-    width: 100
+    anchors.top: prev.bottom
+    margin-top: 5
+    width: 140
     @onClick: toggleOption(self, draw_debug_boxes)
 
   // CheckBox
@@ -30,6 +49,6 @@ DevModeWindow
     // !tooltip: tr('Hide the map panel')
     // anchors.left: drawBoxes.left
     // anchors.top: drawBoxes.bottom
-    // margin-top: 8
+    // margin-top: 5
     // width: 85
     // @onClick: toggleOption(self, hide_map, show_map)

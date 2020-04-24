@@ -218,6 +218,10 @@ function g_tooltip.display(widget)
         widget.tooltipAddons[i].onGroupBackground(toolTipAddonGroupLabels[i], i)
       end
 
+      toolTipAddonGroupLabels[i]:raise()
+      toolTipAddonGroupLabels[i]:show()
+      toolTipAddonGroupLabels[i]:enable()
+
       -- Addons
       --[[
         Options:
@@ -288,9 +292,6 @@ function g_tooltip.display(widget)
       end
 
       toolTipAddonGroupLabels[i]:resize(addonsWidthSum, higherHeight)
-      toolTipAddonGroupLabels[i]:raise()
-      toolTipAddonGroupLabels[i]:show()
-      toolTipAddonGroupLabels[i]:enable()
 
       higherWidth    = higherWidth > addonsWidthSum and higherWidth or addonsWidthSum
       heightTotalSum = heightTotalSum + higherHeight
