@@ -31,7 +31,10 @@ end
 g_resources.addSearchPath(g_resources.getWorkDir() .. "mods", true)
 
 -- setup directory for saving configurations
-g_resources.setupUserWriteDir(('%s/'):format(g_app.getCompactName()))
+if not g_resources.setWriteDir(g_resources.getWorkDir()) or not g_resources.makeDir("config") then
+  g_logger.fatal("Unable to make config directory.")
+end
+g_resources.setWriteDir(g_resources.getWorkDir() .. "config")
 
 -- search all packages
 g_resources.searchAndAddPackages('/', '.otpkg', true)
