@@ -1,14 +1,17 @@
 PowerSendingParticlesBoost1 < UIParticles
   effect: powersending-boost1-effect
   focusable: false
+  phantom: true
 
 PowerSendingParticlesBoost2 < UIParticles
   effect: powersending-boost2-effect
   focusable: false
+  phantom: true
 
 PowerSendingParticlesBoost3 < UIParticles
   effect: powersending-boost3-effect
   focusable: false
+  phantom: true
 
 HotkeybarArrowTop < UIWidget
   id: arrowtop

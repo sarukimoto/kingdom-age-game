@@ -71,10 +71,6 @@ end
 
 function UIPowerButton:onDragEnter(mousePos)
   g_mouse.pushCursor('target')
-  return true
-end
-
-function UIPowerButton:onDragMove(mouseMove, mouseMoved)
   g_mouseicon.display(string.format('/images/game/powers/%d_off', self.power.id))
   return true
 end

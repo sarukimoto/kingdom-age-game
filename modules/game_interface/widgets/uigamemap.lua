@@ -40,9 +40,13 @@ function UIGameMap:onDrop(widget, mousePos)
   if not tile then return false end
 
   local thing = widget.currentDragThing
-  local toPos = tile:getPosition()
-
   local thingPos = thing:getPosition()
+  if not thingPos then return false end
+
+  local thingTile = thing:getTile()
+  if thingPos.x ~= 65535 and not thingTile then return false end
+
+  local toPos = tile:getPosition()
   if thingPos.x == toPos.x and thingPos.y == toPos.y and thingPos.z == toPos.z then return false end
 
   if thing:isItem() and thing:getCount() > 1 then

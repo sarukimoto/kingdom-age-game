@@ -228,9 +228,12 @@ function load(forceDefaults)
 end
 
 function unload()
+  removePowerBoostEffect()
+
   for keyCombo,callback in pairs(boundCombosCallback) do
     g_keyboard.unbindKeyPress(keyCombo, callback)
   end
+
   boundCombosCallback = {}
   currentHotkeys:destroyChildren()
   currentHotkeyLabel = nil
@@ -461,7 +464,12 @@ function addKeyCombo(keyCombo, keySettings, focus)
     hotkeyLabel.useType = nil
     hotkeyLabel.value = ''
   end
-  boundCombosCallback[keyCombo] = function() doKeyCombo(keyCombo) end
+  boundCombosCallback[keyCombo] = function()
+    local textEdit = modules.game_console.getConsolePanel():getChildById('consoleTextEdit')
+    if textEdit and textEdit:isEnabled() and string.match(keyCombo, "^%C$") then return end
+    doKeyCombo(keyCombo)
+  end
+
   g_keyboard.bindKeyPress(keyCombo, boundCombosCallback[keyCombo])
   updateHotkeyLabel(hotkeyLabel)
   if focus then
@@ -860,6 +868,8 @@ function sendPower(flag, keyCombo) -- ([flag], [keyCombo]) -- (flag: powerFlags)
 
   local toPos = mapWidget:getPosition(g_window.getMousePosition())
 
+  removePowerBoostEffect()
+
   -- If has flag, send flag instead of power id
   if flag then
     g_game.sendPowerProtocolData(string.format("%d:%d:%d:%d", flag, 0, 0, 0))
@@ -869,7 +879,6 @@ function sendPower(flag, keyCombo) -- ([flag], [keyCombo]) -- (flag: powerFlags)
   -- Send power id and mouse position
   g_game.sendPowerProtocolData(string.format("%d:%d:%d:%d", powerBoost_lastPower, toPos.x, toPos.y, toPos.z))
 
-  removePowerBoostEffect()
   if keyCombo then
     if modules.ka_game_hotkeybars and lastHotkeyTime > 0 then
       local boostTime  = g_clock.millis() - lastHotkeyTime

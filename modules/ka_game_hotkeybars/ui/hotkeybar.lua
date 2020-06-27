@@ -169,7 +169,7 @@ function UIHotkeybar:load()
 
   local tmp = {}
   for k, keyCombo in pairs(hotkeyBars) do
-    table.insert(tmp, {k, keyCombo})
+    table.insert(tmp, {k, tostring(keyCombo)})
   end
 
   table.sort(tmp, function(a, b) return a[1] < b[1] end)

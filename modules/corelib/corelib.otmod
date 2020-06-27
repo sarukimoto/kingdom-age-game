@@ -29,3 +29,5 @@ Module
 
     dofile 'timer'
     dofile 'shaderfilter'
+
+    dofile 'json'
